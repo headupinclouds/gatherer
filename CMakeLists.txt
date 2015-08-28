@@ -8,6 +8,7 @@ include("cmake/HunterGate.cmake")
 HunterGate(
     URL "https://github.com/ruslo/hunter/archive/v0.8.13.tar.gz"
     SHA1 "7103f0ab481523ca93a06c1c55abcd56741d3a97"
+    LOCAL
 )
 
 project(gatherer VERSION 0.1.0)
@@ -31,6 +32,18 @@ endif()
 
 ## #################################################################
 ## Dependencies - Qt
+## #################################################################
+
+#-Wno-error=unused-command-line-argument-hard-error-in-future
+
+# hunter_add_package(Qt)
+# find_package(Qt5Widgets REQUIRED HINTS ${QT_ROOT})
+# set(CMAKE_AUTOMOC ON)
+# set(CMAKE_AUTOUIC ON)
+# set(CMAKE_AUTORCC ON)
+
+## #################################################################
+## Dependencies - OpenCV
 ## #################################################################
 
 # Are explicit includes of opencv deps still required by hunter?
@@ -61,16 +74,6 @@ hunter_add_package(cereal)
 find_package(cereal CONFIG REQUIRED)
 
 ## #################################################################
-## Dependencies - Qt
-## #################################################################
-
-#hunter_add_package(Qt)
-#find_package(Qt5Widgets REQUIRED)
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTOUIC ON)
-set(CMAKE_AUTORCC ON)
-
-## #################################################################
 ## Dependencies - OpenGL stuff
 ## #################################################################
 
@@ -83,6 +86,10 @@ find_package(GLEW REQUIRED)
 include_directories(${GLEW_INCLUDE_DIRS})
 
 find_package(OpenGL REQUIRED)
+
+## #################################################################
+## Project
+## #################################################################
 
 include_directories(src/lib)
 
