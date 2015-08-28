@@ -6,4 +6,4 @@
 //  Copyright (c) 2012 David Hirvonen. All rights reserved.
 //
 
-#include "GLSLShaderProgram.h"
+#include "graphics/GLSLShaderProgram.h"

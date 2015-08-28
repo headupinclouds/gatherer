@@ -9,7 +9,7 @@
 #ifndef __SprayCam__GLSLShaderProgram__
 #define __SprayCam__GLSLShaderProgram__
 
-#include "gatherer_graphics.h"
+#include "graphics/gatherer_graphics.h"
 #include <iostream>
 #include <vector>
 #include <exception>

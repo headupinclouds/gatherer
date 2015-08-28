@@ -11,10 +11,10 @@
 
 #include <iostream>
 
-#include "gatherer_graphics.h"
-#include "RenderTexture.h"
-#include "GLSLShaderProgram.h"
-#include "GLExtra.h"
+#include "graphics/gatherer_graphics.h"
+#include "graphics/RenderTexture.h"
+#include "graphics/GLSLShaderProgram.h"
+#include "graphics/GLExtra.h"
 #include <memory>
 
 _GATHERER_GRAPHICS_BEGIN

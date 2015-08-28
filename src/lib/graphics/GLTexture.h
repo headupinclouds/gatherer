@@ -9,7 +9,7 @@
 #ifndef SprayCam_GLTexture_h
 #define SprayCam_GLTexture_h
 
-#include "gatherer_graphics.h"
+#include "graphics/gatherer_graphics.h"
 #include <opencv2/core/core.hpp>
 
 _GATHERER_GRAPHICS_BEGIN

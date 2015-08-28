@@ -9,7 +9,7 @@
 #ifndef __SprayCam__GLExtra__
 #define __SprayCam__GLExtra__
 
-#include "gatherer_graphics.h"
+#include "graphics/gatherer_graphics.h"
 #include <iostream>
 #include <opencv2/core/core.hpp>
 

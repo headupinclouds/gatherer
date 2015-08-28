@@ -9,7 +9,7 @@
 #ifndef __SprayCam__RenderTexture__
 #define __SprayCam__RenderTexture__
 
-#include "gatherer_graphics.h"
+#include "graphics/gatherer_graphics.h"
 #include <opencv2/core/core.hpp>
 #include <vector>
 

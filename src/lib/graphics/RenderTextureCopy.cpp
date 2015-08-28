@@ -6,8 +6,8 @@
 //  Copyright (c) 2012 David Hirvonen. All rights reserved.
 //
 
-#include "RenderTextureCopy.h"
-#include "GLExtra.h"
+#include "graphics/RenderTextureCopy.h"
+#include "graphics/GLExtra.h"
 
 _GATHERER_GRAPHICS_BEGIN
 
