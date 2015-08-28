@@ -33,11 +33,9 @@ public:
     unsigned int & get() { return m_texture; }
     void load( const cv::Mat &image )
     {
-        int mode = GL_BGR;
-        int type = GL_UNSIGNED_BYTE;
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glBindTexture(GL_TEXTURE_2D, m_texture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.cols, image.rows, 0, mode, type, image.ptr());
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.cols, image.rows, 0, GL_BGR, GL_UNSIGNED_BYTE, image.ptr());
         glFlush();
     }
     

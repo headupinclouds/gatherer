@@ -18,6 +18,8 @@
 #include <iostream>
 #include <fstream>
 
+_GATHERER_GRAPHICS_BEGIN
+
 // See: http://www.codeincodeblock.com/2013/05/introduction-to-modern-opengl-3x-with.html
 class GLContextWindow
 {
@@ -66,6 +68,8 @@ public:
     GLFWwindow* m_window;
 };
 
+_GATHERER_GRAPHICS_END
+
 /// program:
 
 
@@ -105,6 +109,7 @@ const char *keys =
     "{n " SECOND_FIELD " version   | false | print the application version          }"
 };
 
+#define USE_GL_WINDOW 1
 
 int process(int argc, char **argv)
 {
@@ -122,31 +127,45 @@ int process(int argc, char **argv)
         video = std::make_shared<cv::VideoCapture>(input);
     }
     
-    
     if(video)
     {
-        cv::Mat tmp;
-        (*video) >> tmp;
+        cv::Size size(int(video->get( cv::CAP_PROP_FRAME_WIDTH)), int(video->get(cv::CAP_PROP_FRAME_HEIGHT)));
         
-        GLContextWindow window(tmp.size(), "display");
-        
-        gatherer::graphics::WarpShader shader(tmp.cols, tmp.rows);
-        
-        // Encapsulate:
+        gatherer::graphics::GLContextWindow window(size, "display");
+        gatherer::graphics::WarpShader shader(size.width, size.height);
         gatherer::graphics::GLTexture texture;
-
+        
         while(video->isOpened())
         {
             cv::Mat frame;
             (*video) >> frame;
             
-            // Load frame into texture (slow!)
+#if USE_GL_WINDOW
+            // Load frame into texture using simple glTexImage2D()
+            //
+            // On a 2013 MacBook Pro, a1280x720 texture loads in about 1 ms
+            //
+            //   OpenGL version: 2.1 NVIDIA-10.4.2 310.41.35f01
+            //   GLSL version: 1.20
+            //   Vendor: NVIDIA Corporation
+            //   Renderer: NVIDIA GeForce GT 650M OpenGL Engine
+            //
+            // Texture [1280 x 720]load time: 0.000994985
+
+            auto tic = cv::getTickCount();
             texture.load(frame);
+            auto toc = cv::getTickCount();
+            double elapsed = (toc - tic) / double(cv::getTickFrequency());
+            
+            std::cout << "Texture " <<  size << "load time: " <<  elapsed << std::endl;
+            
             shader(texture.get());
-            
             glfwSwapBuffers (window);
+#else
             
-            //cv::imshow("frame", frame);
+            // Use the siple opencv highguig display window:
+            cv::imshow("frame", frame);
+#endif
         }
     }
     return 0;
