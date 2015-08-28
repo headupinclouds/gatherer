@@ -34,13 +34,18 @@ endif()
 ## Dependencies - Qt
 ## #################################################################
 
+## Needs:
 #-Wno-error=unused-command-line-argument-hard-error-in-future
 
-# hunter_add_package(Qt)
-# find_package(Qt5Widgets REQUIRED HINTS ${QT_ROOT})
-# set(CMAKE_AUTOMOC ON)
-# set(CMAKE_AUTOUIC ON)
-# set(CMAKE_AUTORCC ON)
+option(BUILD_QT OFF)
+
+if(BUILD_QT)
+  hunter_add_package(Qt)
+  find_package(Qt5Widgets REQUIRED HINTS ${QT_ROOT})
+  set(CMAKE_AUTOMOC ON)
+  set(CMAKE_AUTOUIC ON)
+  set(CMAKE_AUTORCC ON)
+endif()
 
 ## #################################################################
 ## Dependencies - OpenCV
