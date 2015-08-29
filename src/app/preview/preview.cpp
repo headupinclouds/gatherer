@@ -285,6 +285,21 @@ int process(int argc, char **argv)
             
             std::cout << "Texture " <<  size << "load time: " <<  elapsed << std::endl;
             
+            // TODO:  This is an initial attempt to put together a few basic classes for
+            // a GLSL rendering pipeline.  More work is needed to iron out a consistent and
+            // flexible API.  For example, currently the WarpShader is configured to render
+            // to the screen, and the FXShader is configured to render to a framebuffer.
+            // Currently it is not possible to switch the order of these.  Also chaining
+            // shaders together via operator overload A(B(C(D(teture)))) is convenient for
+            // simple shader chains, but it should be possible to support multiple source
+            // and desinations shaders for each one.  One such example being:
+            //
+            //     B=>E\
+            // A=> C=>F ==>H
+            //     D=>G/
+            //
+            // This is handled well by GPUImage, for example.
+            
             shader(fx(texture));
             
             glfwSwapBuffers (window);
