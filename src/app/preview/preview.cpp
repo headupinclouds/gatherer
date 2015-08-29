@@ -258,7 +258,7 @@ int process(int argc, char **argv)
         
         gatherer::graphics::GLContextWindow window(size, "display");
         gatherer::graphics::FXShader fx(size, {1.f, 1.f});
-        gatherer::graphics::WarpShader shader(size, window.getResolution());
+        gatherer::graphics::WarpShader rotate(size, window.getResolution());
         gatherer::graphics::GLTexture texture;
 
         while(video->isOpened())
@@ -300,7 +300,7 @@ int process(int argc, char **argv)
             //
             // This is handled well by GPUImage, for example.
             
-            shader(fx(texture));
+            rotate(fx(texture));
             
             glfwSwapBuffers (window);
 #else
