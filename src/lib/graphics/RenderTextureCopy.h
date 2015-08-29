@@ -1,13 +1,13 @@
 //
 //  RenderTextureCopy.h
-//  SprayCam
+//  gatherer
 //
 //  Created by David Hirvonen on 10/14/12.
 //  Copyright (c) 2012 David Hirvonen. All rights reserved.
 //
 
-#ifndef __SprayCam__RenderTextureCopy__
-#define __SprayCam__RenderTextureCopy__
+#ifndef __gatherer__RenderTextureCopy__
+#define __gatherer__RenderTextureCopy__
 
 #include <iostream>
 
@@ -55,4 +55,4 @@ protected:
 
 _GATHERER_GRAPHICS_END
 
-#endif /* defined(__SprayCam__RenderTextureCopy__) */
+#endif /* defined(__gatherer__RenderTextureCopy__) */

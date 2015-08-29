@@ -1,6 +1,6 @@
 //
 //  RenderTextureCopy.cpp
-//  SprayCam
+//  gatherer
 //
 //  Created by David Hirvonen on 10/14/12.
 //  Copyright (c) 2012 David Hirvonen. All rights reserved.

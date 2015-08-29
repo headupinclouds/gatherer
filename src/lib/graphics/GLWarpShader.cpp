@@ -13,7 +13,9 @@
 
 _GATHERER_GRAPHICS_BEGIN
 
-WarpShader::WarpShader(int width, int height) : m_size(width, height)
+WarpShader::WarpShader(const cv::Size &size, const cv::Point2f &resolution)
+: m_size(size)
+, m_resolution(resolution)
 {
     compileShadersPlanar();
 }
@@ -64,17 +66,15 @@ GLuint WarpShader::operator()(int texture)
     // Transform to rectangle defined by (-1,-1) (+1,+1)
     cv::Matx33f T(1,0,-w/2,0,1,-h/2,0,0,1);
     cv::Matx33f S(2.0/w,0,0,0,2.0/h,0,0,0,1);
-    cv::Matx33f H = S * T;
-    
     
     // Otionally add some effect:
     const float theta = (m_count % 360) * M_PI / 180.f;
     const float c = std::cos(theta);
     const float s = std::sin(theta);
     cv::Matx33f R(+c, -s, 0, +s, +c, 0, 0, 0, 1);
-    cv::Matx33f Q = T.inv() * R * T;
+    cv::Matx33f H = S * R * T;
     
-    (*this)(texture, H * Q);
+    (*this)(texture, H);
     
     m_count ++;
     
@@ -99,12 +99,14 @@ void WarpShader::operator()(int texture, const cv::Matx33f &H)
     for(const auto &p : vertices)
         vertices4d.emplace_back(p.x, (m_size.height - p.y), 0, 1);
     
+    // Note for rendering to the display we need to factor in screen resolution
+    glViewport(0, 0, int(m_resolution.x * m_size.width + 0.5f), int(m_resolution.y * m_size.height + 0.5f));
+    
     (*m_pPlanarShaderProgram)();
     glUniformMatrix4fv(m_PlanarUniformMVP, 1, 0, (GLfloat *)&MVPt(0,0));
     
     glClearColor(0, 0, 0, 0);
     glClear(GL_COLOR_BUFFER_BIT);
-    glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_2D, texture);
     
     glVertexAttribPointer(RenderTexture::ATTRIB_VERTEX, 4, GL_FLOAT, 0, 0, &vertices4d[0][0]);

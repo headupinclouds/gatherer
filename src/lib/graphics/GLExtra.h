@@ -1,13 +1,13 @@
 //
 //  GLExtra.h
-//  SprayCam
+//  gatherer
 //
 //  Created by David Hirvonen on 10/8/12.
 //  Copyright (c) 2012 David Hirvonen. All rights reserved.
 //
 
-#ifndef __SprayCam__GLExtra__
-#define __SprayCam__GLExtra__
+#ifndef __gatherer__GLExtra__
+#define __gatherer__GLExtra__
 
 #include "graphics/gatherer_graphics.h"
 #include <iostream>
@@ -53,4 +53,4 @@ static void R3x3To4x4(const cv::Matx33f &R3, cv::Matx44f &R4)
 
 _GATHERER_GRAPHICS_END
 
-#endif /* defined(__SprayCam__GLExtra__) */
+#endif /* defined(__gatherer__GLExtra__) */

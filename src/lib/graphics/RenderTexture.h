@@ -1,13 +1,13 @@
 //
 //  RenderTexture.h
-//  SprayCam
+//  gatherer
 //
 //  Created by David Hirvonen on 9/24/12.
 //  Copyright (c) 2012 David Hirvonen. All rights reserved.
 //
 
-#ifndef __SprayCam__RenderTexture__
-#define __SprayCam__RenderTexture__
+#ifndef __gatherer__RenderTexture__
+#define __gatherer__RenderTexture__
 
 #include "graphics/gatherer_graphics.h"
 #include <opencv2/core/core.hpp>
@@ -33,16 +33,19 @@ protected:
     GLuint m_fbo;
     GLuint m_width;
     GLuint m_height;
+    
+    float m_resX;
+    float m_resY;
 
 public:
 
     enum {  ATTRIB_VERTEX, ATTRIB_TEXTUREPOSITION, NUM_ATTRIBUTES };
 
-    RenderTexture(GLuint p_width, GLuint p_height);
+    RenderTexture(GLuint p_width, GLuint p_height, float resX=1.f, float resY=1.f);
     virtual ~RenderTexture();
     virtual void startRender();
     virtual void finishRender();
-    void bind(GLenum texture);
+    void bind();
     virtual void draw() = 0;
     virtual GLuint render();
     int newTexture();
@@ -55,4 +58,4 @@ void LoadFrameTexture( const cv::Mat &image, GLuint texture );
 
 _GATHERER_GRAPHICS_END
 
-#endif /* defined(__SprayCam__RenderTexture__) */
+#endif /* defined(__gatherer__RenderTexture__) */

@@ -1,13 +1,13 @@
 //
 //  GLSLShaderProgram.h
-//  SprayCam
+//  gatherer
 //
 //  Created by David Hirvonen on 10/8/12.
 //  Copyright (c) 2012 David Hirvonen. All rights reserved.
 //
 
-#ifndef __SprayCam__GLSLShaderProgram__
-#define __SprayCam__GLSLShaderProgram__
+#ifndef __gatherer__GLSLShaderProgram__
+#define __gatherer__GLSLShaderProgram__
 
 #include "graphics/gatherer_graphics.h"
 #include <iostream>
@@ -103,4 +103,4 @@ public:
 
 _GATHERER_GRAPHICS_END
 
-#endif /* defined(__SprayCam__GLSLShaderProgram__) */
+#endif /* defined(__gatherer__GLSLShaderProgram__) */

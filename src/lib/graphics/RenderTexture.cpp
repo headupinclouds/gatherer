@@ -1,6 +1,6 @@
 //
 //  RenderTexture.cpp
-//  SprayCam
+//  gatherer
 //
 //  Created by David Hirvonen on 9/24/12.
 //  Copyright (c) 2012 David Hirvonen. All rights reserved.
@@ -35,40 +35,31 @@ void LoadFrameTexture( const cv::Mat &image, GLuint texture)
     glFlush();
 }
 
-RenderTexture::RenderTexture(GLuint p_width, GLuint p_height) : m_width(p_width), m_height(p_height)
+RenderTexture::RenderTexture(GLuint p_width, GLuint p_height, float resX, float resY)
+: m_width(p_width)
+, m_height(p_height)
+, m_resX(resX)
+, m_resY(resY)
 {
     glGenFramebuffers(1, &m_fbo);
-    glErrorTest();
     glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
-    glErrorTest();
     newTexture();
 }
 
 int RenderTexture::newTexture()
 {
     glGenTextures(1, &m_texID);
-    glErrorTest();
     glBindTexture(GL_TEXTURE_2D, m_texID);
-    glErrorTest();
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glErrorTest();
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glErrorTest();
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glErrorTest();
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glErrorTest();
     glBindTexture(GL_TEXTURE_2D, 0);
-    glErrorTest();
 
     glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
-    glErrorTest();
     glBindTexture(GL_TEXTURE_2D, m_texID);
-    glErrorTest();
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-    glErrorTest();
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texID, 0);
-    glErrorTest();
 
     //  you can check to see if the framebuffer is 'complete' with no errors
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER)!=GL_FRAMEBUFFER_COMPLETE)
@@ -85,9 +76,7 @@ int RenderTexture::newTexture()
 RenderTexture::~RenderTexture()
 {
     glDeleteTextures( 1, &m_texID );
-    glErrorTest(); //  free our texture
     glDeleteFramebuffers( 1, &m_fbo );
-    glErrorTest(); //  free our framebuffer
 }
 
 GLuint RenderTexture::render()
@@ -101,22 +90,19 @@ GLuint RenderTexture::render()
 void RenderTexture::startRender()
 {
     glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
-    glErrorTest(); //  bind the framebuffer
-    glViewport(0,0,m_width,m_height);
-    glErrorTest(); //  set the viewport to our texture dimensions
+    glViewport(0,0, int(m_resX * m_width + 0.5f), int(m_resY * m_height + 0.5f));
 }
 
 void RenderTexture::finishRender()
 {
     //  unbind our framebuffer, return to default state
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glErrorTest();
+
     //  remember to restore the viewport when you are ready to render to the screen!
 }
 
-void RenderTexture::bind(GLenum texture)
+void RenderTexture::bind()
 {
-    glActiveTexture(texture);
     glBindTexture( GL_TEXTURE_2D, m_texID );
 }
 

@@ -8,6 +8,7 @@
 
 #include "graphics/GLWarpShader.h"
 #include "graphics/GLTexture.h"
+#include "graphics/RenderTexture.h"
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -31,7 +32,21 @@ public:
             m_initialized = true;
             throw std::runtime_error("glfwInit failed");
         }
-        
+
+        // Note: Pecularitiy for retina displays must be handled
+        // http://www.glfw.org/faq.html
+        // 4.3 - Why is my output in the lower-left corner of the window?
+        // You are passing the window size, which is in screen coordinates, to glViewport,
+        // which works with pixels. On OS X with a Retina display, and possibly on other
+        // platforms in the future, screen coordinates and pixels do not map 1:1.
+        // Use the framebuffer size, which is in pixels, instead of the window size
+        //
+        // see: glfwGetFramebufferSize(window, &width, &height);
+        //
+        // or for resizable window
+        //
+        // see: glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+
         m_window = glfwCreateWindow(m_size.width, m_size.height, "Frame", NULL, NULL);
         if(!m_window)
             throw std::runtime_error("glfwOpenWindow failed.");
@@ -48,6 +63,13 @@ public:
         std::cout << "GLSL version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
         std::cout << "Vendor: " << glGetString(GL_VENDOR) << std::endl;
         std::cout << "Renderer: " << glGetString(GL_RENDERER) << std::endl;
+    }
+    
+    cv::Point2f getResolution() const
+    {
+        int width, height;
+        glfwGetFramebufferSize(m_window, &width, &height);
+        return cv::Point2f(float(width)/float(m_size.width), float(height)/float(m_size.height));
     }
     
     ~GLContextWindow()
@@ -68,10 +90,113 @@ public:
     GLFWwindow* m_window;
 };
 
+
+class FXShader : public gatherer::graphics::RenderTexture
+{
+public:
+
+    FXShader(const cv::Size &size, const cv::Point2f &resolution)
+    : gatherer::graphics::RenderTexture(size.width, size.height, resolution.x, resolution.y)
+    , m_size(size)
+    , m_count(0)
+    {
+        compileShaders();
+    }
+    
+    // TODO: Base class needs a clear API
+    GLuint operator()(GLuint texture)
+    {
+        m_inputTexture = texture;
+        
+        render(); // virtual method
+        
+        return getTexture();
+    }
+
+    // Called from base class render sequence: start*; draw(); finish*;
+    virtual void draw()
+    {
+        GLTexRect roi(m_size);
+        
+        // {-1,-1}, {1,-1}, {-1,1}, {1,1}
+
+        std::vector<cv::Point2f> vertices = { {-1.f, -1.f}, {+1.f, -1.f}, {-1.f, +1.f}, {+1.f, +1.f} };
+        //auto vertices = roi.GetVertices();
+        auto coords = GLTexRect::GetTextureCoordinates();
+        
+        std::vector<cv::Vec4f> vertices4d;
+        for(const auto &p : vertices)
+            vertices4d.emplace_back(p.x, p.y, 0, 1);
+        
+        (*m_pFXShaderProgram)();
+        
+        glClearColor(0, 0, 0, 0);
+        glClear(GL_COLOR_BUFFER_BIT);
+        glBindTexture(GL_TEXTURE_2D, m_inputTexture);
+        
+        glUniform1f(m_FXUniformTime, float(m_count)/10.f);
+        
+        glVertexAttribPointer(RenderTexture::ATTRIB_VERTEX, 4, GL_FLOAT, 0, 0, &vertices4d[0][0]);
+        glEnableVertexAttribArray(RenderTexture::ATTRIB_VERTEX);
+        glVertexAttribPointer(RenderTexture::ATTRIB_TEXTUREPOSITION, 2, GL_FLOAT, 0, 0, &coords[0]);
+        glEnableVertexAttribArray(RenderTexture::ATTRIB_TEXTUREPOSITION);
+        
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+        glFlush();
+        
+        m_count++;
+    }
+    
+    void compileShaders()
+    {
+        using gatherer::graphics::RenderTexture;
+        
+        // vertex shader
+        const char *kVertexShaderString = R"(
+        attribute vec4 position;
+        attribute vec4 inputTextureCoordinate;
+        varying vec2 textureCoordinate;
+        void main()
+        {
+            gl_Position = position;
+            textureCoordinate = inputTextureCoordinate.xy;
+        })";
+        
+        const char *kFragmentShaderString = R"(
+        //varying highp vec2 textureCoordinate; /* opengl */
+        varying vec2 textureCoordinate;         /* opengl es 2.0 */
+        uniform sampler2D texture;
+        uniform float time;
+        void main()
+        {
+            vec4 delta = vec4(cos(time+textureCoordinate.x), cos(time+textureCoordinate.y), 0.0, 0.0);
+            vec4 value = texture2D(texture, textureCoordinate);
+            gl_FragColor = value + delta;
+        })";
+        
+        // m_frameVertices, i.e. (0, 0, w, h)
+        // m_textureCoordinates, i.e. (-1, -1, 1, 1)
+        const GLchar * vShaderStr[] = { kVertexShaderString };
+        const GLchar * fShaderStr[] = { kFragmentShaderString };
+        std::vector< std::pair<int, const char *> > attributes;
+        attributes.push_back( std::pair<int, const char*>(RenderTexture::ATTRIB_VERTEX, "position") );
+        attributes.push_back( std::pair<int, const char*>(RenderTexture::ATTRIB_TEXTUREPOSITION, "inputTextureCoordinate") );
+        
+        m_pFXShaderProgram = make_unique<gatherer::graphics::shader_prog>(vShaderStr, fShaderStr, attributes);
+        m_FXUniformTexture =  m_pFXShaderProgram->GetUniformLocation("texture");
+        m_FXUniformTime = m_pFXShaderProgram->GetUniformLocation("time");
+    }
+
+    int m_count = 0;
+    cv::Size m_size;
+    std::unique_ptr<gatherer::graphics::shader_prog> m_pFXShaderProgram;
+    GLuint m_FXUniformTexture;
+    GLuint m_FXUniformTime;
+    GLuint m_inputTexture;
+};
+
 _GATHERER_GRAPHICS_END
-
-/// program:
-
 
 const char *version = "v0.1";
 
@@ -132,9 +257,10 @@ int process(int argc, char **argv)
         cv::Size size(int(video->get( cv::CAP_PROP_FRAME_WIDTH)), int(video->get(cv::CAP_PROP_FRAME_HEIGHT)));
         
         gatherer::graphics::GLContextWindow window(size, "display");
-        gatherer::graphics::WarpShader shader(size.width, size.height);
+        gatherer::graphics::FXShader fx(size, {1.f, 1.f});
+        gatherer::graphics::WarpShader shader(size, window.getResolution());
         gatherer::graphics::GLTexture texture;
-        
+
         while(video->isOpened())
         {
             cv::Mat frame;
@@ -159,7 +285,8 @@ int process(int argc, char **argv)
             
             std::cout << "Texture " <<  size << "load time: " <<  elapsed << std::endl;
             
-            shader(texture.get());
+            shader(fx(texture));
+            
             glfwSwapBuffers (window);
 #else
             

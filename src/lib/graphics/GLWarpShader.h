@@ -21,7 +21,7 @@ class WarpShader
 {
 public:
     
-    WarpShader(int width, int height);
+    WarpShader(const cv::Size &size, const cv::Point2f &resolution);
     void compileShadersPlanar();
     GLuint operator()(int texture);
     void operator()(int texture, const cv::Matx33f &H);
@@ -31,6 +31,7 @@ protected:
     int m_count = 0;
     
     cv::Size m_size;
+    cv::Point2f m_resolution;
     
     // Planar shader program
     std::unique_ptr<gatherer::graphics::shader_prog> m_pPlanarShaderProgram;

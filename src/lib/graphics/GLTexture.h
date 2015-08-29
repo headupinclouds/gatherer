@@ -1,24 +1,48 @@
 //
 //  GLTexture.h
-//  SprayCam
+//  gatherer
 //
 //  Created by David Hirvonen on 12/11/12.
 //  Copyright (c) 2012 David Hirvonen. All rights reserved.
 //
 
-#ifndef SprayCam_GLTexture_h
-#define SprayCam_GLTexture_h
+#ifndef gatherer_GLTexture_h
+#define gatherer_GLTexture_h
 
 #include "graphics/gatherer_graphics.h"
 #include <opencv2/core/core.hpp>
 
 _GATHERER_GRAPHICS_BEGIN
 
+
+/**
+ * \class GLTexture
+ *
+ * \brief Simple C++ wrapper to create a new OpenGL texture
+ *
+ * This class creates and manages OpenGL texture memory.
+ *
+ * @code
+ *
+ * cv::Mat image(100, 100, CV_8UC3);
+ * GLTexture texture(image);
+ *
+ * @endcode
+ */
+
+// TODO: comments
+
 class GLTexture
 {
 public:
+    
+    /// Constructor (empty)
     GLTexture() { init(); }
+
+    /// Constructor from OpenCV cv::Mat
     GLTexture(const cv::Mat &image) { init(); load(image); }
+    
+    /// Initialization
     void init()
     {
         glGenTextures(1,&m_texture);
@@ -40,6 +64,8 @@ public:
     }
     
 protected:
+    
+    /// OpenGL texture ID
     unsigned int m_texture;
 };
 
