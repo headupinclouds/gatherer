@@ -43,11 +43,6 @@
 
 #include <QWidget>
 
-QT_BEGIN_NAMESPACE
-class QSlider;
-class QPushButton;
-QT_END_NAMESPACE
-
 class GLWidget;
 class MainWindow;
 
@@ -58,20 +53,13 @@ class Window : public QWidget
 public:
     Window(MainWindow *mw);
 
+    void setVideoDimensions(int width, int height);
+    
 protected:
     void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
 
-private slots:
-    void dockUndock();
-
 private:
-    QSlider *createSlider();
-
     GLWidget *glWidget;
-    QSlider *xSlider;
-    QSlider *ySlider;
-    QSlider *zSlider;
-    QPushButton *dockBtn;
     MainWindow *mainWindow;
 };
 

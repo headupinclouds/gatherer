@@ -6,6 +6,8 @@ add_executable(
     MACOSX_BUNDLE
     glwidget.cpp
     glwidget.h
+    logo.cpp
+    logo.h
     main.cpp
     mainwindow.cpp
     mainwindow.h
@@ -13,11 +15,6 @@ add_executable(
     window.h
 )
 
-target_link_libraries(preview-qt 
-  Qt5::Widgets
-  ${OpenCV_LIBS} 
-  gatherer_graphics
-)
-
+target_link_libraries(preview-qt Qt5::Widgets)
 install(TARGETS preview-qt DESTINATION bin)
 set_property(TARGET preview-qt PROPERTY FOLDER "app/gui")

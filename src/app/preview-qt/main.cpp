@@ -45,6 +45,14 @@
 
 #include "mainwindow.h"
 
+#include "graphics/GLWarpShader.h"
+#include "graphics/GLTexture.h"
+#include "graphics/RenderTexture.h"
+
+#include <opencv2/core/core.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
+
 #if defined(Q_OS_IOS)
 extern "C" int qtmn(int argc, char** argv) {
 #else
@@ -64,12 +72,31 @@ int main(int argc, char **argv) {
 
     MainWindow mainWindow;
     mainWindow.resize(mainWindow.sizeHint());
-    int desktopArea = QApplication::desktop()->width() *
-                     QApplication::desktop()->height();
+    int desktopArea = QApplication::desktop()->width() * QApplication::desktop()->height();
     int widgetArea = mainWindow.width() * mainWindow.height();
     if (((float)widgetArea / (float)desktopArea) < 0.75f)
         mainWindow.show();
     else
         mainWindow.showMaximized();
+    
+#define USE_VIDEO_EVENT_LOOP 1
+    
+#if USE_VIDEO_EVENT_LOOP
+    auto video = std::make_shared<cv::VideoCapture>(0);
+    if(video && video->isOpened())
+    {
+        cv::Size size(int(video->get( cv::CAP_PROP_FRAME_WIDTH)), int(video->get(cv::CAP_PROP_FRAME_HEIGHT)));
+        gatherer::graphics::GLTexture texture;
+        while(video->isOpened())
+        {
+            cv::Mat frame;
+            (*video) >> frame;
+            texture.load(frame);
+            
+            app.processEvents(); // TODO: is this right?
+        }
+    }
+#else
     return app.exec();
+#endif
 }
