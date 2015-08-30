@@ -79,7 +79,7 @@ int main(int argc, char **argv) {
     else
         mainWindow.showMaximized();
     
-#define USE_VIDEO_EVENT_LOOP 1
+#define USE_VIDEO_EVENT_LOOP 0
     
 #if USE_VIDEO_EVENT_LOOP
     auto video = std::make_shared<cv::VideoCapture>(0);

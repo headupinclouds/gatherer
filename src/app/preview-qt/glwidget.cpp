@@ -47,8 +47,9 @@
 #include "graphics/GLWarpShader.h"
 #include "graphics/GLTexture.h"
 
-#include <opencv2/core/core.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/core.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/highgui.hpp>
 
 #include <memory>
 
@@ -58,7 +59,13 @@ GLWidget::GLWidget(QWidget *parent)
     m_core = QCoreApplication::arguments().contains(QStringLiteral("--coreprofile"));
     // --transparent causes the clear color to be transparent. Therefore, on systems that
     // support it, the widget will become transparent apart from the logo.
-
+    
+    
+    // TODO: This shouldn't live here, but want to get first proof of concept working!!!
+    m_video = std::make_shared<cv::VideoCapture>(0);
+    
+    // Can't allocate here (context must not be current?)
+    // m_videoTexture = std::make_shared<gatherer::graphics::GLTexture>();
 }
 
 QSize GLWidget::minimumSizeHint() const
@@ -79,8 +86,8 @@ GLWidget::~GLWidget()
 // Call at startup only:
 void GLWidget::setVideoDimensions(int width, int height)
 {
-    m_width = width;
-    m_height = height;
+    m_videoWidth = width;
+    m_videoHeight = height;
 }
 
 void GLWidget::cleanup()
@@ -102,30 +109,48 @@ void GLWidget::initializeGL()
     initializeOpenGLFunctions();
     
     // TODO: need to populate these form our video source in our video event loop
-    m_program = std::make_shared<gatherer::graphics::WarpShader>( cv::Size(m_width, m_height), cv::Point2f(1,1) );
+    m_program = std::make_shared<gatherer::graphics::WarpShader>( cv::Size(m_windowWidth, m_windowHeight), cv::Point2f(1,1) );
+    m_videoTexture = std::make_shared<gatherer::graphics::GLTexture>();
 }
 
 // TODO: need to pass real texture from our video event loop
-#define USE_REAL_TEXTURE_INPUT 0
+#define USE_REAL_TEXTURE_INPUT 1
 
 void GLWidget::paintGL()
 {
 
 #if !USE_REAL_TEXTURE_INPUT
     // TODO: simulating video input here, need to get the real texture from our event loop replacement:
-    cv::Mat canvas(640, 480, CV_8UC3, cv::Scalar::all(0));
-    for(int r = 10; r < 240; r += 20)
-        cv::circle(canvas, {320, 240}, r, {0,255,0}, 2, 8);
+    cv::Point center(m_windowWidth/2, m_windowHeight/2);
+    cv::Mat canvas(m_windowWidth, m_windowHeight, CV_8UC3, cv::Scalar::all(0));
+    for(int r = (10 + m_counter) % 80; r < m_windowWidth/2; r += 20)
+        cv::circle(canvas, center, r, {0,255,0}, 2, 8);
+    
+    std::stringstream ss;
+    ss << "Hello QT";
+    cv::putText(canvas, ss.str(), {0, center.y}, CV_FONT_HERSHEY_COMPLEX, 0.5, {255, 255, 255});
     
     gatherer::graphics::GLTexture texture(canvas);
     m_texture = texture;
+#else
+    // Even this isn't using a video loop, but grab frames from internally managed video class for now
+    cv::Mat frame;
+    (*m_video) >> frame;
+    m_videoTexture->load(frame);
+    m_texture = (*m_videoTexture);
 #endif
     
     (*m_program)(m_texture);
 
+    m_counter++;
 }
 
 void GLWidget::resizeGL(int w, int h)
 {
     // TODO:
+    m_windowWidth = w;
+    m_windowHeight = h;
+    
+    m_program = std::make_shared<gatherer::graphics::WarpShader>( cv::Size(m_windowWidth, m_windowHeight), cv::Point2f(1,1) );
+
 }

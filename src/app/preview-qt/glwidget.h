@@ -47,7 +47,16 @@
 #include <QOpenGLBuffer>
 #include <QMatrix4x4>
 
-namespace gatherer { namespace graphics { class WarpShader; } };
+namespace gatherer
+{
+    namespace graphics
+    {
+        class WarpShader;
+        class GLTexture;
+    };
+};
+
+namespace cv { class VideoCapture; };
 
 #define DO_ORIGINAL 0
 
@@ -77,10 +86,19 @@ protected:
 private:
 
     std::shared_ptr< gatherer::graphics::WarpShader > m_program;
+    std::shared_ptr< gatherer::graphics::GLTexture > m_videoTexture;
+    std::shared_ptr< cv::VideoCapture > m_video;
     
     GLuint m_texture = 0;
-    GLuint m_width = 0;
-    GLuint m_height = 0;
+    
+    GLuint m_videoWidth = 0;
+    GLuint m_videoHeight = 0;
+    
+    GLuint m_windowWidth = 0;
+    GLuint m_windowHeight = 0;
+    
+    int m_counter = 0;
+    
     bool m_core;
 };
 
