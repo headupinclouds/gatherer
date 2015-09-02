@@ -53,7 +53,12 @@ public:
     MainWindow(GLWidget *gl);
 
 private slots:
-    void onAddNew(GLWidget *gl);
+    
+    void onAddNew();
+
+protected:
+
+    GLWidget *m_gl = 0;
 };
 
 #endif
