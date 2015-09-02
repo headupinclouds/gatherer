@@ -17,7 +17,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # See: cmake/Hunter/config.cmake
 hunter_add_package(Sugar)
-include("$ENV{SUGAR_ROOT}/cmake/Sugar")
+include("${SUGAR_ROOT}/cmake/Sugar")
 include(sugar_include)
 
 set(is_android ANDROID) # syntax compatibility
@@ -54,23 +54,6 @@ endif()
 ## Dependencies - OpenCV
 ## #################################################################
 
-# Are explicit includes of opencv deps still required by hunter?
-
-### ZLIB: ZLIB_INCLUDE_DIRS; ZLIB_LIBRARIES; ZLIB_FOUND 
-hunter_add_package(ZLIB)
-find_package(ZLIB CONFIG REQUIRED)
-message("ZLIB_INCLUDE_DIRS = ${ZLIB_INCLUDE_DIRS}")
-
-### TIFF: TIFF_INCLUDE_DIR; TIFF_LIBRARIES; TIFF_FOUND
-hunter_add_package(TIFF)
-find_package(TIFF CONFIG REQUIRED)
-message("TIFF_INCLUDE_DIRS = ${TIFF_INCLUDE_DIR}")
-
-### PNG: PNG_INCLUDE_DIR; PNG_LIBRARIES; PNG_FOUND
-hunter_add_package(PNG)
-find_package(PNG CONFIG REQUIRED)
-message("PNG_INCLUDE_DIRS = ${PNG_INCLUDE_DIR}")
-
 hunter_add_package(OpenCV)
 find_package(OpenCV REQUIRED)
 
@@ -91,7 +74,10 @@ pkg_search_module(GLFW REQUIRED glfw3)
 include_directories(AFTER ${GLFW_INCLUDE_DIRS})
 
 find_package(GLEW REQUIRED)
-include_directories(AFTER ${GLEW_INCLUDE_DIRS})
+add_library(glew INTERFACE IMPORTED)
+set_target_properties(
+    glew PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${GLEW_INCLUDE_DIRS}"
+)
 
 find_package(OpenGL REQUIRED)
 
