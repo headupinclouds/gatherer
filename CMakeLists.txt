@@ -74,7 +74,10 @@ pkg_search_module(GLFW REQUIRED glfw3)
 include_directories(${GLFW_INCLUDE_DIRS})
 
 find_package(GLEW REQUIRED)
-include_directories(${GLEW_INCLUDE_DIRS})
+add_library(glew INTERFACE IMPORTED)
+set_target_properties(
+    glew PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${GLEW_INCLUDE_DIRS}"
+)
 
 find_package(OpenGL REQUIRED)
 
