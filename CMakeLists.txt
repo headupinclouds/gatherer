@@ -54,23 +54,6 @@ endif()
 ## Dependencies - OpenCV
 ## #################################################################
 
-# Are explicit includes of opencv deps still required by hunter?
-
-### ZLIB: ZLIB_INCLUDE_DIRS; ZLIB_LIBRARIES; ZLIB_FOUND 
-hunter_add_package(ZLIB)
-find_package(ZLIB CONFIG REQUIRED)
-message("ZLIB_INCLUDE_DIRS = ${ZLIB_INCLUDE_DIRS}")
-
-### TIFF: TIFF_INCLUDE_DIR; TIFF_LIBRARIES; TIFF_FOUND
-hunter_add_package(TIFF)
-find_package(TIFF CONFIG REQUIRED)
-message("TIFF_INCLUDE_DIRS = ${TIFF_INCLUDE_DIR}")
-
-### PNG: PNG_INCLUDE_DIR; PNG_LIBRARIES; PNG_FOUND
-hunter_add_package(PNG)
-find_package(PNG CONFIG REQUIRED)
-message("PNG_INCLUDE_DIRS = ${PNG_INCLUDE_DIR}")
-
 hunter_add_package(OpenCV)
 find_package(OpenCV REQUIRED)
 
