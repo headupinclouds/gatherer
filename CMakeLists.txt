@@ -88,10 +88,10 @@ find_package(cereal CONFIG REQUIRED)
 find_package(PkgConfig REQUIRED)
 
 pkg_search_module(GLFW REQUIRED glfw3)
-include_directories(${GLFW_INCLUDE_DIRS})
+include_directories(AFTER ${GLFW_INCLUDE_DIRS})
 
 find_package(GLEW REQUIRED)
-include_directories(${GLEW_INCLUDE_DIRS})
+include_directories(AFTER ${GLEW_INCLUDE_DIRS})
 
 find_package(OpenGL REQUIRED)
 

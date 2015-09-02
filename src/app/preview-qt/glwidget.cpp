@@ -53,19 +53,11 @@
 
 #include <memory>
 
-GLWidget::GLWidget(QWidget *parent)
-    : QOpenGLWidget(parent)
+GLWidget::GLWidget(QWidget *parent) : QOpenGLWidget(parent)
 {
     m_core = QCoreApplication::arguments().contains(QStringLiteral("--coreprofile"));
     // --transparent causes the clear color to be transparent. Therefore, on systems that
     // support it, the widget will become transparent apart from the logo.
-    
-    
-    // TODO: This shouldn't live here, but want to get first proof of concept working!!!
-    m_video = std::make_shared<cv::VideoCapture>(0);
-    
-    // Can't allocate here (context must not be current?)
-    // m_videoTexture = std::make_shared<gatherer::graphics::GLTexture>();
 }
 
 QSize GLWidget::minimumSizeHint() const
@@ -118,31 +110,13 @@ void GLWidget::initializeGL()
 
 void GLWidget::paintGL()
 {
-
-#if !USE_REAL_TEXTURE_INPUT
-    // TODO: simulating video input here, need to get the real texture from our event loop replacement:
-    cv::Point center(m_windowWidth/2, m_windowHeight/2);
-    cv::Mat canvas(m_windowWidth, m_windowHeight, CV_8UC3, cv::Scalar::all(0));
-    for(int r = (10 + m_counter) % 80; r < m_windowWidth/2; r += 20)
-        cv::circle(canvas, center, r, {0,255,0}, 2, 8);
-    
-    std::stringstream ss;
-    ss << "Hello QT";
-    cv::putText(canvas, ss.str(), {0, center.y}, CV_FONT_HERSHEY_COMPLEX, 0.5, {255, 255, 255});
-    
-    gatherer::graphics::GLTexture texture(canvas);
-    m_texture = texture;
-#else
-    // Even this isn't using a video loop, but grab frames from internally managed video class for now
-    cv::Mat frame;
-    (*m_video) >> frame;
-    m_videoTexture->load(frame);
-    m_texture = (*m_videoTexture);
-#endif
-    
-    (*m_program)(m_texture);
-
-    m_counter++;
+    std::unique_lock<std::mutex> lock(m_mutex);
+    if(!m_currentFrame.empty())
+    {
+	m_videoTexture->load(m_currentFrame);
+	m_texture = (*m_videoTexture);
+	(*m_program)(m_texture);
+    }
 }
 
 void GLWidget::resizeGL(int w, int h)
@@ -152,5 +126,9 @@ void GLWidget::resizeGL(int w, int h)
     m_windowHeight = h;
     
     m_program = std::make_shared<gatherer::graphics::WarpShader>( cv::Size(m_windowWidth, m_windowHeight), cv::Point2f(1,1) );
-
 }
+
+// void GLWidget::setImage(const cv::Mat &image)
+// {
+//     std::cout << "got image: : " << image.size() << std::endl;
+// }

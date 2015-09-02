@@ -42,8 +42,18 @@
 #include <QDesktopWidget>
 #include <QSurfaceFormat>
 #include <QtGlobal> // Q_OS_IOS
+#include <QApplication>
+#include <QBasicTimer>
+#include <QThread>
+#include <QImage>
+#include <QWidget>
+#include <QPainter>
+#include <QPaintEvent>
+#include <QDebug>
 
 #include "mainwindow.h"
+#include "glwidget.h"
+#include "VideoCapture.h"
 
 #include "graphics/GLWarpShader.h"
 #include "graphics/GLTexture.h"
@@ -54,9 +64,11 @@
 #include <opencv2/highgui/highgui.hpp>
 
 #if defined(Q_OS_IOS)
-extern "C" int qtmn(int argc, char** argv) {
+extern "C" int qtmn(int argc, char** argv) 
+{
 #else
-int main(int argc, char **argv) {
+int main(int argc, char **argv) 
+{
 #endif
     QApplication app(argc, argv);
 
@@ -70,7 +82,9 @@ int main(int argc, char **argv) {
     }
     QSurfaceFormat::setDefaultFormat(fmt);
 
-    MainWindow mainWindow;
+    GLWidget glWidget; // Note: moved creation output of Window for signal connection:
+
+    MainWindow mainWindow(&glWidget);
     mainWindow.resize(mainWindow.sizeHint());
     int desktopArea = QApplication::desktop()->width() * QApplication::desktop()->height();
     int widgetArea = mainWindow.width() * mainWindow.height();
@@ -79,24 +93,18 @@ int main(int argc, char **argv) {
     else
         mainWindow.showMaximized();
     
-#define USE_VIDEO_EVENT_LOOP 0
+    // ((((((((((((((((( bEGIN )))))))))))))))))
     
-#if USE_VIDEO_EVENT_LOOP
-    auto video = std::make_shared<cv::VideoCapture>(0);
-    if(video && video->isOpened())
-    {
-        cv::Size size(int(video->get( cv::CAP_PROP_FRAME_WIDTH)), int(video->get(cv::CAP_PROP_FRAME_HEIGHT)));
-        gatherer::graphics::GLTexture texture;
-        while(video->isOpened())
-        {
-            cv::Mat frame;
-            (*video) >> frame;
-            texture.load(frame);
-            
-            app.processEvents(); // TODO: is this right?
-        }
-    }
-#else
+    QThread captureThread;
+    captureThread.start();
+
+    VideoCapture capture;
+    capture.moveToThread(&captureThread);
+
+    glWidget.connect(&capture, SIGNAL(matReady(cv::Mat)), SLOT(setImage(cv::Mat)));
+
+    // ((((((((((((((((( eND )))))))))))))))))
     return app.exec();
-#endif
 }
+
+#include "main.moc"

@@ -44,7 +44,7 @@
 #include <QMenu>
 #include <QMessageBox>
 
-MainWindow::MainWindow()
+MainWindow::MainWindow(GLWidget *gl)
 {
     QMenuBar *menuBar = new QMenuBar;
     QMenu *menuWindow = menuBar->addMenu(tr("&Window"));
@@ -54,13 +54,13 @@ MainWindow::MainWindow()
     connect(addNew, SIGNAL(triggered()), this, SLOT(onAddNew()));
     setMenuBar(menuBar);
 
-    onAddNew();
+    onAddNew(gl);
 }
 
-void MainWindow::onAddNew()
+void MainWindow::onAddNew(GLWidget *gl)
 {
     if (!centralWidget())
-        setCentralWidget(new Window(this));
+        setCentralWidget(new Window(this, gl));
     else
         QMessageBox::information(0, tr("Cannot add new window"), tr("Already occupied. Undock first."));
 }

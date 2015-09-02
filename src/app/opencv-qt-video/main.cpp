@@ -120,4 +120,5 @@ int main(int argc, char *argv[])
     return rc;
 }
 
+// AUTOGEN: error: /Users/dhirvonen/devel/gatherer/src/app/preview-qt/main.cpp: The file contains a Q_OBJECT macro, but does not include "main.moc"
 #include "main.moc"

@@ -1,9 +1,13 @@
 # Copyright (c) 2015, Ruslan Baratov, David Hirvonen
 # All rights reserved.
 
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
 add_executable(
     preview-qt
     MACOSX_BUNDLE
+    VideoCapture.cpp
+    VideoCapture.h
     glwidget.cpp
     glwidget.h
     main.cpp

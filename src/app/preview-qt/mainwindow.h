@@ -43,15 +43,17 @@
 
 #include <QMainWindow>
 
+class GLWidget;
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    MainWindow();
+    MainWindow(GLWidget *gl);
 
 private slots:
-    void onAddNew();
+    void onAddNew(GLWidget *gl);
 };
 
 #endif

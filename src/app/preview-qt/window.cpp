@@ -50,11 +50,8 @@
 #include <QApplication>
 #include <QMessageBox>
 
-Window::Window(MainWindow *mw)
-    : mainWindow(mw)
+Window::Window(MainWindow *mw, GLWidget *glWidget) : mainWindow(mw), glWidget(glWidget)
 {
-    glWidget = new GLWidget;
-
     QVBoxLayout *mainLayout = new QVBoxLayout;
     QHBoxLayout *container = new QHBoxLayout;
     container->addWidget(glWidget);

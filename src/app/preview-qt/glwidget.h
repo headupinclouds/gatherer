@@ -41,11 +41,29 @@
 #ifndef GLWIDGET_H
 #define GLWIDGET_H
 
+// TODO: Simplify to bare minimum
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLBuffer>
 #include <QMatrix4x4>
+#include <QApplication>
+#include <QDesktopWidget>
+#include <QSurfaceFormat>
+#include <QtGlobal> // Q_OS_IOS
+#include <QApplication>
+#include <QBasicTimer>
+#include <QThread>
+#include <QImage>
+#include <QWidget>
+#include <QPainter>
+#include <QPaintEvent>
+#include <QDebug>
+
+#include <iostream>
+#include <thread>
+
+#include <opencv2/core/core.hpp>
 
 namespace gatherer
 {
@@ -78,6 +96,13 @@ public:
 public slots:
     void cleanup();
 
+    void setImage(const cv::Mat &image)
+    {
+	std::unique_lock<std::mutex> lock(m_mutex);
+	m_currentFrame = image; 
+	std::cout << "got image" << image.size() << std::endl;
+    }
+
 protected:
     void initializeGL() Q_DECL_OVERRIDE;
     void paintGL() Q_DECL_OVERRIDE;
@@ -87,7 +112,6 @@ private:
 
     std::shared_ptr< gatherer::graphics::WarpShader > m_program;
     std::shared_ptr< gatherer::graphics::GLTexture > m_videoTexture;
-    std::shared_ptr< cv::VideoCapture > m_video;
     
     GLuint m_texture = 0;
     
@@ -97,9 +121,10 @@ private:
     GLuint m_windowWidth = 0;
     GLuint m_windowHeight = 0;
     
-    int m_counter = 0;
-    
     bool m_core;
+
+    std::mutex m_mutex;
+    cv::Mat m_currentFrame; // add a thread safe input queue
 };
 
 #endif
