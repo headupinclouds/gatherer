@@ -80,15 +80,12 @@ find_package(GLEW REQUIRED)
 
 option(USE_GLEW_INTERFACE OFF)
 
-if(USE_GLEW_INTERFACE)
-  add_library(glew INTERFACE IMPORTED)
-  set_target_properties(
-    glew PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${GLEW_INCLUDE_DIRS}"
-    )
-else()
-  find_package(GLEW REQUIRED)
-  include_directories(${GLEW_INCLUDE_DIRS})
-endif()
+add_library(glew INTERFACE IMPORTED)
+set_target_properties(
+  glew PROPERTIES
+  INTERFACE_INCLUDE_DIRECTORIES "${GLEW_INCLUDE_DIRS}"
+  INTERFACE_LINK_LIBRARIES "${GLEW_LIBRARIES}"
+  )
 
 find_package(OpenGL REQUIRED)
 
