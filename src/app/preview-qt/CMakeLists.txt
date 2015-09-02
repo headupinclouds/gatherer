@@ -5,7 +5,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 add_executable(
     preview-qt
-    MACOSX_BUNDLE
+#    MACOSX_BUNDLE
     VideoCapture.cpp
     VideoCapture.h
     glwidget.cpp

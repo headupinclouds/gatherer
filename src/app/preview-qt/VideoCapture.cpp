@@ -1,5 +1,8 @@
 #include "VideoCapture.h"
 
+#include <opencv2/core/core.hpp>
+#include <iostream>
+
 VideoCapture::VideoCapture(QObject * parent) : QObject(parent) {}
 
 void VideoCapture::start(int cam)
@@ -20,6 +23,9 @@ void VideoCapture::timerEvent(QTimerEvent * ev)
     cv::Mat frame;
     if (!m_videoCapture->read(frame))
     { // Blocks until a new frame is ready
+
+	std::cout << "got frame " << std::endl;
+
 	m_timer.stop();
 	return;
     }

@@ -92,16 +92,12 @@ public:
 
     QSize minimumSizeHint() const Q_DECL_OVERRIDE;
     QSize sizeHint() const Q_DECL_OVERRIDE;
+
+    Q_SLOT void setImage(const cv::Mat &image);
     
 public slots:
     void cleanup();
 
-    void setImage(const cv::Mat &image)
-    {
-	std::unique_lock<std::mutex> lock(m_mutex);
-	m_currentFrame = image; 
-	std::cout << "got image" << image.size() << std::endl;
-    }
 
 protected:
     void initializeGL() Q_DECL_OVERRIDE;
@@ -125,6 +121,8 @@ private:
 
     std::mutex m_mutex;
     cv::Mat m_currentFrame; // add a thread safe input queue
+
+    int m_counter = 0;
 };
 
 #endif

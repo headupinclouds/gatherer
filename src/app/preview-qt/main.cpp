@@ -92,19 +92,26 @@ int main(int argc, char **argv)
         mainWindow.show();
     else
         mainWindow.showMaximized();
-    
+
     // ((((((((((((((((( bEGIN )))))))))))))))))
-    
+
     QThread captureThread;
     captureThread.start();
 
     VideoCapture capture;
     capture.moveToThread(&captureThread);
 
+    qRegisterMetaType< cv::Mat >("cv::Mat");
+    QObject::connect(&capture, &VideoCapture::started, [](){ qDebug() << "capture started"; });
+    QMetaObject::invokeMethod(&capture, "start");
+
     glWidget.connect(&capture, SIGNAL(matReady(cv::Mat)), SLOT(setImage(cv::Mat)));
 
     // ((((((((((((((((( eND )))))))))))))))))
-    return app.exec();
+    int rc = app.exec();
+
+    captureThread.quit();
+    captureThread.wait();
 }
 
 #include "main.moc"

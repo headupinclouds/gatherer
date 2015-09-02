@@ -37,7 +37,7 @@ endif()
 ## Needs:
 #-Wno-error=unused-command-line-argument-hard-error-in-future
 
-option(BUILD_QT OFF)
+option(BUILD_QT ON)
 
 if(BUILD_QT)
   hunter_add_package(Qt)
@@ -74,10 +74,21 @@ pkg_search_module(GLFW REQUIRED glfw3)
 include_directories(AFTER ${GLFW_INCLUDE_DIRS})
 
 find_package(GLEW REQUIRED)
-add_library(glew INTERFACE IMPORTED)
-set_target_properties(
+
+# This gives me a build error in the preview test app
+#include <GL/glew.h> // include GLEW and new version of GL on Windows
+
+option(USE_GLEW_INTERFACE OFF)
+
+if(USE_GLEW_INTERFACE)
+  add_library(glew INTERFACE IMPORTED)
+  set_target_properties(
     glew PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${GLEW_INCLUDE_DIRS}"
-)
+    )
+else()
+  find_package(GLEW REQUIRED)
+  include_directories(${GLEW_INCLUDE_DIRS})
+endif()
 
 find_package(OpenGL REQUIRED)
 

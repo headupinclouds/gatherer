@@ -128,7 +128,13 @@ void GLWidget::resizeGL(int w, int h)
     m_program = std::make_shared<gatherer::graphics::WarpShader>( cv::Size(m_windowWidth, m_windowHeight), cv::Point2f(1,1) );
 }
 
-// void GLWidget::setImage(const cv::Mat &image)
-// {
-//     std::cout << "got image: : " << image.size() << std::endl;
-// }
+void GLWidget::setImage(const cv::Mat &image)
+{
+     std::unique_lock<std::mutex> lock(m_mutex);
+     m_currentFrame = image; 
+
+     // Logging for now...
+     if(!(m_counter++ % 100))
+	 std::cout << "GLWidget: got image" << image.size() << std::endl;
+     update();
+}

@@ -3,10 +3,11 @@ include_directories(${GLFW_INCLUDE_DIRS})
 ### preview ###
 add_executable(preview preview.cpp)
 target_link_libraries(preview 
+  PRIVATE
   gatherer_graphics 
   ${OpenCV_LIBS} 
   ${GLFW_LIBRARIES}
-  ${GLEW_LIBRARIES}
+  glew
   "-framework OpenGL"
   "-framework IOKit"
   "-framework Cocoa"
