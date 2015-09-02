@@ -17,7 +17,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # See: cmake/Hunter/config.cmake
 hunter_add_package(Sugar)
-include("$ENV{SUGAR_ROOT}/cmake/Sugar")
+include("${SUGAR_ROOT}/cmake/Sugar")
 include(sugar_include)
 
 set(is_android ANDROID) # syntax compatibility
