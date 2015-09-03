@@ -97,4 +97,3 @@ include_directories(src/lib)
 
 ### Manage libs and source code in src folder
 add_subdirectory(src)
-
