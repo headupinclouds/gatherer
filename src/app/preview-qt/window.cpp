@@ -52,15 +52,28 @@
 
 Window::Window(MainWindow *mw, GLWidget *glWidget) : mainWindow(mw), glWidget(glWidget)
 {
-    QVBoxLayout *mainLayout = new QVBoxLayout;
+    QWidget *buttons = new QWidget;
+    QVBoxLayout *buttons_layout = new QVBoxLayout;
+
+    QPushButton *button_stop = new QPushButton;
+    QPushButton *button_start = new QPushButton;
+    QPushButton *button_record = new QPushButton;
+
+    button_stop->setText("Stop");
+    button_start->setText("Start");
+    button_record->setText("Record");
+
+    buttons_layout->addWidget(button_stop);
+    buttons_layout->addWidget(button_start);
+    buttons_layout->addWidget(button_record);
+
+    buttons->setLayout(buttons_layout);
+
     QHBoxLayout *container = new QHBoxLayout;
     container->addWidget(glWidget);
+    container->addWidget(buttons);
 
-    QWidget *w = new QWidget;
-    w->setLayout(container);
-    mainLayout->addWidget(w);
-
-    setLayout(mainLayout);
+    setLayout(container);
 
     setWindowTitle(tr("Hello GL"));
 }
