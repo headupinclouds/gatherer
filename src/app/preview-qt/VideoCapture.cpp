@@ -46,7 +46,6 @@ void VideoCapture::timerEvent(QTimerEvent * ev)
     if (!getFrame(frame))
     { // Blocks until a new frame is ready
         std::cout << "Didn't capture frame " << std::endl;
-        m_timer.stop();
         return;
     }
     else
