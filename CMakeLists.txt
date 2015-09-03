@@ -78,7 +78,7 @@ find_package(GLEW REQUIRED)
 # This gives me a build error in the preview test app
 #include <GL/glew.h> // include GLEW and new version of GL on Windows
 
-option(USE_GLEW_INTERFACE OFF)
+option(USE_GLEW_INTERFACE ON)
 
 if(USE_GLEW_INTERFACE)
   add_library(glew INTERFACE IMPORTED)

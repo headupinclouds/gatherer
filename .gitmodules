@@ -1,0 +1,4 @@
+[submodule "src/3rdparty/ogles_gpgpu"]
+	path = src/3rdparty/ogles_gpgpu
+	url = git@github.com:headupinclouds/ogles_gpgpu.git
+	branch = hunter
