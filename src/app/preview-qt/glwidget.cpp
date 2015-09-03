@@ -46,6 +46,7 @@
 
 #include "graphics/GLWarpShader.h"
 #include "graphics/GLTexture.h"
+#include "graphics/GLExtra.h"
 
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
@@ -101,7 +102,9 @@ void GLWidget::initializeGL()
     initializeOpenGLFunctions();
 
     // TODO: need to populate these form our video source in our video event loop
-    m_program = std::make_shared<gatherer::graphics::WarpShader>( cv::Size(m_windowWidth, m_windowHeight), cv::Point2f(1,1) );
+    if(m_windowWidth > 0 && m_windowHeight > 0)
+        m_program = std::make_shared<gatherer::graphics::WarpShader>( cv::Size(m_windowWidth, m_windowHeight), cv::Point2f(1,1) );
+
     m_videoTexture = std::make_shared<gatherer::graphics::GLTexture>();
 }
 
@@ -111,11 +114,13 @@ void GLWidget::initializeGL()
 void GLWidget::paintGL()
 {
     std::unique_lock<std::mutex> lock(m_mutex);
-    if(!m_currentFrame.empty())
+    if(!m_currentFrame.empty() && m_program)
     {
         m_videoTexture->load(m_currentFrame);
         m_texture = (*m_videoTexture);
         (*m_program)(m_texture);
+        
+        gatherer::graphics::glErrorTest();
     }
 }
 
