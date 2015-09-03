@@ -68,26 +68,34 @@ find_package(cereal CONFIG REQUIRED)
 ## Dependencies - OpenGL stuff
 ## #################################################################
 
-find_package(PkgConfig REQUIRED)
+if(IOS OR ANDROID)
+  set(GATHERER_OPENGL_ES TRUE)
+else()
+  set(GATHERER_OPENGL_ES FALSE)
+endif()
 
-pkg_search_module(GLFW REQUIRED glfw3)
-include_directories(AFTER ${GLFW_INCLUDE_DIRS})
+if(NOT GATHERER_OPENGL_ES)
+  find_package(PkgConfig REQUIRED)
 
-find_package(GLEW REQUIRED)
+  pkg_search_module(GLFW REQUIRED glfw3)
+  include_directories(AFTER ${GLFW_INCLUDE_DIRS})
 
-# This gives me a build error in the preview test app
-#include <GL/glew.h> // include GLEW and new version of GL on Windows
+  find_package(GLEW REQUIRED)
 
-option(USE_GLEW_INTERFACE OFF)
+  # This gives me a build error in the preview test app
+  #include <GL/glew.h> // include GLEW and new version of GL on Windows
 
-add_library(glew INTERFACE IMPORTED)
-set_target_properties(
-  glew PROPERTIES
-  INTERFACE_INCLUDE_DIRECTORIES "${GLEW_INCLUDE_DIRS}"
-  INTERFACE_LINK_LIBRARIES "${GLEW_LIBRARIES}"
-  )
+  option(USE_GLEW_INTERFACE OFF)
 
-find_package(OpenGL REQUIRED)
+  add_library(glew INTERFACE IMPORTED)
+  set_target_properties(
+    glew PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "${GLEW_INCLUDE_DIRS}"
+    INTERFACE_LINK_LIBRARIES "${GLEW_LIBRARIES}"
+    )
+
+  find_package(OpenGL REQUIRED)
+endif()
 
 ## #################################################################
 ## Project

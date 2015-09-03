@@ -1,6 +1,10 @@
-add_subdirectory(preview)
+if(NOT GATHERER_OPENGL_ES)
+  add_subdirectory(preview)
+endif()
 
 if(BUILD_QT)
   add_subdirectory(preview-qt)
-  add_subdirectory(opencv-qt-video)
+  if(NOT GATHERER_OPENGL_ES)
+    add_subdirectory(opencv-qt-video)
+  endif()
 endif()
