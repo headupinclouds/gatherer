@@ -101,11 +101,14 @@ void GLWidget::initializeGL()
 
     initializeOpenGLFunctions();
 
-    // TODO: need to populate these form our video source in our video event loop
-    if(m_windowWidth > 0 && m_windowHeight > 0)
-        m_program = std::make_shared<gatherer::graphics::WarpShader>( cv::Size(m_windowWidth, m_windowHeight), cv::Point2f(1,1) );
-
+    initShader();
     m_videoTexture = std::make_shared<gatherer::graphics::GLTexture>();
+}
+
+void GLWidget::initShader()
+{
+    if(m_windowWidth > 0 && m_windowHeight > 0)
+        m_program = std::make_shared<gatherer::graphics::WarpShader>( cv::Size(m_windowWidth, m_windowHeight), cv::Point2f(1, 1) );
 }
 
 // TODO: need to pass real texture from our video event loop
@@ -130,7 +133,7 @@ void GLWidget::resizeGL(int w, int h)
     m_windowWidth = w;
     m_windowHeight = h;
 
-    m_program = std::make_shared<gatherer::graphics::WarpShader>( cv::Size(m_windowWidth, m_windowHeight), cv::Point2f(1,1) );
+    initShader();
 }
 
 void GLWidget::setImage(const cv::Mat &image)

@@ -105,12 +105,14 @@ void WarpShader::operator()(int texture, const cv::Matx33f &H)
     for(const auto &p : vertices)
         vertices4d.emplace_back(p.x, (m_size.height - p.y), 0, 1);
 
-    // Note for rendering to the display we need to factor in screen resolution
-    glViewport(0, 0, int(m_resolution.x * m_size.width + 0.5f), int(m_resolution.y * m_size.height + 0.5f));
+    // Note: We'll assume this is configured by the calling functions
+    // Note: for rendering to the display we need to factor in screen resolution
+    //glViewport(0, 0, int(m_resolution.x * m_size.width + 0.5f), int(m_resolution.y * m_size.height + 0.5f));
 
     (*m_pPlanarShaderProgram)();
     glUniformMatrix4fv(m_PlanarUniformMVP, 1, 0, (GLfloat *)&MVPt(0,0));
 
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(0, 0, 0, 0);
     glClear(GL_COLOR_BUFFER_BIT);
     glBindTexture(GL_TEXTURE_2D, texture);

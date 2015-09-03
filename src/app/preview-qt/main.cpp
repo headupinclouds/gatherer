@@ -99,7 +99,7 @@ int main(int argc, char **argv)
         QThread captureThread;
         captureThread.start();
 
-        VideoCapture capture;
+        VideoCapture capture(0, false);
         capture.moveToThread(&captureThread);
 
         qRegisterMetaType< cv::Mat >("cv::Mat");

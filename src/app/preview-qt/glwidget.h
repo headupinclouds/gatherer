@@ -105,6 +105,8 @@ protected:
     void resizeGL(int width, int height) Q_DECL_OVERRIDE;
 
 private:
+    
+    void initShader();
 
     std::shared_ptr< gatherer::graphics::WarpShader > m_program;
     std::shared_ptr< gatherer::graphics::GLTexture > m_videoTexture;
@@ -122,6 +124,9 @@ private:
     std::mutex m_mutex;
     cv::Mat m_currentFrame; // add a thread safe input queue
 
+    float m_resX = 1.f;
+    float m_resY = 1.f;
+    
     int m_counter = 0;
 };
 
