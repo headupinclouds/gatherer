@@ -46,6 +46,7 @@
 
 MainWindow::MainWindow(GLWidget *gl) : m_gl(gl)
 {
+#if !defined(GATHERER_OPENGL_ES)
     QMenuBar *menuBar = new QMenuBar;
     QMenu *menuWindow = menuBar->addMenu(tr("&Window"));
     QAction *addNew = new QAction(menuWindow);
@@ -53,6 +54,7 @@ MainWindow::MainWindow(GLWidget *gl) : m_gl(gl)
     menuWindow->addAction(addNew);
     connect(addNew, SIGNAL(triggered()), this, SLOT(onAddNew()));
     setMenuBar(menuBar);
+#endif
 
     onAddNew();
 }
