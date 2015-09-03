@@ -54,7 +54,7 @@ public:
     Window(MainWindow *mw, GLWidget *gl);
 
     void setVideoDimensions(int width, int height);
-    
+
 protected:
     void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
 

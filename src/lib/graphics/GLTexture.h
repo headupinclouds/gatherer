@@ -35,13 +35,13 @@ _GATHERER_GRAPHICS_BEGIN
 class GLTexture
 {
 public:
-    
+
     /// Constructor (empty)
     GLTexture() { init(); }
 
     /// Constructor from OpenCV cv::Mat
     GLTexture(const cv::Mat &image) { init(); load(image); }
-    
+
     /// Initialization
     void init()
     {
@@ -62,9 +62,9 @@ public:
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.cols, image.rows, 0, GL_BGR, GL_UNSIGNED_BYTE, image.ptr());
         glFlush();
     }
-    
+
 protected:
-    
+
     /// OpenGL texture ID
     unsigned int m_texture;
 };
@@ -92,7 +92,7 @@ public:
         }
         return coords;
     }
-    
+
     static std::vector<float> GetTextureCoordinates() { return std::vector<float> { 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f }; }
 };
 

@@ -27,7 +27,7 @@ string(COMPARE EQUAL "${CMAKE_BUILD_TYPE}" "DEBUG" is_debug)
 string(COMPARE EQUAL "${CMAKE_GENERATOR}" "Xcode" is_xcode)
 
 if(is_xcode)
-  set(CMAKE_CONFIGURATION_TYPES "Debug;Release") 
+  set(CMAKE_CONFIGURATION_TYPES "Debug;Release")
 endif()
 
 ## #################################################################
@@ -80,15 +80,12 @@ find_package(GLEW REQUIRED)
 
 option(USE_GLEW_INTERFACE ON)
 
-if(USE_GLEW_INTERFACE)
-  add_library(glew INTERFACE IMPORTED)
-  set_target_properties(
-    glew PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${GLEW_INCLUDE_DIRS}"
-    )
-else()
-  find_package(GLEW REQUIRED)
-  include_directories(${GLEW_INCLUDE_DIRS})
-endif()
+add_library(glew INTERFACE IMPORTED)
+set_target_properties(
+  glew PROPERTIES
+  INTERFACE_INCLUDE_DIRECTORIES "${GLEW_INCLUDE_DIRS}"
+  INTERFACE_LINK_LIBRARIES "${GLEW_LIBRARIES}"
+  )
 
 find_package(OpenGL REQUIRED)
 
@@ -100,4 +97,3 @@ include_directories(src/lib)
 
 ### Manage libs and source code in src folder
 add_subdirectory(src)
-

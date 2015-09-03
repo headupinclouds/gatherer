@@ -36,15 +36,15 @@ void glCheckError();
 static void R3x3To4x4(const cv::Matx33f &R3, cv::Matx44f &R4)
 {
     R4 = cv::Matx44f::eye();
-    
+
     R4(0,0) = R3(0,0);
     R4(0,1) = R3(0,1);
     R4(0,3) = R3(0,2);
-    
+
     R4(1,0) = R3(1,0);
     R4(1,1) = R3(1,1);
     R4(1,3) = R3(1,2);
-    
+
     R4(3,0) = R3(2,0);
     R4(3,1) = R3(2,1);
     R4(3,3) = R3(2,2);
