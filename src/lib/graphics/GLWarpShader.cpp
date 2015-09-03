@@ -60,6 +60,8 @@ void WarpShader::compileShadersPlanar()
     m_pPlanarShaderProgram = make_unique<gatherer::graphics::shader_prog>(vShaderStr, fShaderStr, attributes);
     m_PlanarUniformMVP = m_pPlanarShaderProgram->GetUniformLocation("modelViewProjMatrix");
     m_PlanarUniformTexture =  m_pPlanarShaderProgram->GetUniformLocation("texture");
+    
+    gatherer::graphics::glErrorTest();
 }
 
 GLuint WarpShader::operator()(int texture)
@@ -112,11 +114,15 @@ void WarpShader::operator()(int texture, const cv::Matx33f &H)
     glClearColor(0, 0, 0, 0);
     glClear(GL_COLOR_BUFFER_BIT);
     glBindTexture(GL_TEXTURE_2D, texture);
+    
+    //std::cout << "glBindTexture " << int(glGetError()) << std::endl;
 
     glVertexAttribPointer(RenderTexture::ATTRIB_VERTEX, 4, GL_FLOAT, 0, 0, &vertices4d[0][0]);
     glEnableVertexAttribArray(RenderTexture::ATTRIB_VERTEX);
     glVertexAttribPointer(RenderTexture::ATTRIB_TEXTUREPOSITION, 2, GL_FLOAT, 0, 0, &coords[0]);
     glEnableVertexAttribArray(RenderTexture::ATTRIB_TEXTUREPOSITION);
+    
+    //std::cout << "glVertex stuff " << int(glGetError()) << std::endl;
 
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
