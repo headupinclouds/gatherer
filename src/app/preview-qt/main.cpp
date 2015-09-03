@@ -83,9 +83,10 @@ int main(int argc, char **argv)
         }
         QSurfaceFormat::setDefaultFormat(fmt);
 
-        GLWidget glWidget; // Note: moved creation output of Window for signal connection:
+        // Should be created in heap, ownership taken by parent widget
+        GLWidget *glWidget = new GLWidget; // Note: moved creation output of Window for signal connection:
 
-        MainWindow mainWindow(&glWidget);
+        MainWindow mainWindow(glWidget);
         mainWindow.resize(mainWindow.sizeHint());
         int desktopArea = QApplication::desktop()->width() * QApplication::desktop()->height();
         int widgetArea = mainWindow.width() * mainWindow.height();
@@ -106,7 +107,7 @@ int main(int argc, char **argv)
         QObject::connect(&capture, &VideoCapture::started, [](){ qDebug() << "capture started"; });
         QMetaObject::invokeMethod(&capture, "start");
 
-        glWidget.connect(&capture, SIGNAL(matReady(cv::Mat)), SLOT(setImage(cv::Mat)));
+        glWidget->connect(&capture, SIGNAL(matReady(cv::Mat)), SLOT(setImage(cv::Mat)));
 
         // ((((((((((((((((( eND )))))))))))))))))
         int rc = app.exec();
