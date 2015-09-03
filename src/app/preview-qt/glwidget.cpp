@@ -113,9 +113,9 @@ void GLWidget::paintGL()
     std::unique_lock<std::mutex> lock(m_mutex);
     if(!m_currentFrame.empty())
     {
-	m_videoTexture->load(m_currentFrame);
-	m_texture = (*m_videoTexture);
-	(*m_program)(m_texture);
+        m_videoTexture->load(m_currentFrame);
+        m_texture = (*m_videoTexture);
+        (*m_program)(m_texture);
     }
 }
 
@@ -135,6 +135,6 @@ void GLWidget::setImage(const cv::Mat &image)
 
      // Logging for now...
      if(!(m_counter++ % 100))
-	 std::cout << "GLWidget: got image" << image.size() << std::endl;
+         std::cout << "GLWidget: got image" << image.size() << std::endl;
      update();
 }
