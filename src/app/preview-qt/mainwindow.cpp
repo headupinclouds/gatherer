@@ -44,7 +44,7 @@
 #include <QMenu>
 #include <QMessageBox>
 
-MainWindow::MainWindow(GLWidget *gl) : m_gl(gl)
+MainWindow::MainWindow(GLWidget *gl, VideoCapture& videoCapture) : m_gl(gl), videoCapture(videoCapture)
 {
 #if !defined(GATHERER_OPENGL_ES)
     QMenuBar *menuBar = new QMenuBar;
@@ -61,8 +61,11 @@ MainWindow::MainWindow(GLWidget *gl) : m_gl(gl)
 
 void MainWindow::onAddNew()
 {
-    if (!centralWidget())
-        setCentralWidget(new Window(this, m_gl));
+    if (!centralWidget()) {
+        Window *newWindow = new Window(this, m_gl, videoCapture);
+        setCentralWidget(newWindow);
+        newWindow->startCapturing();
+    }
     else
         QMessageBox::information(0, tr("Cannot add new window"), tr("Already occupied. Undock first."));
 }

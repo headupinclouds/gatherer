@@ -86,7 +86,9 @@ int main(int argc, char **argv)
         // Should be created in heap, ownership taken by parent widget
         GLWidget *glWidget = new GLWidget; // Note: moved creation output of Window for signal connection:
 
-        MainWindow mainWindow(glWidget);
+        VideoCapture capture(0, false);
+
+        MainWindow mainWindow(glWidget, capture);
         mainWindow.resize(mainWindow.sizeHint());
         int desktopArea = QApplication::desktop()->width() * QApplication::desktop()->height();
         int widgetArea = mainWindow.width() * mainWindow.height();
@@ -100,12 +102,10 @@ int main(int argc, char **argv)
         QThread captureThread;
         captureThread.start();
 
-        VideoCapture capture(0, false);
         capture.moveToThread(&captureThread);
 
         qRegisterMetaType< cv::Mat >("cv::Mat");
         QObject::connect(&capture, &VideoCapture::started, [](){ qDebug() << "capture started"; });
-        QMetaObject::invokeMethod(&capture, "start");
 
         glWidget->connect(&capture, SIGNAL(matReady(cv::Mat)), SLOT(setImage(cv::Mat)));
 

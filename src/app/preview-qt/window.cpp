@@ -50,18 +50,22 @@
 #include <QApplication>
 #include <QMessageBox>
 
-Window::Window(MainWindow *mw, GLWidget *glWidget) : mainWindow(mw), glWidget(glWidget)
+#include "VideoCapture.h"
+
+Window::Window(MainWindow *mw, GLWidget *glWidget, VideoCapture &videoCapture) : mainWindow(mw), glWidget(glWidget), videoCapture(videoCapture)
 {
     QWidget *buttons = new QWidget;
     QVBoxLayout *buttons_layout = new QVBoxLayout;
 
-    QPushButton *button_stop = new QPushButton;
-    QPushButton *button_start = new QPushButton;
+    button_stop = new QPushButton;
+    button_start = new QPushButton;
     QPushButton *button_record = new QPushButton;
 
     button_stop->setText("Stop");
     button_start->setText("Start");
     button_record->setText("Record");
+
+    button_record->setDisabled(true);
 
     buttons_layout->addWidget(button_stop);
     buttons_layout->addWidget(button_start);
@@ -75,12 +79,29 @@ Window::Window(MainWindow *mw, GLWidget *glWidget) : mainWindow(mw), glWidget(gl
 
     setLayout(container);
 
+    connect(button_stop, SIGNAL(clicked()), this, SLOT(stopCapturing()));
+    connect(button_start, SIGNAL(clicked()), this, SLOT(startCapturing()));
+
     setWindowTitle(tr("Hello GL"));
 }
 
 void Window::setVideoDimensions(int width, int height)
 {
     glWidget->setVideoDimensions(width, height);
+}
+
+void Window::startCapturing() {
+    button_stop->setDisabled(false);
+    button_start->setDisabled(true);
+
+    QMetaObject::invokeMethod(&videoCapture, "start");
+}
+
+void Window::stopCapturing() {
+    button_stop->setDisabled(true);
+    button_start->setDisabled(false);
+
+    QMetaObject::invokeMethod(&videoCapture, "stop");
 }
 
 void Window::keyPressEvent(QKeyEvent *e)
