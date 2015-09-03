@@ -59,7 +59,12 @@ public:
     {
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glBindTexture(GL_TEXTURE_2D, m_texture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.cols, image.rows, 0, GL_BGR, GL_UNSIGNED_BYTE, image.ptr());
+#if defined(GATHERER_OPENGL_ES)
+        GLenum format = GL_RGB;
+#else
+        GLenum format = GL_BGR;
+#endif
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.cols, image.rows, 0, format, GL_UNSIGNED_BYTE, image.ptr());
         glFlush();
     }
 

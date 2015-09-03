@@ -36,9 +36,13 @@ void WarpShader::compileShadersPlanar()
         textureCoordinate = inputTextureCoordinate.xy;
     })";
 
-    const char *kPlanarFragmentShaderString = R"(
-    //varying highp vec2 textureCoordinate;
-    varying vec2 textureCoordinate;
+    const char *kPlanarFragmentShaderString =
+#if defined(GATHERER_OPENGL_ES)
+    "varying highp vec2 textureCoordinate;\n"
+#else
+    "varying vec2 textureCoordinate;\n"
+#endif
+    R"(
     uniform sampler2D texture;
     void main()
     {

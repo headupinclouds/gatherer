@@ -68,6 +68,13 @@ find_package(cereal CONFIG REQUIRED)
 ## Dependencies - OpenGL stuff
 ## #################################################################
 
+if(IOS OR ANDROID)
+  set(GATHERER_OPENGL_ES TRUE)
+else()
+  set(GATHERER_OPENGL_ES FALSE)
+endif()
+
+if(NOT GATHERER_OPENGL_ES)
 find_package(PkgConfig REQUIRED)
 
 pkg_search_module(GLFW REQUIRED glfw3)
@@ -88,6 +95,7 @@ set_target_properties(
   )
 
 find_package(OpenGL REQUIRED)
+endif()
 
 ## #################################################################
 ## Project
