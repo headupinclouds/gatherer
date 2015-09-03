@@ -70,48 +70,60 @@ extern "C" int qtmn(int argc, char** argv)
 int main(int argc, char **argv)
 {
 #endif
-    QApplication app(argc, argv);
+    try {
+        QApplication app(argc, argv);
 
-    QSurfaceFormat fmt;
-    fmt.setDepthBufferSize(24);
-    if (QCoreApplication::arguments().contains(QStringLiteral("--multisample")))
-        fmt.setSamples(4);
-    if (QCoreApplication::arguments().contains(QStringLiteral("--coreprofile"))) {
-        fmt.setVersion(3, 2);
-        fmt.setProfile(QSurfaceFormat::CoreProfile);
+        QSurfaceFormat fmt;
+        fmt.setDepthBufferSize(24);
+        if (QCoreApplication::arguments().contains(QStringLiteral("--multisample")))
+            fmt.setSamples(4);
+        if (QCoreApplication::arguments().contains(QStringLiteral("--coreprofile"))) {
+            fmt.setVersion(3, 2);
+            fmt.setProfile(QSurfaceFormat::CoreProfile);
+        }
+        QSurfaceFormat::setDefaultFormat(fmt);
+
+        GLWidget glWidget; // Note: moved creation output of Window for signal connection:
+
+        MainWindow mainWindow(&glWidget);
+        mainWindow.resize(mainWindow.sizeHint());
+        int desktopArea = QApplication::desktop()->width() * QApplication::desktop()->height();
+        int widgetArea = mainWindow.width() * mainWindow.height();
+        if (((float)widgetArea / (float)desktopArea) < 0.75f)
+            mainWindow.show();
+        else
+            mainWindow.showMaximized();
+
+        // ((((((((((((((((( bEGIN )))))))))))))))))
+
+        QThread captureThread;
+        captureThread.start();
+
+        VideoCapture capture;
+        capture.moveToThread(&captureThread);
+
+        qRegisterMetaType< cv::Mat >("cv::Mat");
+        QObject::connect(&capture, &VideoCapture::started, [](){ qDebug() << "capture started"; });
+        QMetaObject::invokeMethod(&capture, "start");
+
+        glWidget.connect(&capture, SIGNAL(matReady(cv::Mat)), SLOT(setImage(cv::Mat)));
+
+        // ((((((((((((((((( eND )))))))))))))))))
+        int rc = app.exec();
+
+        captureThread.quit();
+        captureThread.wait();
+
+        return rc;
     }
-    QSurfaceFormat::setDefaultFormat(fmt);
-
-    GLWidget glWidget; // Note: moved creation output of Window for signal connection:
-
-    MainWindow mainWindow(&glWidget);
-    mainWindow.resize(mainWindow.sizeHint());
-    int desktopArea = QApplication::desktop()->width() * QApplication::desktop()->height();
-    int widgetArea = mainWindow.width() * mainWindow.height();
-    if (((float)widgetArea / (float)desktopArea) < 0.75f)
-        mainWindow.show();
-    else
-        mainWindow.showMaximized();
-
-    // ((((((((((((((((( bEGIN )))))))))))))))))
-
-    QThread captureThread;
-    captureThread.start();
-
-    VideoCapture capture;
-    capture.moveToThread(&captureThread);
-
-    qRegisterMetaType< cv::Mat >("cv::Mat");
-    QObject::connect(&capture, &VideoCapture::started, [](){ qDebug() << "capture started"; });
-    QMetaObject::invokeMethod(&capture, "start");
-
-    glWidget.connect(&capture, SIGNAL(matReady(cv::Mat)), SLOT(setImage(cv::Mat)));
-
-    // ((((((((((((((((( eND )))))))))))))))))
-    int rc = app.exec();
-
-    captureThread.quit();
-    captureThread.wait();
+    catch (const std::exception& exc) {
+        std::cerr << "Exception catched: " << exc.what() << std::endl;
+        return EXIT_FAILURE;
+    }
+    catch (...) {
+        std::cerr << "Unknown exception catched" << std::endl;
+        return EXIT_FAILURE;
+    }
 }
 
 #include "main.moc"
