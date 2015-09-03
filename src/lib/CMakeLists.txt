@@ -10,6 +10,10 @@ if(NOT GATHERER_OPENGL_ES)
   target_link_libraries(gatherer_graphics PRIVATE glew)
 endif()
 
+if(GATHERER_OPENGL_ES)
+  target_compile_definitions(gatherer_graphics PUBLIC GATHERER_OPENGL_ES)
+endif()
+
 set(GATHERER_LIBS
   gatherer_graphics
   ## TODO
