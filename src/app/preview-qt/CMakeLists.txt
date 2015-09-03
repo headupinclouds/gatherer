@@ -17,9 +17,9 @@ add_executable(
     window.h
 )
 
-target_link_libraries(preview-qt 
+target_link_libraries(preview-qt
   Qt5::Widgets
-  ${OpenCV_LIBS} 
+  ${OpenCV_LIBS}
   gatherer_graphics
 )
 

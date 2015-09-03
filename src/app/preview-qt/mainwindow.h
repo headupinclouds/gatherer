@@ -53,7 +53,7 @@ public:
     MainWindow(GLWidget *gl);
 
 private slots:
-    
+
     void onAddNew();
 
 protected:
