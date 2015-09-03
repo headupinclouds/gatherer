@@ -143,6 +143,6 @@ void GLWidget::setImage(const cv::Mat &image)
 
      // Logging for now...
      if(!(m_counter++ % 100))
-         std::cout << "GLWidget: got image" << image.size() << std::endl;
+         std::cout << "GLWidget(" << m_counter << "): got image " << image.size() << std::endl;
      update();
 }
