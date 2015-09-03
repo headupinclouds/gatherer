@@ -50,40 +50,40 @@ public:
         m_window = glfwCreateWindow(m_size.width, m_size.height, "Frame", NULL, NULL);
         if(!m_window)
             throw std::runtime_error("glfwOpenWindow failed.");
-        
+
         glfwMakeContextCurrent(m_window);
-        
+
         //glewExperimental = GL_TRUE; //stops glew crashing on OSX :-/
-        
+
         if(glewInit() != GLEW_OK)
             throw std::runtime_error("glewInit failed");
-        
+
         // print out some info about the graphics drivers
         std::cout << "OpenGL version: " << glGetString(GL_VERSION) << std::endl;
         std::cout << "GLSL version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
         std::cout << "Vendor: " << glGetString(GL_VENDOR) << std::endl;
         std::cout << "Renderer: " << glGetString(GL_RENDERER) << std::endl;
     }
-    
+
     cv::Point2f getResolution() const
     {
         int width, height;
         glfwGetFramebufferSize(m_window, &width, &height);
         return cv::Point2f(float(width)/float(m_size.width), float(height)/float(m_size.height));
     }
-    
+
     ~GLContextWindow()
     {
         //TODO: other tear down
         if(m_window)
             glfwDestroyWindow(m_window);
-        
+
         if(m_initialized)
             glfwTerminate();
     }
-    
+
     operator GLFWwindow * () const { return m_window; }
-    
+
     bool m_initialized = false;
     cv::Size m_size;
     std::string m_name;
@@ -102,14 +102,14 @@ public:
     {
         compileShaders();
     }
-    
+
     // TODO: Base class needs a clear API
     GLuint operator()(GLuint texture)
     {
         m_inputTexture = texture;
-        
+
         render(); // virtual method
-        
+
         return getTexture();
     }
 
@@ -117,41 +117,41 @@ public:
     virtual void draw()
     {
         GLTexRect roi(m_size);
-        
+
         // {-1,-1}, {1,-1}, {-1,1}, {1,1}
 
         std::vector<cv::Point2f> vertices = { {-1.f, -1.f}, {+1.f, -1.f}, {-1.f, +1.f}, {+1.f, +1.f} };
         //auto vertices = roi.GetVertices();
         auto coords = GLTexRect::GetTextureCoordinates();
-        
+
         std::vector<cv::Vec4f> vertices4d;
         for(const auto &p : vertices)
             vertices4d.emplace_back(p.x, p.y, 0, 1);
-        
+
         (*m_pFXShaderProgram)();
-        
+
         glClearColor(0, 0, 0, 0);
         glClear(GL_COLOR_BUFFER_BIT);
         glBindTexture(GL_TEXTURE_2D, m_inputTexture);
-        
+
         glUniform1f(m_FXUniformTime, float(m_count)/10.f);
-        
+
         glVertexAttribPointer(RenderTexture::ATTRIB_VERTEX, 4, GL_FLOAT, 0, 0, &vertices4d[0][0]);
         glEnableVertexAttribArray(RenderTexture::ATTRIB_VERTEX);
         glVertexAttribPointer(RenderTexture::ATTRIB_TEXTUREPOSITION, 2, GL_FLOAT, 0, 0, &coords[0]);
         glEnableVertexAttribArray(RenderTexture::ATTRIB_TEXTUREPOSITION);
-        
+
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
         glFlush();
-        
+
         m_count++;
     }
-    
+
     void compileShaders()
     {
         using gatherer::graphics::RenderTexture;
-        
+
         // vertex shader
         const char *kVertexShaderString = R"(
         attribute vec4 position;
@@ -162,7 +162,7 @@ public:
             gl_Position = position;
             textureCoordinate = inputTextureCoordinate.xy;
         })";
-        
+
         const char *kFragmentShaderString = R"(
         //varying highp vec2 textureCoordinate; /* opengl */
         varying vec2 textureCoordinate;         /* opengl es 2.0 */
@@ -174,7 +174,7 @@ public:
             vec4 value = texture2D(texture, textureCoordinate);
             gl_FragColor = value + delta;
         })";
-        
+
         // m_frameVertices, i.e. (0, 0, w, h)
         // m_textureCoordinates, i.e. (-1, -1, 1, 1)
         const GLchar * vShaderStr[] = { kVertexShaderString };
@@ -182,7 +182,7 @@ public:
         std::vector< std::pair<int, const char *> > attributes;
         attributes.push_back( std::pair<int, const char*>(RenderTexture::ATTRIB_VERTEX, "position") );
         attributes.push_back( std::pair<int, const char*>(RenderTexture::ATTRIB_TEXTUREPOSITION, "inputTextureCoordinate") );
-        
+
         m_pFXShaderProgram = make_unique<gatherer::graphics::shader_prog>(vShaderStr, fShaderStr, attributes);
         m_FXUniformTexture =  m_pFXShaderProgram->GetUniformLocation("texture");
         m_FXUniformTime = m_pFXShaderProgram->GetUniformLocation("time");
@@ -240,7 +240,7 @@ int process(int argc, char **argv)
 {
     cv::CommandLineParser parser(argc, argv, keys);
     std::string input = parser.get<std::string>("input");
-    
+
     std::shared_ptr<cv::VideoCapture> video;
     if(input.empty())
     {
@@ -251,11 +251,11 @@ int process(int argc, char **argv)
     {
         video = std::make_shared<cv::VideoCapture>(input);
     }
-    
+
     if(video)
     {
         cv::Size size(int(video->get( cv::CAP_PROP_FRAME_WIDTH)), int(video->get(cv::CAP_PROP_FRAME_HEIGHT)));
-        
+
         gatherer::graphics::GLContextWindow window(size, "display");
         gatherer::graphics::FXShader fx(size, {1.f, 1.f});
         gatherer::graphics::WarpShader rotate(size, window.getResolution());
@@ -265,7 +265,7 @@ int process(int argc, char **argv)
         {
             cv::Mat frame;
             (*video) >> frame;
-            
+
 #if USE_GL_WINDOW
             // Load frame into texture using simple glTexImage2D()
             //
@@ -282,9 +282,9 @@ int process(int argc, char **argv)
             texture.load(frame);
             auto toc = cv::getTickCount();
             double elapsed = (toc - tic) / double(cv::getTickFrequency());
-            
+
             std::cout << "Texture " <<  size << "load time: " <<  elapsed << std::endl;
-            
+
             // TODO:  This is an initial attempt to put together a few basic classes for
             // a GLSL rendering pipeline.  More work is needed to iron out a consistent and
             // flexible API.  For example, currently the WarpShader is configured to render
@@ -299,12 +299,12 @@ int process(int argc, char **argv)
             //     D=>G/
             //
             // This is handled well by GPUImage, for example.
-            
+
             rotate(fx(texture));
-            
+
             glfwSwapBuffers (window);
 #else
-            
+
             // Use the siple opencv highguig display window:
             cv::imshow("frame", frame);
 #endif

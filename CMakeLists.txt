@@ -27,7 +27,7 @@ string(COMPARE EQUAL "${CMAKE_BUILD_TYPE}" "DEBUG" is_debug)
 string(COMPARE EQUAL "${CMAKE_GENERATOR}" "Xcode" is_xcode)
 
 if(is_xcode)
-  set(CMAKE_CONFIGURATION_TYPES "Debug;Release") 
+  set(CMAKE_CONFIGURATION_TYPES "Debug;Release")
 endif()
 
 ## #################################################################
@@ -97,4 +97,3 @@ include_directories(src/lib)
 
 ### Manage libs and source code in src folder
 add_subdirectory(src)
-

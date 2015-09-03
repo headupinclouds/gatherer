@@ -13,9 +13,9 @@ add_executable(
 #QT5_WRAP_CPP(LIB_HEADER_MOC main.cpp)
 #add_library(foo SHARED ${LIB_SOURCE} ${LIB_HEADER_MOC})
 
-target_link_libraries(opencv-qt-video 
+target_link_libraries(opencv-qt-video
   Qt5::Widgets
-  ${OpenCV_LIBS} 
+  ${OpenCV_LIBS}
 )
 
 install(TARGETS opencv-qt-video DESTINATION bin)

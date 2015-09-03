@@ -99,7 +99,7 @@ void GLWidget::initializeGL()
     connect(context(), &QOpenGLContext::aboutToBeDestroyed, this, &GLWidget::cleanup);
 
     initializeOpenGLFunctions();
-    
+
     // TODO: need to populate these form our video source in our video event loop
     m_program = std::make_shared<gatherer::graphics::WarpShader>( cv::Size(m_windowWidth, m_windowHeight), cv::Point2f(1,1) );
     m_videoTexture = std::make_shared<gatherer::graphics::GLTexture>();
@@ -113,9 +113,9 @@ void GLWidget::paintGL()
     std::unique_lock<std::mutex> lock(m_mutex);
     if(!m_currentFrame.empty())
     {
-	m_videoTexture->load(m_currentFrame);
-	m_texture = (*m_videoTexture);
-	(*m_program)(m_texture);
+        m_videoTexture->load(m_currentFrame);
+        m_texture = (*m_videoTexture);
+        (*m_program)(m_texture);
     }
 }
 
@@ -124,17 +124,17 @@ void GLWidget::resizeGL(int w, int h)
     // TODO:
     m_windowWidth = w;
     m_windowHeight = h;
-    
+
     m_program = std::make_shared<gatherer::graphics::WarpShader>( cv::Size(m_windowWidth, m_windowHeight), cv::Point2f(1,1) );
 }
 
 void GLWidget::setImage(const cv::Mat &image)
 {
      std::unique_lock<std::mutex> lock(m_mutex);
-     m_currentFrame = image; 
+     m_currentFrame = image;
 
      // Logging for now...
      if(!(m_counter++ % 100))
-	 std::cout << "GLWidget: got image" << image.size() << std::endl;
+         std::cout << "GLWidget: got image" << image.size() << std::endl;
      update();
 }
