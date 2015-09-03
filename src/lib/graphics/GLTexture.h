@@ -11,6 +11,7 @@
 
 #include "graphics/gatherer_graphics.h"
 #include <opencv2/core/core.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 _GATHERER_GRAPHICS_BEGIN
 
@@ -51,6 +52,8 @@ public:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        
+        //std::cout << "make texture: " << int(glGetError()) << std::endl;
     }
     virtual ~GLTexture() { glDeleteTextures((GLsizei)1, (GLuint *)&m_texture); }
     virtual operator unsigned int() const { return m_texture; }
@@ -60,11 +63,18 @@ public:
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glBindTexture(GL_TEXTURE_2D, m_texture);
 #if defined(GATHERER_OPENGL_ES)
-        GLenum format = GL_RGB;
+        GLenum format = GL_BGRA;
+        cv::Mat image_;
+        if(image.channels() == 3)
+            cv::cvtColor(image, image_, cv::COLOR_BGR2BGRA);
 #else
         GLenum format = GL_BGR;
+        cv::Mat image_ = image;
 #endif
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.cols, image.rows, 0, format, GL_UNSIGNED_BYTE, image.ptr());
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image_.cols, image_.rows, 0, format, GL_UNSIGNED_BYTE, image_.ptr());
+        
+        //std::cout << "glTexImage2D: " << int(glGetError()) << std::endl;
+        
         glFlush();
     }
 
