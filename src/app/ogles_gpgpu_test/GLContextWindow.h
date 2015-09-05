@@ -16,6 +16,7 @@ public:
     GLContextWindow(const cv::Size &size, const std::string &name);
     ~GLContextWindow();
     cv::Point2f getResolution() const;
+    void swapBuffers();
     operator GLFWwindow * () const { return m_window; }
 protected:
     bool m_initialized = false;

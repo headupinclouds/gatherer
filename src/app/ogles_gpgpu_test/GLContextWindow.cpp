@@ -53,6 +53,12 @@ GLContextWindow::~GLContextWindow()
         glfwTerminate();
 }
 
+void GLContextWindow::swapBuffers()
+{
+    glfwMakeContextCurrent(m_window);
+    glfwSwapBuffers(m_window);
+}
+
 cv::Point2f GLContextWindow::getResolution() const
 {
     int width, height;
