@@ -7,12 +7,13 @@
 
 _GATHERER_GRAPHICS_BEGIN
 
+class GLTexture;
 class GLContextWindow;
 
 class OEGLGPGPUTest
 {
 public:
-    OEGLGPGPUTest(GLContextWindow *ptr);
+    OEGLGPGPUTest(GLContextWindow *ptr, const float resolution=1.f);
     ~OEGLGPGPUTest();
     void initOGLESGPGPU() ;
     void initGPUPipeline(int type);
@@ -22,15 +23,7 @@ public:
 
 protected:
 
-#if 0
-    UIView *baseView;           // root view
-    CamView *camView;           // shows the grabbed video frames ("camera preview")
-    CGRect baseFrame;           // base UI frame
-    UIButton *prevSelBtn;       // previously selected button
-    EAGLContext *eaglContext;   // OpenGL ES 2.0 context
-    GLKView *glView;            // shows the processed video frames as textures in a GLKit view
-#endif
-
+    float resolution = 1.f;
     GLContextWindow *glContextWindow; // NEW
 
     unsigned int selectedProcType;  // selected processors
