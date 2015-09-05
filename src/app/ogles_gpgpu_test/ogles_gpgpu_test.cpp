@@ -5,25 +5,31 @@
 #include "GLContextWindow.h"
 #include "OGLESGPGPUTest.h"
 
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/core.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/highgui.hpp>
 
 #include <iostream>
 
 
 int main(int argc, char **argv)
 {
-    cv::Size size(640, 480);
+    cv::VideoCapture capture(0);
+    cv::Size size(int(capture.get(cv::CAP_PROP_FRAME_WIDTH)), int(capture.get(cv::CAP_PROP_FRAME_HEIGHT)));
+    
+    size = size / 4;
     
     // Create the context
     gatherer::graphics::GLContextWindow window(size, "display");
-    gatherer::graphics::OEGLGPGPUTest test(&window);
+    gatherer::graphics::OEGLGPGPUTest test(&window, window.getResolution().x);
     
-    cv::VideoCapture capture(0);
     while( /*capture */ true )
     {
         cv::Mat frame;
         capture >> frame;
+        cv::resize(frame, frame, size);
+        cv::cvtColor(frame, frame, cv::COLOR_BGR2BGRA);
         test.captureOutput(frame);
+        window.swapBuffers();
     }
 }
