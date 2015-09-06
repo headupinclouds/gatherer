@@ -11,6 +11,12 @@ GLContextWindow::GLContextWindow(const cv::Size &size, const std::string &name) 
         throw std::runtime_error("glfwInit failed");
     }
     
+    //glfwWindowHint(GLFW_SAMPLES, 4);
+    //glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    //glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+    //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    
     // Note: Pecularitiy for retina displays must be handled
     // http://www.glfw.org/faq.html
     // 4.3 - Why is my output in the lower-left corner of the window?
