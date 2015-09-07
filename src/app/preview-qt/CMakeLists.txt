@@ -24,7 +24,12 @@ if(ANDROID)
   list(APPEND CMAKE_MODULE_PATH "${QTANDROIDCMAKE_ROOT}")
   include(AddQtAndroidApk)
 
-  add_qt_android_apk(TARGET preview-qt-apk BASE_TARGET preview-qt INSTALL)
+  add_qt_android_apk(
+      TARGET preview-qt-apk
+      BASE_TARGET preview-qt
+      PACKAGE_NAME preview.qt # must be no '-' (API 16 error)
+      INSTALL
+  )
 
   hunter_add_package(Android-SDK)
   message("Path to `android`: ${ANDROID-SDK_ROOT}/android-sdk/tools/android")
