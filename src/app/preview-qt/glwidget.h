@@ -62,6 +62,7 @@
 
 #include <iostream>
 #include <thread>
+#include <mutex>
 
 #include <opencv2/core/core.hpp>
 
