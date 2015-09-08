@@ -75,26 +75,26 @@ else()
 endif()
 
 if(NOT GATHERER_OPENGL_ES)
-find_package(PkgConfig REQUIRED)
+  find_package(PkgConfig REQUIRED)
 
-pkg_search_module(GLFW REQUIRED glfw3)
-include_directories(AFTER ${GLFW_INCLUDE_DIRS})
+  pkg_search_module(GLFW REQUIRED glfw3)
+  include_directories(AFTER ${GLFW_INCLUDE_DIRS})
 
-find_package(GLEW REQUIRED)
+  find_package(GLEW REQUIRED)
 
-# This gives me a build error in the preview test app
-#include <GL/glew.h> // include GLEW and new version of GL on Windows
+  # This gives me a build error in the preview test app
+  #include <GL/glew.h> // include GLEW and new version of GL on Windows
 
-option(USE_GLEW_INTERFACE ON)
+  option(USE_GLEW_INTERFACE ON)
 
-add_library(glew INTERFACE IMPORTED)
-set_target_properties(
-  glew PROPERTIES
-  INTERFACE_INCLUDE_DIRECTORIES "${GLEW_INCLUDE_DIRS}"
-  INTERFACE_LINK_LIBRARIES "${GLEW_LIBRARIES}"
-  )
+  add_library(glew INTERFACE IMPORTED)
+  set_target_properties(
+    glew PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "${GLEW_INCLUDE_DIRS}"
+    INTERFACE_LINK_LIBRARIES "${GLEW_LIBRARIES}"
+    )
 
-find_package(OpenGL REQUIRED)
+  find_package(OpenGL REQUIRED)
 endif()
 
 ## #################################################################
