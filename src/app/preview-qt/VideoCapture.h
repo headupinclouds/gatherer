@@ -24,14 +24,17 @@ class VideoCapture : public QObject
     Q_OBJECT
     QBasicTimer m_timer;
     QScopedPointer<cv::VideoCapture> m_videoCapture;
+    bool getFrame(cv::Mat &);
 public:
-    VideoCapture(QObject * parent = 0);
+    VideoCapture(QObject * parent = 0, bool synth=false);
     Q_SIGNAL void started();
     Q_SLOT void start(int cam = 0);
     Q_SLOT void stop();
     Q_SIGNAL void matReady(const cv::Mat &);
 private:
     void timerEvent(QTimerEvent * ev);
+    
+    bool m_synth = false;
 };
 
 #endif // _CAPTURE_H_

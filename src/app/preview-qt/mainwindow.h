@@ -44,16 +44,23 @@
 #include <QMainWindow>
 
 class GLWidget;
+class VideoCapture;
 
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    MainWindow(GLWidget *gl);
+    MainWindow(GLWidget *gl, VideoCapture&b);
 
 private slots:
-    void onAddNew(GLWidget *gl);
+
+    void onAddNew();
+
+protected:
+
+    GLWidget *m_gl = 0;
+    VideoCapture& videoCapture;
 };
 
 #endif

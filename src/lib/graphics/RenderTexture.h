@@ -33,7 +33,7 @@ protected:
     GLuint m_fbo;
     GLuint m_width;
     GLuint m_height;
-    
+
     float m_resX;
     float m_resY;
 

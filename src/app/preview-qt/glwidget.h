@@ -87,14 +87,14 @@ class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 public:
     GLWidget(QWidget *parent = 0);
     ~GLWidget();
-    
+
     void setVideoDimensions(int width, int height);
 
     QSize minimumSizeHint() const Q_DECL_OVERRIDE;
     QSize sizeHint() const Q_DECL_OVERRIDE;
 
     Q_SLOT void setImage(const cv::Mat &image);
-    
+
 public slots:
     void cleanup();
 
@@ -105,23 +105,28 @@ protected:
     void resizeGL(int width, int height) Q_DECL_OVERRIDE;
 
 private:
+    
+    void initShader();
 
     std::shared_ptr< gatherer::graphics::WarpShader > m_program;
     std::shared_ptr< gatherer::graphics::GLTexture > m_videoTexture;
-    
+
     GLuint m_texture = 0;
-    
+
     GLuint m_videoWidth = 0;
     GLuint m_videoHeight = 0;
-    
+
     GLuint m_windowWidth = 0;
     GLuint m_windowHeight = 0;
-    
+
     bool m_core;
 
     std::mutex m_mutex;
     cv::Mat m_currentFrame; // add a thread safe input queue
 
+    float m_resX = 1.f;
+    float m_resY = 1.f;
+    
     int m_counter = 0;
 };
 

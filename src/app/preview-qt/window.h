@@ -45,22 +45,32 @@
 
 class GLWidget;
 class MainWindow;
+class VideoCapture;
+class QPushButton;
 
 class Window : public QWidget
 {
     Q_OBJECT
 
 public:
-    Window(MainWindow *mw, GLWidget *gl);
+    Window(MainWindow *mw, GLWidget *gl, VideoCapture&);
 
     void setVideoDimensions(int width, int height);
-    
+
+    Q_SLOT void startCapturing();
+    Q_SLOT void stopCapturing();
+
 protected:
     void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
 
 private:
     GLWidget *glWidget;
     MainWindow *mainWindow;
+
+    VideoCapture& videoCapture;
+
+    QPushButton* button_start;
+    QPushButton* button_stop;
 };
 
 #endif

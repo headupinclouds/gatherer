@@ -11,6 +11,7 @@
 
 #include "graphics/gatherer_graphics.h"
 #include <opencv2/core/core.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 _GATHERER_GRAPHICS_BEGIN
 
@@ -35,13 +36,13 @@ _GATHERER_GRAPHICS_BEGIN
 class GLTexture
 {
 public:
-    
+
     /// Constructor (empty)
     GLTexture() { init(); }
 
     /// Constructor from OpenCV cv::Mat
     GLTexture(const cv::Mat &image) { init(); load(image); }
-    
+
     /// Initialization
     void init()
     {
@@ -51,6 +52,8 @@ public:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        
+        //std::cout << "make texture: " << int(glGetError()) << std::endl;
     }
     virtual ~GLTexture() { glDeleteTextures((GLsizei)1, (GLuint *)&m_texture); }
     virtual operator unsigned int() const { return m_texture; }
@@ -59,12 +62,24 @@ public:
     {
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glBindTexture(GL_TEXTURE_2D, m_texture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.cols, image.rows, 0, GL_BGR, GL_UNSIGNED_BYTE, image.ptr());
+#if defined(GATHERER_OPENGL_ES)
+        GLenum format = GL_BGRA;
+        cv::Mat image_;
+        if(image.channels() == 3)
+            cv::cvtColor(image, image_, cv::COLOR_BGR2BGRA);
+#else
+        GLenum format = GL_BGR;
+        cv::Mat image_ = image;
+#endif
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image_.cols, image_.rows, 0, format, GL_UNSIGNED_BYTE, image_.ptr());
+        
+        //std::cout << "glTexImage2D: " << int(glGetError()) << std::endl;
+        
         glFlush();
     }
-    
+
 protected:
-    
+
     /// OpenGL texture ID
     unsigned int m_texture;
 };
@@ -92,7 +107,7 @@ public:
         }
         return coords;
     }
-    
+
     static std::vector<float> GetTextureCoordinates() { return std::vector<float> { 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f }; }
 };
 

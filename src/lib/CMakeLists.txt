@@ -5,9 +5,16 @@ include(sugar_include)
 sugar_include(.)
 
 add_library(gatherer_graphics STATIC ${GATHERER_GRAPHICS_SRC} ${GATHERER_GRAPHICS_HDRS})
-target_link_libraries(gatherer_graphics PRIVATE ${OpenCV_LIBS} glew)
+target_link_libraries(gatherer_graphics PRIVATE ${OpenCV_LIBS})
+if(NOT GATHERER_OPENGL_ES)
+  target_link_libraries(gatherer_graphics PRIVATE glew)
+endif()
 
-set(GATHERER_LIBS 
+if(GATHERER_OPENGL_ES)
+  target_compile_definitions(gatherer_graphics PUBLIC GATHERER_OPENGL_ES)
+endif()
+
+set(GATHERER_LIBS
   gatherer_graphics
   ## TODO
 )
