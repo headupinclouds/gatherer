@@ -86,7 +86,7 @@ int main(int argc, char **argv)
         // Should be created in heap, ownership taken by parent widget
         GLWidget *glWidget = new GLWidget; // Note: moved creation output of Window for signal connection:
 
-        VideoCapture capture(0, false);
+        VideoCapture capture(0, true);
 
         MainWindow mainWindow(glWidget, capture);
         mainWindow.resize(mainWindow.sizeHint());
