@@ -9,6 +9,8 @@
     <application
         android:label="preview-qt"
         android:name="org.qtproject.qt5.android.bindings.QtApplication"
+	android:debuggable="true"
+	android:hardwareAccelerated="true"
     >
     <activity
         android:label="preview-qt"
