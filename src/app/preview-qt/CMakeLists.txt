@@ -28,13 +28,14 @@ if(ANDROID)
       TARGET preview-qt-apk
       BASE_TARGET preview-qt
       PACKAGE_NAME preview.qt # must be no '-' (API 16 error)
-      INSTALL
+      #INSTALL
   )
 
   hunter_add_package(Android-SDK)
   message("Path to `android`: ${ANDROID-SDK_ROOT}/android-sdk/tools/android")
   message("Path to `emulator`: ${ANDROID-SDK_ROOT}/android-sdk/tools/emulator")
   message("Path to `adb`: ${ANDROID-SDK_ROOT}/android-sdk/platform-tools/adb")
+
 else()
   add_executable(preview-qt ${SOURCES})
   install(TARGETS preview-qt DESTINATION bin)
@@ -47,3 +48,5 @@ target_link_libraries(preview-qt
 )
 
 set_property(TARGET preview-qt PROPERTY FOLDER "app/gui")
+
+
