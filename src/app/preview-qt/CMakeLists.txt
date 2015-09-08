@@ -28,6 +28,7 @@ if(ANDROID)
       TARGET preview-qt-apk
       BASE_TARGET preview-qt
       PACKAGE_NAME preview.qt # must be no '-' (API 16 error)
+      MANIFEST "${CMAKE_CURRENT_LIST_DIR}/AndroidManifest.xml.in"
       #INSTALL
   )
 
