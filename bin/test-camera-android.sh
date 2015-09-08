@@ -5,7 +5,7 @@ if [ -z "${GATHERER}" ]; then
     exit
 fi
 
-if [ $(adb devices | wc -l) -lt 3 ]; then
+if [ $(adb devices | wc -l | awk '{print $1}') -lt 3 ]; then
     >&2 echo "Must have valid android device connected"
     exit
 fi
