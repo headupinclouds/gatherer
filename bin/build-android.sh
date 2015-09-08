@@ -6,5 +6,6 @@ build.py --toolchain ${TOOLCHAIN} --verbose --fwd HUNTER_CONFIGURATION_TYPES=Rel
 --config Release \
 --install \
 --strip \
+--clear \
 --jobs 8 
 
