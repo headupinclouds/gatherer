@@ -51,10 +51,42 @@ def run():
     sys.exit('Expected environment variable PROJECT_DIR')
 
   # Check broken builds --
-  # TODO: ...
+  if (project_dir == 'examples/Boost-filesystem') and (toolchain == 'analyze'):
+    print('Skip (https://github.com/ruslo/hunter/issues/25)')
+    sys.exit(0)
+
+  if (project_dir == 'examples/Boost-system') and (toolchain == 'analyze'):
+    print('Skip (https://github.com/ruslo/hunter/issues/26)')
+    sys.exit(0)
+
+  if (project_dir == 'examples/OpenSSL') and (toolchain == 'mingw'):
+    print('Skip (https://github.com/ruslo/hunter/issues/28)')
+    sys.exit(0)
+
+  if (project_dir == 'examples/OpenSSL') and (toolchain == 'ios-7-0'):
+    print('Skip (https://github.com/ruslo/hunter/issues/29)')
+    sys.exit(0)
+
+  if (project_dir == 'examples/OpenSSL') and (toolchain == 'xcode'):
+    print('Skip (https://github.com/ruslo/hunter/issues/30)')
+    sys.exit(0)
   # -- end
 
   verbose = True
+  if (
+      os.getenv('TRAVIS') and
+      (project_dir == 'examples/CLAPACK') and
+      (toolchain == 'xcode')
+  ):
+    verbose = False
+
+  if (
+      os.getenv('TRAVIS') and
+      (project_dir == 'examples/GSL') and
+      (toolchain == 'xcode')
+  ):
+    verbose = False
+
   project_dir = os.path.join(cdir, project_dir)
   project_dir = os.path.normpath(project_dir)
 
@@ -114,6 +146,20 @@ def run():
 
   print('Testing in: {}'.format(testing_dir))
   os.chdir(testing_dir)
+
+  args = [
+      sys.executable,
+      build_script,
+      '--clear',
+      '--toolchain',
+      toolchain,
+      '--home',
+      project_dir,
+      '--fwd',
+      'HUNTER_ROOT={}'.format(hunter_root),
+      'TESTING_URL={}'.format(hunter_url),
+      'TESTING_SHA1={}'.format(hunter_sha1)
+  ]
 
   if not parsed_args.verbose:
     args += ['HUNTER_STATUS_DEBUG=NO']
