@@ -37,7 +37,7 @@ endif()
 ## Needs:
 #-Wno-error=unused-command-line-argument-hard-error-in-future
 
-option(BUILD_QT ON)
+option(BUILD_QT "Build with Qt" ON)
 
 if(BUILD_QT)
   hunter_add_package(Qt)
