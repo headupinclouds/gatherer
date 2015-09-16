@@ -41,7 +41,7 @@ option(BUILD_QT "Build with Qt" ON)
 
 if(BUILD_QT)
   hunter_add_package(Qt)
-  find_package(Qt5Widgets REQUIRED version 5.5)
+  find_package(Qt5Widgets 5.5 REQUIRED)
   message("Used Qt:")
   message("  ${QT_ROOT} (root from Hunter)")
   message("  ${Qt5Widgets_DIR} (find_package result)")
