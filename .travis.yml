@@ -1,0 +1,42 @@
+# Mac OS X (https://github.com/travis-ci-tester/toolchain-table)
+
+# whitelist
+branches:
+  only:
+    - master
+
+language:
+    - objective-c
+
+install:
+    - brew install cmake
+    - brew install python3
+    # install cmake toolchains and script
+    - POLLY_VERSION="0.6.2"
+    - wget "https://github.com/ruslo/polly/archive/v${POLLY_VERSION}.tar.gz"
+    - tar xf "v${POLLY_VERSION}.tar.gz"
+    - export PATH="`pwd`/polly-${POLLY_VERSION}/bin:${PATH}"
+    # -- end
+    # install cmake
+    - CMAKE_VERSION="3.2.1-ruslo"
+    - wget "https://github.com/ruslo/CMake/archive/v${CMAKE_VERSION}.tar.gz"
+    - openssl sha1 "v${CMAKE_VERSION}.tar.gz"
+    - tar xf "v${CMAKE_VERSION}.tar.gz"
+    - cd "CMake-${CMAKE_VERSION}"
+    -   build.py --install --toolchain default --config Release --fwd "CMAKE_USE_SYSTEM_CURL=YES"
+    -   export PATH="`pwd`/_install/default/bin:${PATH}"
+    - cd ..
+    # -- end
+    # verify installed cmake
+    - which cmake
+    - cmake --version
+
+env:
+    #
+    - PROJECT_DIR=. TOOLCHAIN=libcxx
+    - PROJECT_DIR=. TOOLCHAIN=xcode
+    - PROJECT_DIR=. TOOLCHAIN=ios-nocodesign
+    - PROJECT_DIR=. TOOLCHAIN=analyze
+
+script:
+    - python3 ./jenkins.py
