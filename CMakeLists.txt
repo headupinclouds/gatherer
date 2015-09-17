@@ -38,6 +38,13 @@ if(is_xcode)
 endif()
 
 ## #################################################################
+## Dependencies - OpenCV
+## #################################################################
+
+hunter_add_package(OpenCV)
+find_package(OpenCV REQUIRED)
+
+## #################################################################
 ## Dependencies - Qt
 ## #################################################################
 
@@ -56,13 +63,6 @@ if(BUILD_QT)
   set(CMAKE_AUTOUIC ON)
   set(CMAKE_AUTORCC ON)
 endif()
-
-## #################################################################
-## Dependencies - OpenCV
-## #################################################################
-
-hunter_add_package(OpenCV)
-find_package(OpenCV REQUIRED)
 
 ## #################################################################
 ## Dependencies - cereal (lightweight boost serialization alt)
