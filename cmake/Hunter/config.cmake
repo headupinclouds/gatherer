@@ -1,13 +1,7 @@
-set(CMAKE_MODULE_PATH @CMAKE_MODULE_PATH@) # fetch top level CMAKE_MODULE_PATH
-
 message(">:>:>:>:>:>:>:>:>:>:>:>:>:>:>:>:>: ${CMAKE_MODULE_PATH} <:<:<:<:<:<:<:<:<:<:<:<:<:<:<:<:<:<:<:<:<:<:<:")
 
-# possibly import these via CMakeLists.txt: i.e., @is_ios@, etc
-string(COMPARE EQUAL "${CMAKE_OSX_SYSROOT}" "iphoneos" is_ios)
-string(COMPARE EQUAL "${CMAKE_SYSTEM_NAME}" "Linux" is_linux)
-
 ### OpenCV
-if(@ANDROID@)
+if(ANDROID)
   message("ANDROID =====================================================================")
   include(SetOpenCVCMakeArgs-android) 
   set_opencv_cmake_args_android()

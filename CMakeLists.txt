@@ -3,35 +3,33 @@
 
 cmake_minimum_required(VERSION 3.0)
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake/modules")
-
-set(custom_config "${CMAKE_CURRENT_BINARY_DIR}/hunter-config.cmake")
-configure_file(cmake/Hunter/config.cmake "${custom_config}" @ONLY)
-
 ### Hunter snapshot that will be used ###
 include("cmake/HunterGate.cmake")
 HunterGate(
     URL "https://github.com/ruslo/hunter/archive/v0.12.7.tar.gz"
     SHA1 "b5ae065573ea2706ae1389a9048f1cabb2451f23"
-    FILEPATH "${custom_config}"
+    LOCAL
 )
-
-set(CMAKE_MODULE_PATH @CMAKE_MODULE_PATH@)
-
 project(gatherer VERSION 0.1.0)
 
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake/modules")
 
-# See: cmake/Hunter/config.cmake
-hunter_add_package(Sugar)
-include("${SUGAR_ROOT}/cmake/Sugar")
-include(sugar_include)
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 set(is_android ${ANDROID}) # syntax compatibility
 string(COMPARE EQUAL "${CMAKE_OSX_SYSROOT}" "iphoneos" is_ios)
 string(COMPARE EQUAL "${CMAKE_SYSTEM_NAME}" "Linux" is_linux)
 string(COMPARE EQUAL "${CMAKE_BUILD_TYPE}" "DEBUG" is_debug)
 string(COMPARE EQUAL "${CMAKE_GENERATOR}" "Xcode" is_xcode)
+
+# See: cmake/Hunter/config.cmake
+# First call to 'hunter_add_package' will contains read of Hunter/config.cmake
+# Next variables will be used:
+#   * is_ios
+#   * is_linux
+hunter_add_package(Sugar)
+include("${SUGAR_ROOT}/cmake/Sugar")
+include(sugar_include)
 
 if(is_xcode)
   set(CMAKE_CONFIGURATION_TYPES "Debug;Release")
