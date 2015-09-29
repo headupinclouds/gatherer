@@ -1,42 +1,42 @@
 # Mac OS X (https://github.com/travis-ci-tester/toolchain-table)
 
-# whitelist
-branches:
-  only:
-    - master
-
 language:
     - objective-c
+
+env:
+    - TOOLCHAIN=libcxx CONFIG=Release
+    - TOOLCHAIN=libcxx CONFIG=Debug
+    - TOOLCHAIN=xcode CONFIG=Release
+    - TOOLCHAIN=xcode CONFIG=Debug
+    - TOOLCHAIN=ios-nocodesign-arm64 CONFIG=Release
+    - TOOLCHAIN=ios-nocodesign-arm64 CONFIG=Debug
+    - TOOLCHAIN=ios-nocodesign-armv7 CONFIG=Release
+    - TOOLCHAIN=ios-nocodesign-armv7 CONFIG=Debug
+    # - TOOLCHAIN=analyze CONFIG=Release (error in OpenCV)
+    # - TOOLCHAIN=analyze CONFIG=Debug
 
 install:
     - brew install cmake
     - brew install python3
+    - brew install glfw3
+    - brew install glew
     # install cmake toolchains and script
-    - POLLY_VERSION="0.6.2"
+    - POLLY_VERSION="0.7.7"
     - wget "https://github.com/ruslo/polly/archive/v${POLLY_VERSION}.tar.gz"
     - tar xf "v${POLLY_VERSION}.tar.gz"
     - export PATH="`pwd`/polly-${POLLY_VERSION}/bin:${PATH}"
     # -- end
     # install cmake
-    - CMAKE_VERSION="3.2.1-ruslo"
-    - wget "https://github.com/ruslo/CMake/archive/v${CMAKE_VERSION}.tar.gz"
-    - openssl sha1 "v${CMAKE_VERSION}.tar.gz"
-    - tar xf "v${CMAKE_VERSION}.tar.gz"
-    - cd "CMake-${CMAKE_VERSION}"
-    -   build.py --install --toolchain default --config Release --fwd "CMAKE_USE_SYSTEM_CURL=YES"
-    -   export PATH="`pwd`/_install/default/bin:${PATH}"
-    - cd ..
+    - CMAKE_TAG="3.3.2-p0"
+    - CMAKE_VERSION="3.3.2"
+    - wget "https://github.com/ruslo/CMake/releases/download/v${CMAKE_TAG}/cmake-${CMAKE_VERSION}-Darwin-x86_64.tar.gz"
+    - tar xf "cmake-${CMAKE_VERSION}-Darwin-x86_64.tar.gz"
+    - export PATH="`pwd`/cmake-${CMAKE_VERSION}-Darwin-x86_64/bin:${PATH}"
     # -- end
     # verify installed cmake
     - which cmake
     - cmake --version
-
-env:
-    #
-    - PROJECT_DIR=. TOOLCHAIN=libcxx
-    - PROJECT_DIR=. TOOLCHAIN=xcode
-    - PROJECT_DIR=. TOOLCHAIN=ios-nocodesign
-    - PROJECT_DIR=. TOOLCHAIN=analyze
+    # -- end
 
 script:
-    - python3 ./jenkins.py
+    - build.py --toolchain ${TOOLCHAIN} --config ${CONFIG} --verbose --fwd HUNTER_STATUS_DEBUG=OFF HUNTER_PACKAGE_LOG_BUILD=YES HUNTER_PACKAGE_LOG_INSTALL=YES HUNTER_CONFIGURATION_TYPES=${CONFIG}
