@@ -33,6 +33,7 @@ include(sugar_include)
 
 if(is_xcode)
   set(CMAKE_CONFIGURATION_TYPES "Debug;Release")
+  set(CMAKE_XCODE_ATTRIBUTE_ENABLE_BITCODE NO)
 endif()
 
 ## #################################################################
