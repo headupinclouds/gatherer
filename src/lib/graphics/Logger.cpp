@@ -2,6 +2,10 @@
 
 #include <spdlog/spdlog.h>
 
+#if defined(__ANDROID__)
+# include <spdlog/sinks/android_sink.h>
+#endif
+
 _GATHERER_GRAPHICS_BEGIN
 
 std::shared_ptr<spdlog::logger> Logger::create(const char* name)
