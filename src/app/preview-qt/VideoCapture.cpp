@@ -3,7 +3,10 @@
 #include <opencv2/core/core.hpp>
 #include <iostream>
 
-VideoCapture::VideoCapture(QObject * parent, bool synth) : QObject(parent), m_synth(synth) {}
+VideoCapture::VideoCapture(QObject * parent, bool synth) : QObject(parent), m_synth(synth)
+{
+    logger_ = gatherer::graphics::Logger::get("preview-qt");
+}
 
 bool VideoCapture::getFrame(cv::Mat &frame)
 {
@@ -45,7 +48,7 @@ void VideoCapture::timerEvent(QTimerEvent * ev)
     cv::Mat frame;
     if (!getFrame(frame))
     { // Blocks until a new frame is ready
-        std::cout << "Didn't capture frame " << std::endl;
+        logger_->info("Didn't capture frame");
         return;
     }
     else
