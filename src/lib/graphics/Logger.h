@@ -10,8 +10,9 @@ _GATHERER_GRAPHICS_BEGIN
 class Logger
 {
 public:
-    static std::shared_ptr<spdlog::logger> create(const char* name);
-    static std::shared_ptr<spdlog::logger> get(const char* name);
+    using Pointer = std::shared_ptr<spdlog::logger>;
+    static Pointer create(const char* name);
+    static Pointer get(const char* name);
 };
 
 _GATHERER_GRAPHICS_END
