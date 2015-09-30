@@ -8,3 +8,4 @@ build.py --toolchain ${TOOLCHAIN} --verbose --fwd HUNTER_CONFIGURATION_TYPES=Rel
 --strip \
 --clear \
 --jobs 8 
+

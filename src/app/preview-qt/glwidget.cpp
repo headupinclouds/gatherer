@@ -53,6 +53,7 @@
 #include <opencv2/highgui.hpp>
 
 #include <memory>
+#include <mutex>
 
 GLWidget::GLWidget(QWidget *parent) : QOpenGLWidget(parent)
 {

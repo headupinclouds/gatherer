@@ -63,7 +63,11 @@ public:
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glBindTexture(GL_TEXTURE_2D, m_texture);
 #if defined(GATHERER_OPENGL_ES)
+#if __ANDROID__
+        GLenum format = GL_RGBA;
+#else
         GLenum format = GL_BGRA;
+#endif
         cv::Mat image_;
         if(image.channels() == 3)
             cv::cvtColor(image, image_, cv::COLOR_BGR2BGRA);
