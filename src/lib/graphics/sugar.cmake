@@ -18,6 +18,7 @@ sugar_files(
     GLWarpShader.cpp
     RenderTexture.cpp
     RenderTextureCopy.cpp
+    Logger.cpp
 )
 
 sugar_files(
@@ -29,4 +30,5 @@ sugar_files(
     RenderTexture.h
     RenderTextureCopy.h
     gatherer_graphics.h
+    Logger.h
 )

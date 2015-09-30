@@ -64,6 +64,8 @@
 #include <thread>
 #include <mutex>
 
+#include "graphics/Logger.h"
+
 #include <opencv2/core/core.hpp>
 
 namespace gatherer
@@ -129,6 +131,8 @@ private:
     float m_resY = 1.f;
     
     int m_counter = 0;
+
+    gatherer::graphics::Logger::Pointer logger_;
 };
 
 #endif

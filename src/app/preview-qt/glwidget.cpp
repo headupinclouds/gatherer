@@ -60,6 +60,7 @@ GLWidget::GLWidget(QWidget *parent) : QOpenGLWidget(parent)
     m_core = QCoreApplication::arguments().contains(QStringLiteral("--coreprofile"));
     // --transparent causes the clear color to be transparent. Therefore, on systems that
     // support it, the widget will become transparent apart from the logo.
+    logger_ = gatherer::graphics::Logger::get("preview-qt");
 }
 
 QSize GLWidget::minimumSizeHint() const
@@ -144,6 +145,6 @@ void GLWidget::setImage(const cv::Mat &image)
 
      // Logging for now...
      if(!(m_counter++ % 100))
-         std::cout << "GLWidget(" << m_counter << "): got image " << image.size() << std::endl;
+         logger_->info() << "GLWidget(" << m_counter << "): got image " << image.size();
      update();
 }

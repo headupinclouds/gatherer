@@ -1,5 +1,7 @@
 # gatherer
 
+[![Build Status](https://travis-ci.org/headupinclouds/gatherer.svg?branch=master)](https://travis-ci.org/headupinclouds/gatherer)
+
 This is an initial sandbox repository to facilitate OpenCV + OpenGL + QT collaboration with the Hunter package manager.
 
 The test video preview app makes uses of GLFW and GLEW to manage the OpenGL contex + window.  
@@ -11,3 +13,4 @@ brew tap homebrew/versions
 brew install --build-bottle --static glfw3
 brew install glew
 ```
+

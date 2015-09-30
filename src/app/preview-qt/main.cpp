@@ -58,6 +58,7 @@
 #include "graphics/GLWarpShader.h"
 #include "graphics/GLTexture.h"
 #include "graphics/RenderTexture.h"
+#include "graphics/Logger.h"
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -82,6 +83,9 @@ int main(int argc, char **argv)
             fmt.setProfile(QSurfaceFormat::CoreProfile);
         }
         QSurfaceFormat::setDefaultFormat(fmt);
+
+        auto logger = gatherer::graphics::Logger::create("preview-qt");
+        logger->info("Start");
 
         // Should be created in heap, ownership taken by parent widget
         GLWidget *glWidget = new GLWidget; // Note: moved creation output of Window for signal connection:

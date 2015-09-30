@@ -38,5 +38,5 @@ env:
     - PROJECT_DIR=. TOOLCHAIN=ios-nocodesign
     - PROJECT_DIR=. TOOLCHAIN=analyze
 
-
-
+script:
+    - python3 ./jenkins.py
