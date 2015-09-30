@@ -11,6 +11,8 @@
 #include <QPaintEvent>
 #include <QDebug>
 
+#include "graphics/Logger.h"
+
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -35,6 +37,7 @@ private:
     void timerEvent(QTimerEvent * ev);
     
     bool m_synth = false;
+    gatherer::graphics::Logger::Pointer logger_;
 };
 
 #endif // _CAPTURE_H_

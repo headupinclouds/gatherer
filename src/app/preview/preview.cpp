@@ -257,6 +257,7 @@ int process(int argc, char **argv)
         cv::Size size(int(video->get( cv::CAP_PROP_FRAME_WIDTH)), int(video->get(cv::CAP_PROP_FRAME_HEIGHT)));
 
         gatherer::graphics::GLContextWindow window(size, "display");
+
         gatherer::graphics::FXShader fx(size, {1.f, 1.f});
         gatherer::graphics::WarpShader rotate(size, window.getResolution());
         gatherer::graphics::GLTexture texture;
