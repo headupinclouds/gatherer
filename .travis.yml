@@ -39,4 +39,4 @@ install:
     # -- end
 
 script:
-    - build.py --toolchain ${TOOLCHAIN} --config ${CONFIG} --verbose --fwd HUNTER_CONFIGURATION_TYPES=${CONFIG} --discard 10
+    - build.py --toolchain ${TOOLCHAIN} --config ${CONFIG} --verbose --fwd HUNTER_CONFIGURATION_TYPES=${CONFIG} --discard 10 --tail 100
