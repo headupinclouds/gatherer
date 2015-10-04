@@ -86,6 +86,10 @@ if(NOT GATHERER_OPENGL_ES)
   pkg_search_module(GLFW REQUIRED glfw3)
   include_directories(AFTER ${GLFW_INCLUDE_DIRS})
 
+  if(XCODE)
+    link_directories(${GLFW_LIBRARY_DIRS}) # Fix Xcode build
+  endif()
+
   find_package(GLEW REQUIRED)
 
   # This gives me a build error in the preview test app

@@ -90,7 +90,12 @@ int main(int argc, char **argv)
         // Should be created in heap, ownership taken by parent widget
         GLWidget *glWidget = new GLWidget; // Note: moved creation output of Window for signal connection:
 
-        VideoCapture capture(0, false);
+#if defined(__ANDROID__)
+        const bool synth = true; // Camera not working on Android (yet)
+#else
+        const bool synth = false;
+#endif
+        VideoCapture capture(0, synth);
 
         MainWindow mainWindow(glWidget, capture);
         mainWindow.resize(mainWindow.sizeHint());
