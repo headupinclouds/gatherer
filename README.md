@@ -1,6 +1,6 @@
 # gatherer
 
-[![Build Status](https://travis-ci.org/headupinclouds/gatherer.svg?branch=master)](https://travis-ci.org/headupinclouds/gatherer) : develop
+[![Build Status](https://travis-ci.org/headupinclouds/gatherer.svg?branch=develop)](https://travis-ci.org/headupinclouds/gatherer) : develop
 
 
 [![Build Status](https://travis-ci.org/headupinclouds/gatherer.svg?branch=master)](https://travis-ci.org/headupinclouds/gatherer) : master
