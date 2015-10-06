@@ -1,6 +1,9 @@
 # gatherer
 
-[![Build Status](https://travis-ci.org/headupinclouds/gatherer.svg?branch=master)](https://travis-ci.org/headupinclouds/gatherer)
+[![Build Status](https://travis-ci.org/headupinclouds/gatherer.svg?branch=develop)](https://travis-ci.org/headupinclouds/gatherer) : develop
+
+
+[![Build Status](https://travis-ci.org/headupinclouds/gatherer.svg?branch=master)](https://travis-ci.org/headupinclouds/gatherer) : master
 
 This is an initial sandbox repository to facilitate OpenCV + OpenGL + QT collaboration with the Hunter package manager.
 
