@@ -1,5 +1,7 @@
 # gatherer
 
+Disclaimer: This is a work in progress made public to support collaboration during initial development.  This README will be updated when an initial release is available.
+
 [![Build Status](https://travis-ci.org/headupinclouds/gatherer.svg?branch=develop)](https://travis-ci.org/headupinclouds/gatherer) : develop
 
 
