@@ -1,4 +1,4 @@
-macro(set_opencv_cmake_args_osx)
+macro(set_opencv_cmake_args_windows)
     set(OPENCV_CMAKE_ARGS 
 
       #### Repeat HUNTER ARGS ###
@@ -20,9 +20,9 @@ macro(set_opencv_cmake_args_osx)
       WITH_TIFF=ON            # "Include TIFF support"                        
       WITH_JASPER=ON          # "Include JPEG2K support"                      
       WITH_JPEG=ON            # "Include JPEG support"                        
+      WITH_TBB=ON             # "Include Intel TBB support"
 
       WITH_PTHREADS_PF=OFF    # "Use pthreads-based parallel_for"
-      WITH_TBB=OFF            # "Include Intel TBB support"
       WITH_1394=OFF           # "Include IEEE1394 support"          
       WITH_AVFOUNDATION=OFF   # "Use AVFoundation for Video I/O"             
       WITH_CARBON=OFF         # "Use Carbon for UI instead of Cocoa"        
@@ -68,4 +68,4 @@ macro(set_opencv_cmake_args_osx)
       WITH_IPP_A=OFF          # "Include Intel IPP_A support"                 
       WITH_GDAL=OFF           # "Include GDAL Support"                        
       WITH_GPHOTO2=OFF        # "Include gPhoto2 library support"             
-endmacro(set_opencv_cmake_args_osx)
+endmacro(set_opencv_cmake_args_windows)
