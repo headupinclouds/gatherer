@@ -6,6 +6,7 @@ if(NOT GATHERER_OPENGL_ES)
 endif()
 
 if(BUILD_QT)
+  add_subdirectory(qt-camera-demo)
   add_subdirectory(preview-qt)
   if(NOT GATHERER_OPENGL_ES)
     add_subdirectory(opencv-qt-video)
