@@ -53,6 +53,7 @@ endif()
 
 target_link_libraries(qt-camera-demo
   Qt5::Widgets
+  Qt5::Multimedia
   Qt5::Declarative
   ${OpenCV_LIBS}
   gatherer_graphics

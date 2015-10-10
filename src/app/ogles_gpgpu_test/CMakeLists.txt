@@ -1,6 +1,6 @@
 include_directories(${GLFW_INCLUDE_DIRS})
 
-find_package(ogles_gpgpu)
+#find_package(ogles_gpgpu)
 
 ### preview ###
 set(OGLES_GPGPU_TEST_SRCS
