@@ -37,13 +37,6 @@ if(is_xcode)
 endif()
 
 ## #################################################################
-## Dependencies - OpenCV
-## #################################################################
-
-hunter_add_package(OpenCV)
-find_package(OpenCV REQUIRED)
-
-## #################################################################
 ## Dependencies - Qt
 ## #################################################################
 
@@ -53,8 +46,26 @@ find_package(OpenCV REQUIRED)
 option(BUILD_QT "Build with Qt" ON)
 
 if(BUILD_QT)
-  hunter_add_package(Qt)
-  find_package(Qt5Widgets 5.5 REQUIRED)
+
+  # Disable until qtdeclarative is available: https://github.com/ruslo/hunter/issues/253
+  #hunter_add_package(Qt COMPONENTS qtbase qtdeclarative qtmultimedia)
+  #find_package(Qt5Widgets REQUIRED)
+  #find_package(Qt5Multimedia REQUIRED)
+  #find_package(Qt5Declarative REQUIRED)
+
+  # qtcore : not found
+  # qtgui : not found
+  # qtnetwork : not found
+  # qtopengl   : not found
+  # qtsql : not found
+
+  hunter_add_package(Qt COMPONENTS qtbase qtdeclarative qtmultimedia qtscript qtsvg qtxmlpatterns)
+  find_package(Qt5Widgets REQUIRED)
+  find_package(Qt5Multimedia REQUIRED)
+  find_package(Qt5MultimediaWidgets REQUIRED)
+  find_package(Qt5OpenGL REQUIRED)
+  #find_package(Qt5Declarative REQUIRED)
+
   message("Used Qt:")
   message("  ${QT_ROOT} (root from Hunter)")
   message("  ${Qt5Widgets_DIR} (find_package result)")
@@ -62,6 +73,13 @@ if(BUILD_QT)
   set(CMAKE_AUTOUIC ON)
   set(CMAKE_AUTORCC ON)
 endif()
+
+## #################################################################
+## Dependencies - OpenCV
+## #################################################################
+
+hunter_add_package(OpenCV)
+find_package(OpenCV REQUIRED)
 
 ## #################################################################
 ## Dependencies - cereal (lightweight boost serialization alt)
