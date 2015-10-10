@@ -6,7 +6,14 @@ if(NOT GATHERER_OPENGL_ES)
 endif()
 
 if(BUILD_QT)
-  add_subdirectory(qt-camera-demo)
+
+  # Disable until qtdeclarative is available: https://github.com/ruslo/hunter/issues/253
+  #add_subdirectory(qt-camera-demo)
+
+  # Try this stock camera sample copy-and-paste from: 
+  # http://doc.qt.io/qt-5/qtmultimediawidgets-camera-example.html
+  add_subdirectory(qt-camera)
+
   add_subdirectory(preview-qt)
   if(NOT GATHERER_OPENGL_ES)
     add_subdirectory(opencv-qt-video)
