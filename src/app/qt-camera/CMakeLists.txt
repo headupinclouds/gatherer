@@ -49,6 +49,8 @@ target_link_libraries(qt-camera
   Qt5::Multimedia
   Qt5::MultimediaWidgets
   Qt5::OpenGL
+  Qt5::Qml
+  Qt5::Quick
   #${OpenCV_LIBS}
   #gatherer_graphics
 )

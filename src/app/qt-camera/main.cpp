@@ -42,9 +42,67 @@
 
 #include <QtWidgets>
 
+// Enable this for potential fix by @pretyman: https://github.com/ruslo/hunter/issues/253
+#define STATIC_BUILD 0
+
+// Undefined symbols for architecture x86_64:
+//   "qt_static_plugin_QtQuick2Plugin()", referenced from:
+//       _main in main.cpp.o
+//       __GLOBAL__sub_I_main.cpp in main.cpp.o
+//   "qt_static_plugin_CoreAudioPlugin()", referenced from:
+//       __GLOBAL__sub_I_main.cpp in main.cpp.o
+//   "qt_static_plugin_AVFServicePlugin()", referenced from:
+//       __GLOBAL__sub_I_main.cpp in main.cpp.o
+//   "qt_static_plugin_QtQuick2WindowPlugin()", referenced from:
+//       _main in main.cpp.o
+//       __GLOBAL__sub_I_main.cpp in main.cpp.o
+//   "qt_static_plugin_QtQuickLayoutsPlugin()", referenced from:
+//       _main in main.cpp.o
+//       __GLOBAL__sub_I_main.cpp in main.cpp.o
+//   "qt_static_plugin_AudioCaptureServicePlugin()", referenced from:
+//       __GLOBAL__sub_I_main.cpp in main.cpp.o
+//   "qt_static_plugin_AVFMediaPlayerServicePlugin()", referenced from:
+//       __GLOBAL__sub_I_main.cpp in main.cpp.o
+//   "qt_static_plugin_QMultimediaDeclarativeModule()", referenced from:
+//       _main in main.cpp.o
+//       __GLOBAL__sub_I_main.cpp in main.cpp.o
+// ld: symbol(s) not found for architecture x86_64x
+
+
+#include <QQmlApplicationEngine>
+#include <QQmlContext>
+#include <QQmlEngine>
+#include <QAudio>
+#include <QQmlExtensionPlugin>
+#include <QtQml/qqml.h>
+#include <QtQml>
+#if STATIC_BUILD
+#include <QtPlugin>
+Q_IMPORT_PLUGIN(QCocoaIntegrationPlugin)
+Q_IMPORT_PLUGIN(QtQuick2Plugin)
+Q_IMPORT_PLUGIN(QtQuick2WindowPlugin)
+Q_IMPORT_PLUGIN(QMultimediaDeclarativeModule)
+Q_IMPORT_PLUGIN(QtQuickLayoutsPlugin)
+Q_IMPORT_PLUGIN(AVFServicePlugin) // Camera
+Q_IMPORT_PLUGIN(AVFMediaPlayerServicePlugin)
+Q_IMPORT_PLUGIN(AudioCaptureServicePlugin) // Record
+Q_IMPORT_PLUGIN(CoreAudioPlugin)
+#endif // STATIC_BUILD
+
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
+
+#if STATIC_BUILD
+	// registration because of https://bugreports.qt.io/browse/QTBUG-38661
+	qRegisterMetaType<QAudio::Error>();
+	qRegisterMetaType<QAudio::State>();
+	qRegisterMetaType<QAudio::Mode>();
+	qobject_cast<QQmlExtensionPlugin*>(qt_static_plugin_QtQuick2Plugin().instance())->registerTypes("QtQuick");
+	qobject_cast<QQmlExtensionPlugin*>(qt_static_plugin_QMultimediaDeclarativeModule().instance())->registerTypes("QtMultimedia");
+	qobject_cast<QQmlExtensionPlugin*>(qt_static_plugin_QtQuick2WindowPlugin().instance())->registerTypes("QtQuick.Window");
+	qobject_cast<QQmlExtensionPlugin*>(qt_static_plugin_QtQuickLayoutsPlugin().instance())->registerTypes("QtQuick.Layouts");
+#endif // STATIC_BUILD
 
     Camera camera;
     camera.show();
