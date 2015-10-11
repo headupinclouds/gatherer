@@ -8,6 +8,11 @@ VideoCapture::VideoCapture(QObject * parent, bool synth) : QObject(parent), m_sy
     logger_ = gatherer::graphics::Logger::get("preview-qt");
 }
 
+void VideoCapture::setConversion(ConvertDelegate &delegate)
+{
+    m_conversion = delegate;
+}
+
 bool VideoCapture::getFrame(cv::Mat &frame)
 {
     if(m_synth)
@@ -23,14 +28,32 @@ bool VideoCapture::getFrame(cv::Mat &frame)
     }
     else
     {
-        return m_videoCapture->read(frame);
+        bool status = m_videoCapture->read(frame);
+        
+        if(m_conversion)
+        {
+            m_conversion(frame);
+            
+            cv::imshow("frame", frame), cv::waitKey(50);
+        }
+        
+        return status;
     }
+}
+
+cv::Size VideoCapture::getSize(int cam)
+{
+    cv::VideoCapture capture(0);
+    cv::Size size(int(capture.get(cv::CAP_PROP_FRAME_WIDTH)), int(capture.get(cv::CAP_PROP_FRAME_HEIGHT)));
+    return size;
 }
 
 void VideoCapture::start(int cam)
 {
     if (!m_videoCapture && !m_synth)
+    {
         m_videoCapture.reset(new cv::VideoCapture(cam));
+    }
 
     if (m_synth || m_videoCapture->isOpened())
     {

@@ -23,19 +23,23 @@
 // http://stackoverflow.com/questions/21246766/how-to-efficiently-display-opencv-video-in-qt
 class VideoCapture : public QObject
 {
+    typedef std::function<void(cv::Mat&)> ConvertDelegate;
+    
     Q_OBJECT
     QBasicTimer m_timer;
     QScopedPointer<cv::VideoCapture> m_videoCapture;
     bool getFrame(cv::Mat &);
 public:
     VideoCapture(QObject * parent = 0, bool synth=false);
+    cv::Size getSize(int cam);
+    void setConversion(ConvertDelegate &delegate);
     Q_SIGNAL void started();
     Q_SLOT void start(int cam = 0);
     Q_SLOT void stop();
     Q_SIGNAL void matReady(const cv::Mat &);
 private:
     void timerEvent(QTimerEvent * ev);
-    
+    ConvertDelegate m_conversion;
     bool m_synth = false;
     gatherer::graphics::Logger::Pointer logger_;
 };
