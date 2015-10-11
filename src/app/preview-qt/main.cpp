@@ -38,6 +38,15 @@
 **
 ****************************************************************************/
 
+#include "mainwindow.h"
+#include "glwidget.h"
+#include "VideoCapture.h"
+
+#include "graphics/GLWarpShader.h"
+#include "graphics/GLTexture.h"
+#include "graphics/RenderTexture.h"
+#include "graphics/Logger.h"
+
 #include <QApplication>
 #include <QDesktopWidget>
 #include <QSurfaceFormat>
@@ -50,15 +59,6 @@
 #include <QPainter>
 #include <QPaintEvent>
 #include <QDebug>
-
-#include "mainwindow.h"
-#include "glwidget.h"
-#include "VideoCapture.h"
-
-#include "graphics/GLWarpShader.h"
-#include "graphics/GLTexture.h"
-#include "graphics/RenderTexture.h"
-#include "graphics/Logger.h"
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -87,24 +87,36 @@ int main(int argc, char **argv)
         auto logger = gatherer::graphics::Logger::create("preview-qt");
         logger->info("Start");
 
-        // Should be created in heap, ownership taken by parent widget
-        GLWidget *glWidget = new GLWidget; // Note: moved creation output of Window for signal connection:
-
 #if defined(__ANDROID__)
         const bool synth = true; // Camera not working on Android (yet)
 #else
         const bool synth = false;
 #endif
+        
         VideoCapture capture(0, synth);
 
+        cv::Size size = capture.getSize(0);
+
+#if USE_OGLESGPGPU
+		// OGLES_GPGPU currently expects BGRA on OS X 
+        std::function<void(cv::Mat &)> conversion = [](cv::Mat &frame)
+        {
+            cv::cvtColor(frame, frame, cv::COLOR_BGR2BGRA);
+        };
+        capture.setConversion(conversion); // for ogles_gpgpu + opencv
+#endif
+
+        // Should be created in heap, ownership taken by parent widget
+        GLWidget *glWidget = new GLWidget; // Note: moved creation output of Window for signal connection:
+
+        glWidget->makeCurrent();
+        
+#if USE_OGLESGPGPU
+
+#endif
         MainWindow mainWindow(glWidget, capture);
-        mainWindow.resize(mainWindow.sizeHint());
-        int desktopArea = QApplication::desktop()->width() * QApplication::desktop()->height();
-        int widgetArea = mainWindow.width() * mainWindow.height();
-        if (((float)widgetArea / (float)desktopArea) < 0.75f)
-            mainWindow.show();
-        else
-            mainWindow.showMaximized();
+        mainWindow.setFixedSize(size.width, size.height);
+        mainWindow.show();
 
         // ((((((((((((((((( bEGIN )))))))))))))))))
 
@@ -117,7 +129,7 @@ int main(int argc, char **argv)
         QObject::connect(&capture, &VideoCapture::started, [](){ qDebug() << "capture started"; });
 
         glWidget->connect(&capture, SIGNAL(matReady(cv::Mat)), SLOT(setImage(cv::Mat)));
-
+        
         // ((((((((((((((((( eND )))))))))))))))))
         int rc = app.exec();
 

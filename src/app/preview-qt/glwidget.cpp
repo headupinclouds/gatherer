@@ -39,14 +39,15 @@
 ****************************************************************************/
 
 #include "glwidget.h"
-#include <QMouseEvent>
-#include <QOpenGLShaderProgram>
-#include <QCoreApplication>
-#include <math.h>
 
 #include "graphics/GLWarpShader.h"
 #include "graphics/GLTexture.h"
 #include "graphics/GLExtra.h"
+
+#include <QMouseEvent>
+#include <QOpenGLShaderProgram>
+#include <QCoreApplication>
+#include <math.h>
 
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
@@ -100,17 +101,36 @@ void GLWidget::initializeGL()
     // the signal will be followed by an invocation of initializeGL() where we
     // can recreate all resources.
     connect(context(), &QOpenGLContext::aboutToBeDestroyed, this, &GLWidget::cleanup);
-
+    
     initializeOpenGLFunctions();
 
+    //glActiveTexture(GL_TEXTURE1);
+    
     initShader();
+    
+#if USE_OGLESGPGPU
+    logger_->info() << "GLWidget::initializeGL(): " << std::this_thread::get_id();
+#else
     m_videoTexture = std::make_shared<gatherer::graphics::GLTexture>();
+#endif
 }
 
 void GLWidget::initShader()
 {
     if(m_windowWidth > 0 && m_windowHeight > 0)
-        m_program = std::make_shared<gatherer::graphics::WarpShader>( cv::Size(m_windowWidth, m_windowHeight), cv::Point2f(1, 1) );
+    {
+#if USE_OGLESGPGPU
+        if(!m_pipeline)
+        {
+            m_pipeline = std::make_shared<gatherer::graphics::OEGLGPGPUTest>(context(), 1.f);
+        }
+        //logger_->info() << "GLWidget::initShader(): " << std::this_thread::get_id();
+#else
+        m_program = std::make_shared<gatherer::graphics::WarpShader>(cv::Size(m_windowWidth, m_windowHeight), cv::Point2f(1, 1));
+#endif
+    }
+    
+    //glClearColor(float(rand()%100)/100.f, float(rand()%100)/100.f, float(rand()%100)/100.f, 1);
 }
 
 // TODO: need to pass real texture from our video event loop
@@ -119,6 +139,23 @@ void GLWidget::initShader()
 void GLWidget::paintGL()
 {
     std::unique_lock<std::mutex> lock(m_mutex);
+    
+#if USE_OGLESGPGPU
+    //std::cout << "OpenGL version: " << glGetString(GL_VERSION) << std::endl;
+    //std::cout << "GLSL version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
+    //std::cout << "Vendor: " << glGetString(GL_VENDOR) << std::endl;
+    //std::cout << "Renderer: " << glGetString(GL_RENDERER) << std::endl;
+    
+    if(!m_currentFrame.empty() && m_pipeline)
+    {
+        m_pipeline->captureOutput(m_currentFrame);
+        gatherer::graphics::glErrorTest();
+        //logger_->info() << "GLWidget::paintGL(): " << std::this_thread::get_id();
+        
+        //glClearColor(float(rand()%100)/100.f, float(rand()%100)/100.f, float(rand()%100)/100.f, 1);
+        //glClear(GL_COLOR_BUFFER_BIT);
+    }
+#else
     if(!m_currentFrame.empty() && m_program)
     {
         m_videoTexture->load(m_currentFrame);
@@ -127,6 +164,7 @@ void GLWidget::paintGL()
         
         gatherer::graphics::glErrorTest();
     }
+#endif
 }
 
 void GLWidget::resizeGL(int w, int h)
@@ -134,17 +172,21 @@ void GLWidget::resizeGL(int w, int h)
     // TODO:
     m_windowWidth = w;
     m_windowHeight = h;
+    
+    //logger_->info() << "GLWidget::resizeGL(): " << std::this_thread::get_id();
 
     initShader();
 }
 
 void GLWidget::setImage(const cv::Mat &image)
 {
-     std::unique_lock<std::mutex> lock(m_mutex);
-     m_currentFrame = image;
-
-     // Logging for now...
-     if(!(m_counter++ % 100))
-         logger_->info() << "GLWidget(" << m_counter << "): got image " << image.size();
-     update();
+    std::unique_lock<std::mutex> lock(m_mutex);
+    m_currentFrame = image;
+    
+    // Logging for now...
+    if(!(m_counter++ % 100))
+    {
+        logger_->info() << "GLWidget(" << m_counter << "): got image " << image.size() << " " << image.channels();
+    }
+    update();
 }

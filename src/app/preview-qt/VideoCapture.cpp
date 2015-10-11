@@ -33,8 +33,7 @@ bool VideoCapture::getFrame(cv::Mat &frame)
         if(m_conversion)
         {
             m_conversion(frame);
-            
-            cv::imshow("frame", frame), cv::waitKey(50);
+            //cv::imshow("frame", frame), cv::waitKey(50);
         }
         
         return status;

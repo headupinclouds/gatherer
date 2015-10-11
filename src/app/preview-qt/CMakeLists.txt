@@ -3,8 +3,16 @@
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
+
+# USE_OGLESGPGPU=1 for ogles_gpgpu shader samples, else gatherer/graphics
+# Note: ogles_gpgpu currently not working in this project, but same code is ok 
+# in ogles_gpgpu_test with glfw
+add_definitions(-DUSE_OGLESGPGPU=0)
+
 set(
     SOURCES
+	OGLESGPGPUTest.cpp	
+	OGLESGPGPUTest.h
     VideoCapture.cpp
     VideoCapture.h
     glwidget.cpp
@@ -46,6 +54,19 @@ target_link_libraries(preview-qt
   Qt5::Widgets
   ${OpenCV_LIBS}
   gatherer_graphics
+  ogles_gpgpu
+  ${GLFW_LIBRARIES}
+  glew
+  "-framework OpenGL"
+  "-framework IOKit"
+  "-framework Cocoa"
+  "-framework OpenGL"
+  "-framework QuartzCore"
+  "-framework CoreMedia"
+  "-framework AVFoundation"
+  "-framework AppKit"
+  "-framework CoreData"
+  "-framework Foundation"
 )
 
 set_property(TARGET preview-qt PROPERTY FOLDER "app/gui")

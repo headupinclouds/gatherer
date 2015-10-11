@@ -41,6 +41,8 @@
 #ifndef GLWIDGET_H
 #define GLWIDGET_H
 
+#include "graphics/Logger.h"
+
 // TODO: Simplify to bare minimum
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
@@ -60,14 +62,14 @@
 #include <QPaintEvent>
 #include <QDebug>
 
+#include <opencv2/core/core.hpp>
+
 #include <iostream>
 #include <thread>
 #include <mutex>
 
-#include "graphics/Logger.h"
-
-#include <opencv2/core/core.hpp>
-
+#if USE_OGLESGPGPU
+#  include "OGLESGPGPUTest.h"
 namespace gatherer
 {
     namespace graphics
@@ -76,6 +78,16 @@ namespace gatherer
         class GLTexture;
     };
 };
+#else
+namespace gatherer
+{
+    namespace graphics
+    {
+        class WarpShader;
+        class GLTexture;
+    };
+};
+#endif
 
 namespace cv { class VideoCapture; };
 
@@ -101,7 +113,6 @@ public:
 public slots:
     void cleanup();
 
-
 protected:
     void initializeGL() Q_DECL_OVERRIDE;
     void paintGL() Q_DECL_OVERRIDE;
@@ -111,8 +122,12 @@ private:
     
     void initShader();
 
+#if USE_OGLESGPGPU
+    std::shared_ptr< gatherer::graphics::OEGLGPGPUTest > m_pipeline;
+#else
     std::shared_ptr< gatherer::graphics::WarpShader > m_program;
     std::shared_ptr< gatherer::graphics::GLTexture > m_videoTexture;
+#endif
 
     GLuint m_texture = 0;
 
