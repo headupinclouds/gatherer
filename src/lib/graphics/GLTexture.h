@@ -70,7 +70,13 @@ public:
 #endif
         cv::Mat image_;
         if(image.channels() == 3)
+        {
             cv::cvtColor(image, image_, cv::COLOR_BGR2BGRA);
+        }
+        else
+        {
+            image_ = image;
+        }
 #else
         GLenum format = GL_BGR;
         cv::Mat image_ = image;
