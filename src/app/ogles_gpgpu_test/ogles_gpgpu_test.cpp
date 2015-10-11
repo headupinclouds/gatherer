@@ -17,7 +17,7 @@ int main(int argc, char **argv)
     cv::VideoCapture capture(0);
     cv::Size size(int(capture.get(cv::CAP_PROP_FRAME_WIDTH)), int(capture.get(cv::CAP_PROP_FRAME_HEIGHT)));
     
-    size = size / 4;
+    //size = size / 4;
     
     // Create the context
     gatherer::graphics::GLContextWindow window(size, "display");
