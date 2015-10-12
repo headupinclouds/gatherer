@@ -47,19 +47,8 @@ option(BUILD_QT "Build with Qt" ON)
 
 if(BUILD_QT)
 
-  # Disable until qtdeclarative is available: https://github.com/ruslo/hunter/issues/253
-  #hunter_add_package(Qt COMPONENTS qtbase qtdeclarative qtmultimedia)
-  #find_package(Qt5Widgets REQUIRED)
-  #find_package(Qt5Multimedia REQUIRED)
-  #find_package(Qt5Declarative REQUIRED)
-
-  # qtcore : not found
-  # qtgui : not found
-  # qtnetwork : not found
-  # qtopengl   : not found
-  # qtsql : not found
-
-  hunter_add_package(Qt COMPONENTS qtbase qtdeclarative qtmultimedia qtscript qtsvg qtxmlpatterns)
+  # Some background: https://github.com/ruslo/hunter/issues/253
+  hunter_add_package(Qt COMPONENTS qtbase qtdeclarative qtmultimedia qtscript qtsvg qtxmlpatterns qtquick1)
   find_package(Qt5Widgets REQUIRED)
   find_package(Qt5Multimedia REQUIRED)
   find_package(Qt5MultimediaWidgets REQUIRED)
@@ -68,9 +57,6 @@ if(BUILD_QT)
   find_package(Qt5Quick REQUIRED)
   find_package(Qt5QuickTest REQUIRED)
   find_package(Qt5QuickWidgets REQUIRED)
-  #find_package(Qt5MultimediaQuick_p REQUIRED)
-  #find_package(Qt5QuickItem REQUIRED)
-  #find_package(Qt5Declarative REQUIRED)
 
   message("Used Qt:")
   message("  ${QT_ROOT} (root from Hunter)")

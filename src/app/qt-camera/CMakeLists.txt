@@ -63,8 +63,9 @@ set(qt_qml_libs
   "-L${qt_lib_dir}/qml/QtQuick/Window.2/"
   windowplugin
   # Multimedia
-  "-L${qt_lib_dir}/qml/QtMultimedia"
+  "-L${qt_lib_dir}/lib"
   Qt5MultimediaQuick_p
+  "-L${qt_lib_dir}/qml/QtMultimedia"
   declarative_multimedia
   )
 
