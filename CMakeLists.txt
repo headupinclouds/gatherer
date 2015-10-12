@@ -68,6 +68,8 @@ if(BUILD_QT)
   find_package(Qt5Quick REQUIRED)
   find_package(Qt5QuickTest REQUIRED)
   find_package(Qt5QuickWidgets REQUIRED)
+  #find_package(Qt5MultimediaQuick_p REQUIRED)
+  #find_package(Qt5QuickItem REQUIRED)
   #find_package(Qt5Declarative REQUIRED)
 
   message("Used Qt:")

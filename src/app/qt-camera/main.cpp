@@ -43,7 +43,7 @@
 #include <QtWidgets>
 
 // Enable this for potential fix by @pretyman: https://github.com/ruslo/hunter/issues/253
-#define STATIC_BUILD 0
+#define STATIC_BUILD 1
 
 // Undefined symbols for architecture x86_64:
 //   "qt_static_plugin_QtQuick2Plugin()", referenced from:

@@ -44,6 +44,67 @@ else()
   install(TARGETS qt-camera DESTINATION bin)
 endif()
 
+
+# get_cmake_property(_variableNames VARIABLES)
+# foreach (_variableName ${_variableNames})
+#   message(STATUS "${_variableName}=${${_variableName}}")
+# endforeach()
+# message("qt_lib_dir: ${qt_lib_dir}")
+
+# i.e., ${HUNTER_ROOT}/_Base/xxxxxxx/07d21d3/18855aa/Install
+set(qt_lib_dir ${_qt5Core_install_prefix})
+
+# https://github.com/ruslo/hunter/issues/253#issuecomment-147019505
+set(qt_qml_libs
+  "-L${qt_lib_dir}/plugins/qmltooling"
+  qmldbg_tcp
+  "-L${qt_lib_dir}/qml/QtQuick.2/"
+  qtquick2plugin
+  "-L${qt_lib_dir}/qml/QtQuick/Window.2/"
+  windowplugin
+  # Multimedia
+  "-L${qt_lib_dir}/qml/QtMultimedia"
+  Qt5MultimediaQuick_p
+  declarative_multimedia
+  )
+
+
+# Missing: _SCDynamicStoreCopyProxies   (SystemConfiguration.framework
+
+set(qt_multimedia_libs
+  "-L${qt_lib_dir}/plugins/mediaservice/"
+  qavfcamera
+  qavfmediaplayer
+  qtmedia_audioengine
+  "-L${qt_lib_dir}/plugins/audio/"
+  qtaudio_coreaudio
+  "-framework AudioUnit"
+  "-framework AudioToolbox"
+  "-framework CoreAudio"
+  "-framework AVFoundation"
+  "-framework CoreMedia"
+  "-framework CoreVideo"
+  "-framework QuartzCore"
+  "-framework SystemConfiguration"
+  "-framework Foundation"
+  "-framework CoreGraphics"
+  "-framework CoreText"
+  "-framework Security"
+  )
+
+set(qt_qcocoa_libs
+  "-framework IOKit"
+  )
+
+#/Install/qml/QtQuick//LocalStorage/libqmllocalstorageplugin.a
+#/Install/qml/QtQuick//Particles.2/libparticlesplugin.a
+#/Install/qml/QtQuick//Window.2/libwindowplugin.a
+
+# set(qt_quick_layout_libs
+#   "-L${qt_lib_dir}/qml/QtQuick/Layouts"
+#   qquicklayoutsplugin
+#   )
+
 target_link_libraries(qt-camera
   Qt5::Widgets
   Qt5::Multimedia
@@ -51,6 +112,10 @@ target_link_libraries(qt-camera
   Qt5::OpenGL
   Qt5::Qml
   Qt5::Quick
+  ${qt_qml_libs}
+  ${qt_multimedia_libs}
+  ${qt_cocoa_libs}
+  ${qt_quick_layout_libs}
   #${OpenCV_LIBS}
   #gatherer_graphics
 )

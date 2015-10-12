@@ -12,7 +12,9 @@ if(BUILD_QT)
 
   # Try this stock camera sample copy-and-paste from: 
   # http://doc.qt.io/qt-5/qtmultimediawidgets-camera-example.html
-  add_subdirectory(qt-camera)
+
+  # Currently not linking, working through plugin issues and lack of Qt5MultimediaQuick_p
+  #add_subdirectory(qt-camera)
 
   add_subdirectory(preview-qt)
   if(NOT GATHERER_OPENGL_ES)
