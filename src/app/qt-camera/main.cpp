@@ -42,32 +42,8 @@
 
 #include <QtWidgets>
 
-// Enable this for potential fix by @pretyman: https://github.com/ruslo/hunter/issues/253
+// Enable this for fix by @pretyman: https://github.com/ruslo/hunter/issues/253
 #define STATIC_BUILD 1
-
-// Undefined symbols for architecture x86_64:
-//   "qt_static_plugin_QtQuick2Plugin()", referenced from:
-//       _main in main.cpp.o
-//       __GLOBAL__sub_I_main.cpp in main.cpp.o
-//   "qt_static_plugin_CoreAudioPlugin()", referenced from:
-//       __GLOBAL__sub_I_main.cpp in main.cpp.o
-//   "qt_static_plugin_AVFServicePlugin()", referenced from:
-//       __GLOBAL__sub_I_main.cpp in main.cpp.o
-//   "qt_static_plugin_QtQuick2WindowPlugin()", referenced from:
-//       _main in main.cpp.o
-//       __GLOBAL__sub_I_main.cpp in main.cpp.o
-//   "qt_static_plugin_QtQuickLayoutsPlugin()", referenced from:
-//       _main in main.cpp.o
-//       __GLOBAL__sub_I_main.cpp in main.cpp.o
-//   "qt_static_plugin_AudioCaptureServicePlugin()", referenced from:
-//       __GLOBAL__sub_I_main.cpp in main.cpp.o
-//   "qt_static_plugin_AVFMediaPlayerServicePlugin()", referenced from:
-//       __GLOBAL__sub_I_main.cpp in main.cpp.o
-//   "qt_static_plugin_QMultimediaDeclarativeModule()", referenced from:
-//       _main in main.cpp.o
-//       __GLOBAL__sub_I_main.cpp in main.cpp.o
-// ld: symbol(s) not found for architecture x86_64x
-
 
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
