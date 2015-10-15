@@ -40,43 +40,11 @@
 
 #include "camera.h"
 
-#include <QtWidgets>
-
-// Enable this for fix by @pretyman: https://github.com/ruslo/hunter/issues/253
-#define STATIC_BUILD 1
-
-#include <QQmlApplicationEngine>
-#include <QQmlContext>
-#include <QQmlEngine>
-#include <QAudio>
-#include <QQmlExtensionPlugin>
-#include <QtQml/qqml.h>
-#include <QtQml>
-#if STATIC_BUILD
-#include <QtPlugin>
-Q_IMPORT_PLUGIN(QCocoaIntegrationPlugin)
-Q_IMPORT_PLUGIN(QtQuick2Plugin)
-Q_IMPORT_PLUGIN(QtQuick2WindowPlugin)
-Q_IMPORT_PLUGIN(QMultimediaDeclarativeModule)
-Q_IMPORT_PLUGIN(AVFServicePlugin) // Camera
-Q_IMPORT_PLUGIN(AVFMediaPlayerServicePlugin)
-Q_IMPORT_PLUGIN(AudioCaptureServicePlugin) // Record
-Q_IMPORT_PLUGIN(CoreAudioPlugin)
-#endif // STATIC_BUILD
+#include <QApplication>
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-
-#if STATIC_BUILD
-	// registration because of https://bugreports.qt.io/browse/QTBUG-38661
-	qRegisterMetaType<QAudio::Error>();
-	qRegisterMetaType<QAudio::State>();
-	qRegisterMetaType<QAudio::Mode>();
-	qobject_cast<QQmlExtensionPlugin*>(qt_static_plugin_QtQuick2Plugin().instance())->registerTypes("QtQuick");
-	qobject_cast<QQmlExtensionPlugin*>(qt_static_plugin_QMultimediaDeclarativeModule().instance())->registerTypes("QtMultimedia");
-	qobject_cast<QQmlExtensionPlugin*>(qt_static_plugin_QtQuick2WindowPlugin().instance())->registerTypes("QtQuick.Window");
-#endif // STATIC_BUILD
 
     Camera camera;
     camera.show();
