@@ -55,19 +55,24 @@ target_link_libraries(preview-qt
   ${OpenCV_LIBS}
   gatherer_graphics
   ogles_gpgpu
-  ${GLFW_LIBRARIES}
-  glew
-  "-framework OpenGL"
-  "-framework IOKit"
-  "-framework Cocoa"
-  "-framework OpenGL"
-  "-framework QuartzCore"
-  "-framework CoreMedia"
-  "-framework AVFoundation"
-  "-framework AppKit"
-  "-framework CoreData"
-  "-framework Foundation"
 )
+
+if(APPLE AND NOT IOS)
+  target_link_libraries(preview-qt
+    ${GLFW_LIBRARIES}
+    glew
+    "-framework OpenGL"
+    "-framework IOKit"
+    "-framework Cocoa"
+    "-framework OpenGL"
+    "-framework QuartzCore"
+    "-framework CoreMedia"
+    "-framework AVFoundation"
+    "-framework AppKit"
+    "-framework CoreData"
+    "-framework Foundation"
+  )
+endif()
 
 set_property(TARGET preview-qt PROPERTY FOLDER "app/gui")
 
