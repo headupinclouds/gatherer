@@ -129,6 +129,8 @@ include_directories(src/3rdparty/ogles_gpgpu)
 include_directories(src/3rdparty/ogles_gpgpu/ogles_gpgpu)
 include_directories(src/3rdparty/ogles_gpgpu/ogles_gpgpu/common)
 
+enable_testing()
+
 ### Manage libs and source code in src folder
 add_subdirectory(src)
 
