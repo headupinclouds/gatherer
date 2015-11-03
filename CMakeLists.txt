@@ -48,7 +48,7 @@ option(BUILD_QT "Build with Qt" ON)
 if(BUILD_QT)
 
   # Some background: https://github.com/ruslo/hunter/issues/253
-  hunter_add_package(Qt COMPONENTS qtbase qtdeclarative qtmultimedia qtscript qtsvg qtxmlpatterns qtquick1)
+  hunter_add_package(Qt COMPONENTS qtmultimedia qtdeclarative)
   find_package(Qt5Widgets REQUIRED)
   find_package(Qt5Multimedia REQUIRED)
   find_package(Qt5MultimediaWidgets REQUIRED)
