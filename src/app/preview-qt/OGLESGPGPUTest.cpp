@@ -122,7 +122,11 @@ void OEGLGPGPUTest::captureOutput(const cv::Mat &image)
     
     // on each new frame, this will release the input buffers and textures, and prepare new ones
     // texture format must be GL_BGRA because this is one of the native camera formats (see initCam)
+#if __ANDROID__
+    gpgpuInputHandler->prepareInput(frameSize.width, frameSize.height, GL_RGBA, (void *)image.ptr());
+#else
     gpgpuInputHandler->prepareInput(frameSize.width, frameSize.height, GL_BGRA, (void *)image.ptr());
+#endif
     
 #if USE_INPUT_TEXTURE
     // set the input texture id - we do not copy any data, we use the camera frame directly as texture!
@@ -150,7 +154,11 @@ void OEGLGPGPUTest::prepareForFrameOfSize(const cv::Size &size)
     // prepare ogles_gpgpu for the incoming frame size
     // GL_NONE means that the input memory transfer object is NOT prepared
     // this will be done in captureOutput: on each new frame
+#if __ANDROID__
+    gpgpuMngr->prepare(size.width, size.height, true ? GL_RGBA : GL_NONE);
+#else
     gpgpuMngr->prepare(size.width, size.height, true ? GL_BGRA : GL_NONE);
+#endif
     gpgpuInputHandler = gpgpuMngr->getInputMemTransfer();
     
     // everything prepared
