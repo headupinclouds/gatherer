@@ -41,9 +41,13 @@
 #include "camera.h"
 
 #include <QApplication>
+#include <QtGlobal> // Q_OS_IOS
 
-int main(int argc, char *argv[])
-{
+#if defined(Q_OS_IOS)
+extern "C" int qtmn(int argc, char** argv) {
+#else
+  int main(int argc, char **argv) {
+#endif
     QApplication app(argc, argv);
 
     Camera camera;
