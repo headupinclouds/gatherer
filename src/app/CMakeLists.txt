@@ -15,6 +15,11 @@ if(BUILD_QT)
 
   # Currently not linking, working through plugin issues and lack of Qt5MultimediaQuick_p
 	add_subdirectory(qt-camera)
+  if(GATHERER_OPENGL_ES)
+    add_subdirectory(declarative-camera)
+  else()
+    # See issue #55
+  endif()
 
   add_subdirectory(preview-qt)
   if(NOT GATHERER_OPENGL_ES)
