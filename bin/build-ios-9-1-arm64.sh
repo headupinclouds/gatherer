@@ -4,19 +4,25 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 . ${DIR}/common.sh
 
 EXTRA_ARGS=""
-[ $# -ge 1 ] && EXTRA_ARGS="--clear" 
+if [ $# -ge 1 ]; then
+	EXTRA_ARGS="--clear"
+fi
 
-TOOLCHAIN=libcxx
+TOOLCHAIN=ios-9-1-arm64
 
 function build_all
 {
 	build.py --toolchain ${TOOLCHAIN} --verbose --fwd HUNTER_CONFIGURATION_TYPES=Release \
 			 ${GATHERER_BUILD_ARGS[*]} \
+			 CMAKE_XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET=8.0 \
 			 --config Release \
-			 --install \
 			 --jobs 8 \
+			 --open \
 			 --reconfig \
 			 ${EXTRA_ARGS}
 }
 
 (cd ${DIR}/.. && build_all)
+
+
+
