@@ -9,3 +9,7 @@ GATHERER_BUILD_ARGS=\
 	"BUILD_QT=${BUILD_QT}"
 )
 
+function rename_tab
+{
+	echo -ne "\033]0;$1:$2\007"
+}

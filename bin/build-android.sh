@@ -8,15 +8,20 @@ if [ $# -ge 1 ]; then
 	EXTRA_ARGS="--clear"
 fi
 
+# Fails:
 #TOOLCHAIN=android-ndk-r10e-api-16-armeabi-v7a-neon-clang-35-hid
-# broken
 
 # Tested by ruslo:
 #TOOLCHAIN=android-ndk-r10-api-19-armeabi-v7a
 
-TOOLCHAIN=android-ndk-r10e-api-19-armeabi-v7a-neon
+# Fails:
+#TOOLCHAIN=android-ndk-r10e-api-19-armeabi-v7a-neon
+
+TOOLCHAIN=android-ndk-r10e-api-21-arm64-v8a-clang-35
 
 export ANDROID_SDK_ROOT=${ANDROID_HOME}
+
+rename_tab gatherer $TOOLCHAIN
 
 function build_all
 {

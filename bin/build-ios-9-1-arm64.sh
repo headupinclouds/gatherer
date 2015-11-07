@@ -10,6 +10,8 @@ fi
 
 TOOLCHAIN=ios-9-1-arm64
 
+rename_tab gatherer $TOOLCHAIN
+
 function build_all
 {
 	build.py --toolchain ${TOOLCHAIN} --verbose --fwd HUNTER_CONFIGURATION_TYPES=Release \
