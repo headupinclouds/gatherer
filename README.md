@@ -14,7 +14,7 @@ We have adopted the [ogles_gpgpu](https://github.com/internaut/ogles_gpgpu) proj
 
 In this project, QT is being used for cross platform UI capabilities, as well as the initial camera input.  
 
-The goal is to keep most of this project portable, and decopuled from QT (and the associated LGPL restriction) as much as possible, so the camera interface may be replaced at a later point.  
+The goal is to keep most of this project portable, and decoupled from QT (and the associated LGPL restrictions) as much as possible, so the camera interface may be replaced at a later point.  While QT does introduce some significant build overhead, [Hunter](https://github.com/ruslo/hunter) package management should make the build transparent.
 
 Background: The [OpenCV](https://github.com/Itseez/opencv) `highgui` lib provides a nice `VideoCapture` class.  This comes very close to providing a cross platform camera interface, but the native Android camera interface (which relies on a somewhat undocumented and unsupported API) has been deprecated, and the camera does not run on any recent Android devices we tested, despite a fair amount of testing and tinkering.  With the exception of Android, OpenCV's `VideoCapture` would seem to cover most iOS and "desktop" systems.  Android is the only wrinkle, due to Java, but it seems direct Android camera access is at least possible through (Necessitas)[https://necessitas.kde.org] extensions, which may be another option.
 
@@ -23,3 +23,4 @@ While the main objective is simple and portable OpenGL (ES) GPGPU processing, Op
 * [Boost Compute](https://github.com/boostorg/compute)
 * [ArrayFire](https://github.com/arrayfire/arrayfire)
 
+Current development is performed on OS X, but all official ([Hunter](https://github.com/ruslo/hunter) platforms should theoretically be supported: Linux, Mac, Windows, iOS, Android, Raspberry Pi.  This project is still in its infancy, and may not be of much use to end users yet, apart from a collection of examples demonstrating core functionality of the above mentioned packages.  Currently QT QML camera samples are functioning on iOS and Android.  Some simple GPGPU video shader samples are also included.  
