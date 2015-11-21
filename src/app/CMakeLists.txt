@@ -14,7 +14,7 @@ if(BUILD_QT)
   # http://doc.qt.io/qt-5/qtmultimediawidgets-camera-example.html
 
   # Currently not linking, working through plugin issues and lack of Qt5MultimediaQuick_p
-	add_subdirectory(qt-camera)
+  add_subdirectory(qt-camera)
   if(GATHERER_OPENGL_ES)
     add_subdirectory(declarative-camera)
   else()

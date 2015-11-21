@@ -5,23 +5,19 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 EXTRA_ARGS=""
 if [ $# -ge 1 ]; then
-	EXTRA_ARGS="--clear"
+	EXTRA_ARGS="--clear --reconfig"
 fi
 
-# Fails:
-#TOOLCHAIN=android-ndk-r10e-api-16-armeabi-v7a-neon-clang-35-hid
-
-# Tested by ruslo:
-#TOOLCHAIN=android-ndk-r10-api-19-armeabi-v7a
-
-# Fails:
-#TOOLCHAIN=android-ndk-r10e-api-19-armeabi-v7a-neon
-
-TOOLCHAIN=android-ndk-r10e-api-21-arm64-v8a-clang-35
-
-export ANDROID_SDK_ROOT=${ANDROID_HOME}
+# Must be <= 19 for qt qml camera:
+TOOLCHAIN=${ANDROID_TOOLCHAIN}
 
 rename_tab gatherer $TOOLCHAIN
+
+[ -n ${ANDROID_SDK_ROOT} ] && unset ANDROID_SDK_ROOT
+[ -n ${ANDROID_SDK_ROOT} ] && unset ANDROID_HOME
+echo $ANDROID_SDK_ROOT
+
+printenv | grep -i android
 
 function build_all
 {
