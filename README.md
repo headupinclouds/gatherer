@@ -18,5 +18,8 @@ The goal is to keep most of this project portable, and decopuled from QT (and th
 
 Background: The [OpenCV](https://github.com/Itseez/opencv) `highgui` lib provides a nice `VideoCapture` class.  This comes very close to providing a cross platform camera interface, but the native Android camera interface (which relies on a somewhat undocumented and unsupported API) has been deprecated, and the camera does not run on any recent Android devices we tested, despite a fair amount of testing and tinkering.  With the exception of Android, OpenCV's `VideoCapture` would seem to cover most iOS and "desktop" systems.  Android is the only wrinkle, due to Java, but it seems direct Android camera access is at least possible through (Necessitas)[https://necessitas.kde.org] extensions, which may be another option.
 
-To be continued...
+While the main objective is simple and portable OpenGL (ES) GPGPU processing, OpenCL seems to be available on the majority of modern Android devices, so some OpenCL package support may also be included through one or more of:
+
+* [Boost Compute](https://github.com/boostorg/compute)
+* [ArrayFire](https://github.com/arrayfire/arrayfire)
 
