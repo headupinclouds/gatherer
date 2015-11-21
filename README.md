@@ -2,7 +2,7 @@
 
 Disclaimer: This is a work in progress made public to support collaboration during initial development.  This README will be updated when an initial release is available.
 
-Note: The travis builds are currently failing due to build timeouts (mostly due to QT), although the develop branch should typically build fine.  This will likely need to be resolved by an increase in the travis timeout or a future binary package feature in the [Hunter](https://github.com/ruslo/hunter) package manager, on which this project is based.
+Note: The travis builds are currently failing due to build timeouts (mostly due to QT), although the develop branch should typically build fine.  This will likely need to be resolved by an increase in the travis timeout or a future binary package feature in the [Hunter](https://github.com/ruslo/hunter) package manager, on which this project is based.  It is worth scanning that project's README for some background on the link above.
 
 [![Build Status](https://travis-ci.org/headupinclouds/gatherer.svg?branch=develop)](https://travis-ci.org/headupinclouds/gatherer) : develop
 
