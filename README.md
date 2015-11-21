@@ -24,4 +24,4 @@ While the main objective is simple and portable OpenGL (ES) GPGPU processing, Op
 
 Current development is performed primarily on OS X, but all official [Hunter](https://github.com/ruslo/hunter) platforms should theoretically be supported: Linux, Mac, Windows, iOS, Android, Raspberry Pi.  This project is still in its infancy, and may not be of much use to end users yet, apart from a collection of examples demonstrating core functionality of the above mentioned packages.  Currently QT QML camera samples are functioning on iOS and Android.  Some simple GPGPU video shader samples are also included. 
 
-A number of these issues is discussed in more detail in the issues section.
+A number of these issues are discussed in more detail in the issues section.
