@@ -118,6 +118,7 @@ uint VideoFilterRunnable::newTexture() {
       GL_TEXTURE_2D, 0, GL_RGBA, m_size.width(), m_size.height(), 0, GL_RGBA,
       GL_UNSIGNED_BYTE, 0
   );
+  assert(texture != 0);
   return texture;
 }
 
@@ -146,11 +147,20 @@ bool VideoFilterRunnable::isFrameFormatYUV(const QVideoFrame& frame) {
 
 // Create a texture from the image data.
 GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
-  QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
+  QOpenGLContext* openglContext = QOpenGLContext::currentContext();
+  if (!openglContext) {
+    qWarning("Can't get context!");
+    return 0;
+  }
+  assert(openglContext->isValid());
+
+  QOpenGLFunctions *f = openglContext->functions();
+  assert(f != 0);
 
   // Already an OpenGL texture.
   if (input->handleType() == QAbstractVideoBuffer::GLTextureHandle) {
     GLuint texture = input->handle().toUInt();
+    assert(texture != 0);
     f->glBindTexture(GL_TEXTURE_2D, texture);
     m_lastInputTexture = texture;
     return texture;
