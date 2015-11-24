@@ -25,4 +25,6 @@ if(BUILD_QT)
   if(NOT GATHERER_OPENGL_ES)
     add_subdirectory(opencv-qt-video)
   endif()
+
+  add_subdirectory(qmlvideofilter)
 endif()
