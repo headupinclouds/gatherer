@@ -92,3 +92,5 @@ else()
   target_link_libraries(qmlvideofilter ${Qt5Gui_PLUGINS})
   target_link_libraries(qmlvideofilter ${Qt5Multimedia_PLUGINS})
 endif()
+
+target_link_libraries(qmlvideofilter gatherer_graphics)

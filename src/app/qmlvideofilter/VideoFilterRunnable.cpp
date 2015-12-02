@@ -36,6 +36,8 @@
 
 #include <cassert> // assert
 
+#include <graphics/GLExtra.h> // GATHERER_OPENGL_DEBUG
+
 #include "VideoFilter.hpp"
 #include "TextureBuffer.hpp"
 
@@ -118,6 +120,7 @@ uint VideoFilterRunnable::newTexture() {
       GL_TEXTURE_2D, 0, GL_RGBA, m_size.width(), m_size.height(), 0, GL_RGBA,
       GL_UNSIGNED_BYTE, 0
   );
+  GATHERER_OPENGL_DEBUG;
   assert(texture != 0);
   return texture;
 }
@@ -171,6 +174,7 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
   // Upload.
   if (m_tempTexture) {
     f->glBindTexture(GL_TEXTURE_2D, m_tempTexture);
+    GATHERER_OPENGL_DEBUG;
   }
   else {
     m_tempTexture = newTexture();
@@ -200,6 +204,7 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
       GL_UNSIGNED_BYTE, // type
       input->bits() // pixels
   );
+  GATHERER_OPENGL_DEBUG;
 
   input->unmap();
   return m_tempTexture;
