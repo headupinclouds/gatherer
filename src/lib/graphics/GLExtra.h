@@ -13,6 +13,27 @@
 #include <iostream>
 #include <opencv2/core/core.hpp>
 
+#if defined(GATHERER_ENABLE_OPENGL_DEBUG)
+# define GATHERER_OPENGL_DEBUG \
+      do { \
+        GLenum er = glGetError(); \
+        const char* errorMessage = gatherer::graphics::glErrorToString(er); \
+        if (errorMessage != nullptr) { \
+          std::ostringstream msg; \
+          msg << errorMessage; \
+          msg << " ("; \
+          msg << "code:" << er; \
+          msg << " file:" << __FILE__; \
+          msg << " line:" << __LINE__; \
+          msg << ")"; \
+          throw std::runtime_error(msg.str()); \
+        } \
+      } \
+      while (false);
+#else
+# define GATHERER_OPENGL_DEBUG
+#endif
+
 _GATHERER_GRAPHICS_BEGIN
 
 void glMakeIdentityf(GLfloat m[16]);
@@ -23,6 +44,12 @@ cv::Mat glOrtho(GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloa
 cv::Mat glFrustum(GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat near, GLfloat far);
 void glErrorTest();
 void glCheckError();
+
+/*
+ * @brief Convert integer error value to string message
+ * @return nullptr - no error
+ */
+const char* glErrorToString(GLenum error);
 
 // Source: dhirvonen@elucideye.com
 // drishti/lib/graphics/graphics/MosaicRenderGL.cpp: R3x3To4x4

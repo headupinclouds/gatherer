@@ -25,6 +25,75 @@ void glCheckError()
     glErrorTest();
 }
 
+const char* glErrorToString(GLenum error) {
+#if defined(GATHERER_OPENGL_ES)
+  // OpenGL ES: https://www.khronos.org/opengles/sdk/docs/man/
+  switch(error) {
+    case GL_NO_ERROR:
+      return nullptr;
+    case GL_INVALID_ENUM:
+      return "GL_INVALID_ENUM: An unacceptable value is specified for an"
+          " enumerated argument. The offending command is ignored"
+          " and has no other side effect than to set the error flag.";
+    case GL_INVALID_VALUE:
+      return "GL_INVALID_VALUE: A numeric argument is out of range. The"
+          " offending command is ignored and has no other side effect than"
+          " to set the error flag.";
+    case GL_INVALID_OPERATION:
+      return "GL_INVALID_OPERATION: The specified operation is not allowed in"
+          " the current state. The offending command is ignored"
+          " and has no other side effect than to set the error flag.";
+    case GL_INVALID_FRAMEBUFFER_OPERATION:
+      return "GL_INVALID_FRAMEBUFFER_OPERATION: The command is trying to render"
+          " to or read from the framebuffer while the currently bound"
+          " framebuffer is not framebuffer complete (i.e. the return value"
+          " from glCheckFramebufferStatus is not GL_FRAMEBUFFER_COMPLETE)."
+          " The offending command is ignored and has no other side effect"
+          " than to set the error flag.";
+    case GL_OUT_OF_MEMORY:
+      return "GL_OUT_OF_MEMORY: There is not enough memory left to execute the"
+          " command. The state of the GL is undefined, except for the state"
+          " of the error flags, after this error is recorded.";
+    default:
+      return "OpenGL ES uknown error";
+  }
+#else
+  // OpenGL: https://www.opengl.org/sdk/docs/man/
+  switch (error) {
+    case GL_NO_ERROR:
+      return nullptr;
+    case GL_INVALID_ENUM:
+      return "GL_INVALID_ENUM: An unacceptable value is specified for an"
+          " enumerated argument. The offending command is ignored"
+          " and has no other side effect than to set the error flag.";
+    case GL_INVALID_VALUE:
+      return "GL_INVALID_VALUE: A numeric argument is out of range. The"
+          " offending command is ignored and has no other side effect than"
+          " to set the error flag.";
+    case GL_INVALID_OPERATION:
+      return "GL_INVALID_OPERATION: The specified operation is not allowed in"
+          " the current state. The offending command is ignored"
+          " and has no other side effect than to set the error flag.";
+    case GL_INVALID_FRAMEBUFFER_OPERATION:
+      return "GL_INVALID_FRAMEBUFFER_OPERATION: The framebuffer object is not"
+          " complete. The offending command is ignored and has no other side"
+          " effect than to set the error flag.";
+    case GL_OUT_OF_MEMORY:
+      return "GL_OUT_OF_MEMORY: There is not enough memory left to execute the"
+          " command. The state of the GL is undefined, except for the state"
+          " of the error flags, after this error is recorded.";
+    case GL_STACK_UNDERFLOW:
+      return "GL_STACK_UNDERFLOW: An attempt has been made to perform an"
+          " operation that would cause an internal stack to underflow.";
+    case GL_STACK_OVERFLOW:
+      return "GL_STACK_OVERFLOW: An attempt has been made to perform an"
+          " operation that would cause an internal stack to overflow.";
+    default:
+      return "OpenGL uknown error";
+  }
+#endif
+}
+
 // Set these up with build in transpose for opengl column-major (I'm hard wired to think in row-major)
 static const int m00 = 0;
 static const int m01 = 4;
