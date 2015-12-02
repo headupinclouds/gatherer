@@ -17,6 +17,11 @@ if(GATHERER_OPENGL_ES)
   target_compile_definitions(gatherer_graphics PUBLIC GATHERER_OPENGL_ES)
 endif()
 
+target_compile_definitions(
+    gatherer_graphics
+    PUBLIC "$<$<CONFIG:Debug>:GATHERER_ENABLE_OPENGL_DEBUG>"
+)
+
 set(GATHERER_LIBS
   gatherer_graphics
   ## TODO
