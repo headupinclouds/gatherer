@@ -19,6 +19,8 @@ set(
     InfoFilterResult.hpp
     InfoFilterRunnable.hpp
     InfoFilterRunnable.cpp
+	OGLESGPGPUTest.h
+	OGLESGPGPUTest.cpp
     qmlvideofilter.qrc
     main.qml
 )
@@ -98,4 +100,4 @@ else()
   target_link_libraries(qmlvideofilter ${Qt5Multimedia_PLUGINS})
 endif()
 
-target_link_libraries(qmlvideofilter gatherer_graphics libyuv::yuv)
+target_link_libraries(qmlvideofilter gatherer_graphics ogles_gpgpu libyuv::yuv)
