@@ -229,7 +229,8 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
     
 #if USE_OGLES_GPGPU
   m_pipeline->captureOutput(frame);
-  return m_pipeline->getTexture(); // TODO: Something like this...
+  // TODO: Here we need to prevent the render to display and return a handle to the final render to texture.
+  return m_pipeline->getTexture();
 #else
   // glTexImage2D only once and use TexSubImage later on. This avoids the need
   // to recreate the CL image object on every frame.
