@@ -130,11 +130,7 @@ uint VideoFilterRunnable::newTexture() {
       m_size.width(),
       m_size.height(),
       0, // border
-#if defined(Q_OS_IOS)
-      GL_BGRA, // format
-#else
-      GL_RGBA, // format
-#endif
+      TextureBuffer::openglTextureFormat(), // format
       GL_UNSIGNED_BYTE, // type
       0 // data
   );
@@ -180,7 +176,7 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
 
   // Already an OpenGL texture.
   if (input->handleType() == QAbstractVideoBuffer::GLTextureHandle) {
-    assert(input->pixelFormat() == TextureBuffer::expectedFormat());
+    assert(input->pixelFormat() == TextureBuffer::qtTextureFormat());
     GLuint texture = input->handle().toUInt();
     assert(texture != 0);
     f->glBindTexture(GL_TEXTURE_2D, texture);
@@ -234,11 +230,7 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
      0, // yoffset
      m_size.width(),
      m_size.height(),
-#if defined(Q_OS_IOS)
-     GL_BGRA, // format
-#else
-     GL_RGBA, // format
-#endif
+     TextureBuffer::openglTextureFormat(), // format
      GL_UNSIGNED_BYTE, // type
      frame.ptr<uint8_t>()); // pixels
 
