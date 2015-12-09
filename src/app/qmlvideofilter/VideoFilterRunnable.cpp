@@ -216,7 +216,7 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
     // glTexImage2D only once and use TexSubImage later on. This avoids the need
     // to recreate the CL image object on every frame.
     
-    f->glTexSubImage2D(
+    f->glTexImage2D(
        GL_TEXTURE_2D, // target
        0, // level
        GL_RGBA, // internalformat
