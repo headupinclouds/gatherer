@@ -42,6 +42,10 @@ class TextureBuffer: public QAbstractVideoBuffer {
   TextureBuffer(uint id): QAbstractVideoBuffer(GLTextureHandle), id_(id) {
   }
 
+  static QVideoFrame::PixelFormat expectedFormat() {
+    return QVideoFrame::Format_BGRA32;
+  }
+
   MapMode mapMode() const {
     return NotMapped;
   }
@@ -66,10 +70,9 @@ class TextureBuffer: public QAbstractVideoBuffer {
   */
   static QVideoFrame createVideoFrame(
       uint textureId,
-      const QSize& size,
-      QVideoFrame::PixelFormat format
+      const QSize& size
   ) {
-    return QVideoFrame(new TextureBuffer(textureId), size, format);
+    return QVideoFrame(new TextureBuffer(textureId), size, expectedFormat());
   }
 
  private:

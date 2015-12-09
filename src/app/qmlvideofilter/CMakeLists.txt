@@ -29,7 +29,12 @@ if(ANDROID)
   target_link_libraries(qmlvideofilter Qt5::Quick Qt5::Multimedia)
   target_link_libraries(qmlvideofilter EGL GLESv2)
 
-  set_target_properties(qmlvideofilter PROPERTIES VERSION 1.0)
+  set_target_properties(
+      qmlvideofilter
+      PROPERTIES
+      VERSION 1.0
+      DEBUG_POSTFIX "" # Fix Android load
+  )
 
   hunter_add_package(QtAndroidCMake)
   list(APPEND CMAKE_MODULE_PATH "${QTANDROIDCMAKE_ROOT}")
