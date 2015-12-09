@@ -24,7 +24,6 @@ function build_all
 	build.py --toolchain ${TOOLCHAIN} --verbose --fwd ANDROID=TRUE \
 			 ${GATHERER_BUILD_ARGS[*]} \
 			 --config Release \
-			 --install \
 			 --strip \
 			 --jobs 8  \
 			 ${EXTRA_ARGS}
