@@ -210,10 +210,6 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
   cv::Point c(cv::theRNG().uniform(0, frame.cols), cv::theRNG().uniform(0,frame.rows));
   cv::circle(frame, c, cv::theRNG().uniform(10, 100), {0,255,0}, 2, 8);
 
-//    std::stringstream ss;
-//    ss << getenv("HOME") << "/Documents/test_frame.png";
-//    cv::imwrite(ss.str(), frame);
-
   // glTexImage2D only once and use TexSubImage later on. This avoids the need
   // to recreate the CL image object on every frame.
 
