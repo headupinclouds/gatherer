@@ -43,6 +43,7 @@
 
 #include "libyuv.h"
 
+#include <opencv2/imgproc.hpp>
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 
@@ -96,9 +97,8 @@ QVideoFrame VideoFilterRunnable::run(
 
   // Accessing dynamic properties on the filter element is simple:
   qreal factor = m_filter->factor();
-  return TextureBuffer::createVideoFrame(
-      m_outTexture, m_size, input->pixelFormat()
-  );
+   return TextureBuffer::createVideoFrame(m_outTexture, m_size, QVideoFrame::Format_BGRA32);
+
 }
 
 void VideoFilterRunnable::releaseTextures() {
@@ -191,8 +191,6 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
         return 0;
     }
     
-    std::cout << "format: " << int(input->pixelFormat()) << std::endl;
-    
     // Convert NV12 TO BGRA format:
     // TODO: Handle other formats
     cv::Mat frame;
@@ -209,6 +207,9 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
         default: CV_Assert(false);
     }
 
+    cv::Point c(cv::theRNG().uniform(0, frame.cols), cv::theRNG().uniform(0,frame.rows));
+    cv::circle(frame, c, cv::theRNG().uniform(10, 100), {0,255,0}, 2, 8);
+    
 //    std::stringstream ss;
 //    ss << getenv("HOME") << "/Documents/test_frame.png";
 //    cv::imwrite(ss.str(), frame);
