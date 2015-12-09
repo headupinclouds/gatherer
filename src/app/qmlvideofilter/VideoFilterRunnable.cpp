@@ -121,9 +121,22 @@ uint VideoFilterRunnable::newTexture() {
   f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+  // http://stackoverflow.com/a/9617429/2288008
   f->glTexImage2D(
-      GL_TEXTURE_2D, 0, GL_RGBA, m_size.width(), m_size.height(), 0, GL_RGBA,
-      GL_UNSIGNED_BYTE, 0
+      GL_TEXTURE_2D, // target
+      0, // level
+      GL_RGBA, // internalformat
+      m_size.width(),
+      m_size.height(),
+      0, // border
+#if defined(Q_OS_IOS)
+      GL_BGRA, // format
+#else
+      GL_RGBA, // format
+#endif
+      GL_UNSIGNED_BYTE, // type
+      0 // data
   );
   GATHERER_OPENGL_DEBUG;
   assert(texture != 0);
@@ -213,20 +226,20 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
   // glTexImage2D only once and use TexSubImage later on. This avoids the need
   // to recreate the CL image object on every frame.
 
-  f->glTexImage2D(
+  f->glTexSubImage2D(
      GL_TEXTURE_2D, // target
      0, // level
-     GL_RGBA, // internalformat
+     0, // xoffset
+     0, // yoffset
      m_size.width(),
      m_size.height(),
-     0, // border
 #if defined(Q_OS_IOS)
      GL_BGRA, // format
 #else
      GL_RGBA, // format
 #endif
      GL_UNSIGNED_BYTE, // type
-     frame.ptr<uint8_t>());
+     frame.ptr<uint8_t>()); // pixels
 
   GATHERER_OPENGL_DEBUG;
 
