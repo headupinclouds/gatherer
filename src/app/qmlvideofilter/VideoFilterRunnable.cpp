@@ -97,7 +97,7 @@ QVideoFrame VideoFilterRunnable::run(
 
   // Accessing dynamic properties on the filter element is simple:
   qreal factor = m_filter->factor();
-   return TextureBuffer::createVideoFrame(m_outTexture, m_size, QVideoFrame::Format_BGRA32);
+   return TextureBuffer::createVideoFrame(m_outTexture, m_size);
 
 }
 
@@ -180,6 +180,7 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
 
   // Already an OpenGL texture.
   if (input->handleType() == QAbstractVideoBuffer::GLTextureHandle) {
+    assert(input->pixelFormat() == TextureBuffer::expectedFormat());
     GLuint texture = input->handle().toUInt();
     assert(texture != 0);
     f->glBindTexture(GL_TEXTURE_2D, texture);
