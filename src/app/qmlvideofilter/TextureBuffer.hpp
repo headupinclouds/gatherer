@@ -42,8 +42,20 @@ class TextureBuffer: public QAbstractVideoBuffer {
   TextureBuffer(uint id): QAbstractVideoBuffer(GLTextureHandle), id_(id) {
   }
 
-  static QVideoFrame::PixelFormat expectedFormat() {
+  static QVideoFrame::PixelFormat qtTextureFormat() {
+#if defined(Q_OS_IOS)
     return QVideoFrame::Format_BGRA32;
+#else
+    return QVideoFrame::Format_BGR32;
+#endif
+  }
+
+  static GLenum openglTextureFormat() {
+#if defined(Q_OS_IOS)
+    return GL_BGRA;
+#else
+    return GL_RGBA;
+#endif
   }
 
   MapMode mapMode() const {
@@ -72,7 +84,7 @@ class TextureBuffer: public QAbstractVideoBuffer {
       uint textureId,
       const QSize& size
   ) {
-    return QVideoFrame(new TextureBuffer(textureId), size, expectedFormat());
+    return QVideoFrame(new TextureBuffer(textureId), size, qtTextureFormat());
   }
 
  private:
