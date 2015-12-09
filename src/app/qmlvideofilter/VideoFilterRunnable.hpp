@@ -38,7 +38,14 @@
 #include <QVideoFilterRunnable>
 #include <QOpenGLFunctions> // introduce GLuint in cross-platform fashion
 
+
+#define USE_OGLES_GPGPU 0
+
 class VideoFilter;
+
+#if USE_OGLES_GPGPU
+namespace gatherer { namespace graphics { class OEGLGPGPUTest; } }
+#endif
 
 class VideoFilterRunnable: public QVideoFilterRunnable {
  public:
@@ -65,6 +72,10 @@ class VideoFilterRunnable: public QVideoFilterRunnable {
   uint m_tempTexture;
   uint m_outTexture;
   uint m_lastInputTexture;
+  
+#if USE_OGLES_GPGPU
+  std::shared_ptr<gatherer::graphics::OEGLGPGPUTest> m_pipeline;
+#endif
 };
 
 #endif // VIDEO_FILTER_RUNNABLE_HPP_

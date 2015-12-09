@@ -43,6 +43,10 @@
 
 #include "libyuv.h"
 
+#if USE_OGLES_GPGPU
+#  include "OGLESGPGPUTest.h"
+#endif
+
 #include <opencv2/imgproc.hpp>
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
@@ -56,6 +60,10 @@ VideoFilterRunnable::VideoFilterRunnable(VideoFilter *filter) :
 
   const char *vendor = (const char *) f->glGetString(GL_VENDOR);
   qDebug("GL_VENDOR: %s", vendor);
+        
+#if USE_OGLES_GPGPU
+  m_pipeline = std::make_shared<gatherer::graphics::OEGLGPGPUTest>(QOpenGLContext::currentContext(), 1.0); // TODO: resolution
+#endif
 }
 
 VideoFilterRunnable::~VideoFilterRunnable() {
@@ -177,7 +185,7 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
   // Already an OpenGL texture.
   if (input->handleType() == QAbstractVideoBuffer::GLTextureHandle) {
     assert(input->pixelFormat() == TextureBuffer::qtTextureFormat());
-    GLuint texture = input->handle().toUInt();
+    GLuint texture = input->handle().toUInt(); 
     assert(texture != 0);
     f->glBindTexture(GL_TEXTURE_2D, texture);
     m_lastInputTexture = texture;
@@ -217,9 +225,14 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
     default: CV_Assert(false);
   }
 
+  input->unmap();
+    
+#if USE_OGLES_GPGPU
+  m_pipeline->captureOutput(frame);
+  return m_pipeline->getTexture(); // TODO: Something like this...
+#else
   // glTexImage2D only once and use TexSubImage later on. This avoids the need
   // to recreate the CL image object on every frame.
-
   f->glTexSubImage2D(
      GL_TEXTURE_2D, // target
      0, // level
@@ -232,7 +245,6 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
      frame.ptr<uint8_t>()); // pixels
 
   GATHERER_OPENGL_DEBUG;
-
-  input->unmap();
   return m_tempTexture;
+#endif
 }

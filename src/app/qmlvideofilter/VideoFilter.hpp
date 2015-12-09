@@ -37,6 +37,7 @@
 
 #include <QAbstractVideoFilter>
 
+
 class VideoFilter: public QAbstractVideoFilter {
   Q_OBJECT
   Q_PROPERTY(qreal factor READ factor WRITE setFactor NOTIFY factorChanged)
