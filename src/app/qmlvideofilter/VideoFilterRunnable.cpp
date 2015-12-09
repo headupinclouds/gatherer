@@ -41,6 +41,11 @@
 #include "VideoFilter.hpp"
 #include "TextureBuffer.hpp"
 
+#include "libyuv.h"
+
+#include <opencv2/core.hpp>
+#include <opencv2/highgui.hpp>
+
 VideoFilterRunnable::VideoFilterRunnable(VideoFilter *filter) :
     m_filter(filter),
     m_tempTexture(0),
@@ -174,36 +179,58 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
   // Upload.
   if (m_tempTexture) {
     f->glBindTexture(GL_TEXTURE_2D, m_tempTexture);
-    GATHERER_OPENGL_DEBUG;
+      GATHERER_OPENGL_DEBUG;
   }
   else {
-    m_tempTexture = newTexture();
+      m_tempTexture = newTexture();
   }
+    
+    bool ok = input->map(QAbstractVideoBuffer::ReadOnly);
+    if (!ok) {
+        qWarning("Can't map!");
+        return 0;
+    }
+    
+    std::cout << "format: " << int(input->pixelFormat()) << std::endl;
+    
+    // Convert NV12 TO BGRA format:
+    // TODO: Handle other formats
+    cv::Mat frame;
+    switch(input->pixelFormat())
+    {
+        case QVideoFrame::Format_NV21:
+            frame.create(input->size().height(), input->size().width(), CV_8UC4);
+            libyuv::NV21ToARGB(input->bits(), input->bytesPerLine(), input->bits(1), input->bytesPerLine(1), frame.ptr<uint8_t>(), frame.step1(), frame.cols, frame.rows);
+            break;
+        case QVideoFrame::Format_NV12:
+            frame.create(input->size().height(), input->size().width(), CV_8UC4);
+            libyuv::NV12ToARGB(input->bits(), input->bytesPerLine(), input->bits(1), input->bytesPerLine(1), frame.ptr<uint8_t>(), frame.step1(), frame.cols, frame.rows);
+            break;
+        default: CV_Assert(false);
+    }
 
-  bool ok = input->map(QAbstractVideoBuffer::ReadOnly);
-  if (!ok) {
-    qWarning("Can't map!");
-    return 0;
-  }
-
-  // glTexImage2D only once and use TexSubImage later on. This avoids the need
-  // to recreate the CL image object on every frame.
-
-  f->glTexSubImage2D(
-      GL_TEXTURE_2D, // target
-      0, // level
-      GL_RGBA, // internalformat
-      m_size.width(),
-      m_size.height(),
-      0, // border
+    std::stringstream ss;
+    ss << getenv("HOME") << "/Documents/test_frame.png";
+    cv::imwrite(ss.str(), frame);
+    
+    // glTexImage2D only once and use TexSubImage later on. This avoids the need
+    // to recreate the CL image object on every frame.
+    
+    f->glTexSubImage2D(
+       GL_TEXTURE_2D, // target
+       0, // level
+       GL_RGBA, // internalformat
+       m_size.width(),
+       m_size.height(),
+       0, // border
 #if defined(Q_OS_IOS)
-      GL_BGRA, // format
+       GL_BGRA, // format
 #else
-      GL_RGBA, // format
+       GL_RGBA, // format
 #endif
-      GL_UNSIGNED_BYTE, // type
-      input->bits() // pixels
-  );
+       GL_UNSIGNED_BYTE, // type
+       frame.ptr<uint8_t>());
+
   GATHERER_OPENGL_DEBUG;
 
   input->unmap();

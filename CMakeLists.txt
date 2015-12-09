@@ -85,6 +85,13 @@ hunter_add_package(cereal)
 find_package(cereal CONFIG REQUIRED)
 
 ## #################################################################
+## Dependencies - libyuv
+## #################################################################
+
+hunter_add_package(libyuv)
+find_package(libyuv CONFIG REQUIRED)
+
+## #################################################################
 ## Dependencies - OpenGL stuff
 ## #################################################################
 

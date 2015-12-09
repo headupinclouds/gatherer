@@ -93,4 +93,4 @@ else()
   target_link_libraries(qmlvideofilter ${Qt5Multimedia_PLUGINS})
 endif()
 
-target_link_libraries(qmlvideofilter gatherer_graphics)
+target_link_libraries(qmlvideofilter gatherer_graphics libyuv::yuv)

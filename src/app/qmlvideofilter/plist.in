@@ -51,6 +51,8 @@
   <!--
   Other
   -->
+  <key>UIFileSharingEnabled</key>
+  <string>YES</string>
   <key>CFBundleDevelopmentRegion</key>
   <string>en</string>
   <key>CFBundleInfoDictionaryVersion</key>
