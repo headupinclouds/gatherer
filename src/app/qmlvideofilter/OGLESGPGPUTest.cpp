@@ -146,7 +146,7 @@ void OEGLGPGPUTest::prepareForFrameOfSize(const cv::Size &size)
 {
     float frameAspectRatio = size.width / size.height;
     
-    fprintf(stderr, "camera frames are of size %dx%d (aspect %f)", (int)size.width, (int)size.height, frameAspectRatio);
+    fprintf(stderr, "camera frames are of size %dx%d (aspect %f)\n", (int)size.width, (int)size.height, frameAspectRatio);
  
     // update the display renderer's output size
     outputDispRenderer->setOutputSize(size.width, size.height);
