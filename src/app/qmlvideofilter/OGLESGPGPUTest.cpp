@@ -51,7 +51,7 @@ void OEGLGPGPUTest::initOGLESGPGPU()
     initGPUPipeline(4);
     
     // initialize the pipeline (TODO)
-    gpgpuMngr->init(glContext); // <= diff context
+    gpgpuMngr->init(ogles_gpgpu::Core::getCurrentEAGLContext());
     
 }
 
