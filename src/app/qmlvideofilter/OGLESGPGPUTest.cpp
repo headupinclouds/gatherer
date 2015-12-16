@@ -4,7 +4,7 @@
 #include <opencv2/highgui.hpp>
 
 #define INITIAL_PROC_TYPE 1
-#define USE_INPUT_TEXTURE 0
+#define USE_INPUT_TEXTURE 1
 
 _GATHERER_GRAPHICS_BEGIN
 
