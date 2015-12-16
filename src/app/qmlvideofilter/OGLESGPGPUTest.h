@@ -20,7 +20,7 @@ public:
     void initOGLESGPGPU() ;
     void initGPUPipeline(int type);
     void prepareForFrameOfSize(const cv::Size &size);
-    void captureOutput(const cv::Mat &image) ;
+    void captureOutput(cv::Size, void* pixelBuffer) ;
     void initCam();
     void setDisplaySize(int width, int height);
  

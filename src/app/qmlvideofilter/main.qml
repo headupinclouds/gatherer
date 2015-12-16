@@ -42,6 +42,7 @@ Item {
 
   Camera {
     id: camera
+    objectName: "CameraObject"
   }
 
   VideoOutput {

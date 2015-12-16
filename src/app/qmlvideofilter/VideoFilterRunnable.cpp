@@ -157,6 +157,9 @@ bool VideoFilterRunnable::isFrameValid(const QVideoFrame& frame) {
   if (frame.handleType() == QAbstractVideoBuffer::GLTextureHandle) {
     return true;
   }
+  if (frame.handleType() == QAbstractVideoBuffer::CVPixelBufferHandle) {
+    return true;
+  }
   return false;
 }
 
@@ -192,6 +195,16 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
     return texture;
   }
 
+#if USE_OGLES_GPGPU
+  if (input->handleType() == QAbstractVideoBuffer::CVPixelBufferHandle) {
+    void* pixelBuffer = input->handle().value<void*>();
+    cv::Size frameSize(input->size().width(), input->size().height());
+    m_pipeline->captureOutput(frameSize, pixelBuffer);
+    // TODO: Here we need to prevent the render to display and return a handle to the final render to texture.
+    return m_pipeline->getTexture();
+  }
+#endif
+
   assert(input->handleType() == QAbstractVideoBuffer::NoHandle);
 
   // Upload.
@@ -226,12 +239,7 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
   }
 
   input->unmap();
-    
-#if USE_OGLES_GPGPU
-  m_pipeline->captureOutput(frame);
-  // TODO: Here we need to prevent the render to display and return a handle to the final render to texture.
-  return m_pipeline->getTexture();
-#else
+
   // glTexImage2D only once and use TexSubImage later on. This avoids the need
   // to recreate the CL image object on every frame.
   f->glTexSubImage2D(
@@ -247,5 +255,4 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
 
   GATHERER_OPENGL_DEBUG;
   return m_tempTexture;
-#endif
 }

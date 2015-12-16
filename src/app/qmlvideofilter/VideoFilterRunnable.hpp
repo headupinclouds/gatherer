@@ -38,9 +38,6 @@
 #include <QVideoFilterRunnable>
 #include <QOpenGLFunctions> // introduce GLuint in cross-platform fashion
 
-
-#define USE_OGLES_GPGPU 0
-
 class VideoFilter;
 
 #if USE_OGLES_GPGPU

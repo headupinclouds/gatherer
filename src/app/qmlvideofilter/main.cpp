@@ -32,8 +32,12 @@
 **
 ****************************************************************************/
 
+#include <cassert> // assert
+
 #include <QGuiApplication>
 #include <QQuickView>
+#include <QQuickItem>
+#include <QCamera>
 
 #include "VideoFilter.hpp"
 #include "InfoFilter.hpp"
@@ -53,6 +57,41 @@ int main(int argc, char **argv) {
 
   QQuickView view;
   view.setSource(QUrl("qrc:///main.qml"));
+
+#if defined(Q_OS_IOS)
+  // Default camera on iOS is not setting good parameters by default
+  QQuickItem* root = view.rootObject();
+  QObject* qmlCamera = root->findChild<QObject*>("CameraObject");
+  assert(qmlCamera != nullptr);
+
+  QCamera* camera = qvariant_cast<QCamera*>(qmlCamera->property("mediaObject"));
+  assert(camera != nullptr);
+
+  QCameraViewfinderSettings viewfinderFoundSetting;
+  assert(viewfinderFoundSetting.isNull());
+
+  auto viewfinderSettings = camera->supportedViewfinderSettings();
+  for (auto i: viewfinderSettings) {
+    bool good = true;
+    if (i.pixelFormat() != QVideoFrame::Format_ARGB32) {
+      good = false;
+    }
+    if (i.resolution().height() > view.height()) {
+      good = false;
+    }
+    if (i.resolution().width() > view.width()) {
+      good = false;
+    }
+    if (good) {
+      // Get last setting if several RGB available.
+      // Goes from lower resolution to higher (verify?)
+      viewfinderFoundSetting = i;
+    }
+  }
+
+  assert(viewfinderFoundSetting.pixelFormat() == QVideoFrame::Format_ARGB32);
+  camera->setViewfinderSettings(viewfinderFoundSetting);
+#endif
 
   view.show();
 
