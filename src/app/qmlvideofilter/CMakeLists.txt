@@ -25,6 +25,10 @@ set(
     main.qml
 )
 
+if(IOS)
+  list(APPEND sources CVPixelBufferWrapper.hpp CVPixelBufferWrapper.mm)
+endif()
+
 if(ANDROID)
   add_library(qmlvideofilter SHARED ${sources})
 
