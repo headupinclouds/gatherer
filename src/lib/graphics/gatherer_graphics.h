@@ -19,8 +19,10 @@
 #elif __APPLE__
 #include "TargetConditionals.h"
 #if TARGET_OS_IPHONE && TARGET_IPHONE_SIMULATOR
+#  define GATHERER_IOS 1
 // define something for simulator
 #elif TARGET_OS_IPHONE
+#  define GATHERER_IOS 1
 #  include <OpenGLES/ES2/gl.h>
 #  include <OpenGLES/ES2/glext.h>
 #  include <arm_neon.h>
