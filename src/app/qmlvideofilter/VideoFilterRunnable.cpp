@@ -157,9 +157,7 @@ bool VideoFilterRunnable::isFrameValid(const QVideoFrame& frame) {
   if (frame.handleType() == QAbstractVideoBuffer::GLTextureHandle) {
     return true;
   }
-  if (frame.handleType() == QAbstractVideoBuffer::CVPixelBufferHandle) {
-    return true;
-  }
+
   return false;
 }
 
@@ -196,14 +194,12 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
   }
 
 #if USE_OGLES_GPGPU
-  if (input->handleType() == QAbstractVideoBuffer::CVPixelBufferHandle) {
-    void* pixelBuffer = input->handle().value<void*>();
-    cv::Size frameSize(input->size().width(), input->size().height());
-    m_pipeline->captureOutput(frameSize, pixelBuffer);
-    // TODO: Here we need to prevent the render to display and return a handle to the final render to texture.
-    return m_pipeline->getTexture();
-  }
-#endif
+  void* pixelBuffer = 0; // TODO run map and build
+  cv::Size frameSize(input->size().width(), input->size().height());
+  m_pipeline->captureOutput(frameSize, pixelBuffer);
+  // TODO: Here we need to prevent the render to display and return a handle to the final render to texture.
+  return m_pipeline->getTexture();
+#else
 
   assert(input->handleType() == QAbstractVideoBuffer::NoHandle);
 
@@ -255,4 +251,5 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
 
   GATHERER_OPENGL_DEBUG;
   return m_tempTexture;
+#endif
 }

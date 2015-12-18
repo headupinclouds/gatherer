@@ -54,6 +54,7 @@ Item {
 
   VideoFilter {
     id: videofilter
+    active: false
     // Animate a property which is passed to filter.
     SequentialAnimation on factor {
       loops: Animation.Infinite
