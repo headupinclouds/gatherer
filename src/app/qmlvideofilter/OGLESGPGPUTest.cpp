@@ -135,6 +135,8 @@ void OEGLGPGPUTest::captureOutput(cv::Size size, void* pixelBuffer)
     gpgpuMngr->setInputData(pixelBuffer);
 #endif
     
+    return;
+
     // run processing pipeline
     gpgpuMngr->process();
     
