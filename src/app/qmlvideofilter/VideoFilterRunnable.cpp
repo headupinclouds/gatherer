@@ -41,6 +41,10 @@
 #include "VideoFilter.hpp"
 #include "TextureBuffer.hpp"
 
+#if GATHERER_IOS
+# include "CVPixelBufferWrapper.hpp"
+#endif
+
 #include "libyuv.h"
 
 #if USE_OGLES_GPGPU
@@ -193,10 +197,10 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
     return texture;
   }
 
-#if USE_OGLES_GPGPU
-  void* pixelBuffer = 0; // TODO run map and build
+#if USE_OGLES_GPGPU && GATHERER_IOS
+  CVPixelBufferWrapper bufferWrapper(*input);
   cv::Size frameSize(input->size().width(), input->size().height());
-  m_pipeline->captureOutput(frameSize, pixelBuffer);
+  m_pipeline->captureOutput(frameSize, bufferWrapper.getCVPixelBufferRef());
   // TODO: Here we need to prevent the render to display and return a handle to the final render to texture.
   return m_pipeline->getTexture();
 #else

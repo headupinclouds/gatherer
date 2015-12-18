@@ -40,6 +40,7 @@
 class TextureBuffer: public QAbstractVideoBuffer {
  public:
   TextureBuffer(uint id): QAbstractVideoBuffer(GLTextureHandle), id_(id) {
+    assert(id != 0);
   }
 
   static QVideoFrame::PixelFormat qtTextureFormat() {
