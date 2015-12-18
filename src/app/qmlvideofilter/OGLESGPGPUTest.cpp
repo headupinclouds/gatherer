@@ -4,7 +4,7 @@
 #include <opencv2/highgui.hpp>
 
 #define INITIAL_PROC_TYPE 1
-#define USE_INPUT_TEXTURE 0
+#define USE_INPUT_TEXTURE 1
 
 _GATHERER_GRAPHICS_BEGIN
 
@@ -51,7 +51,7 @@ void OEGLGPGPUTest::initOGLESGPGPU()
     initGPUPipeline(4);
     
     // initialize the pipeline (TODO)
-    gpgpuMngr->init(glContext); // <= diff context
+    gpgpuMngr->init(ogles_gpgpu::Core::getCurrentEAGLContext());
     
 }
 
@@ -110,12 +110,12 @@ GLuint OEGLGPGPUTest::getTexture()
     return outputDispRenderer->getInputTexId();
 }
 
-void OEGLGPGPUTest::captureOutput(const cv::Mat &image)
+void OEGLGPGPUTest::captureOutput(cv::Size size, void* pixelBuffer)
 {
     // when we get the first frame, prepare the system for the size of the incoming frames
     if (firstFrame)
     {
-        frameSize = image.size();
+        frameSize = size;
         prepareForFrameOfSize(frameSize);
         firstFrame = false;
     }
@@ -123,16 +123,16 @@ void OEGLGPGPUTest::captureOutput(const cv::Mat &image)
     // on each new frame, this will release the input buffers and textures, and prepare new ones
     // texture format must be GL_BGRA because this is one of the native camera formats (see initCam)
 #if __ANDROID__
-    gpgpuInputHandler->prepareInput(frameSize.width, frameSize.height, GL_RGBA, (void *)image.ptr());
+    gpgpuInputHandler->prepareInput(frameSize.width, frameSize.height, GL_RGBA, pixelBuffer);
 #else
-    gpgpuInputHandler->prepareInput(frameSize.width, frameSize.height, GL_BGRA, (void *)image.ptr());
+    gpgpuInputHandler->prepareInput(frameSize.width, frameSize.height, GL_BGRA, pixelBuffer);
 #endif
     
 #if USE_INPUT_TEXTURE
     // set the input texture id - we do not copy any data, we use the camera frame directly as texture!
     gpgpuMngr->setInputTexId(gpgpuInputHandler->getInputTexId());
 #else
-    gpgpuMngr->setInputData(image.ptr());
+    gpgpuMngr->setInputData(pixelBuffer);
 #endif
     
     // run processing pipeline
@@ -146,7 +146,7 @@ void OEGLGPGPUTest::prepareForFrameOfSize(const cv::Size &size)
 {
     float frameAspectRatio = size.width / size.height;
     
-    fprintf(stderr, "camera frames are of size %dx%d (aspect %f)", (int)size.width, (int)size.height, frameAspectRatio);
+    fprintf(stderr, "camera frames are of size %dx%d (aspect %f)\n", (int)size.width, (int)size.height, frameAspectRatio);
  
     // update the display renderer's output size
     outputDispRenderer->setOutputSize(size.width, size.height);

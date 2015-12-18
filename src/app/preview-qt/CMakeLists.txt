@@ -50,6 +50,19 @@ else()
   install(TARGETS preview-qt DESTINATION bin)
 endif()
 
+if(IOS)
+  set_target_properties(
+      preview-qt
+      PROPERTIES
+      MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_LIST_DIR}/plist.in"
+      XCODE_ATTRIBUTE_PRODUCT_NAME
+      "PreviewQtCameraExample"
+      XCODE_ATTRIBUTE_BUNDLE_IDENTIFIER
+      "com.github.headupinclouds.gatherer.previewqt"
+      XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY "1,2" # iPhone/iPad
+  )
+endif()
+
 target_link_libraries(preview-qt
   Qt5::Widgets
   ${OpenCV_LIBS}
