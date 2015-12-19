@@ -24,7 +24,10 @@ public:
     void initCam();
     void setDisplaySize(int width, int height);
  
-    GLuint getTexture();
+    GLuint getDisplayTexture() const;
+    GLuint getInputTexture() const;
+    GLuint getOutputTexture() const;
+    
 protected:
 
     void *glContext = 0;

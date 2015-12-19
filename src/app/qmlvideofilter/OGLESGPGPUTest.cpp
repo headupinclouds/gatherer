@@ -105,9 +105,19 @@ void OEGLGPGPUTest::initGPUPipeline(int type)
     }
 }
 
-GLuint OEGLGPGPUTest::getTexture()
+GLuint OEGLGPGPUTest::getDisplayTexture() const
 {
     return outputDispRenderer->getInputTexId();
+}
+
+GLuint OEGLGPGPUTest::getInputTexture() const
+{
+    return gpgpuInputHandler->getInputTexId();
+}
+
+GLuint OEGLGPGPUTest::getOutputTexture() const
+{
+    return gpgpuInputHandler->getOutputTexId();
 }
 
 void OEGLGPGPUTest::captureOutput(cv::Size size, void* pixelBuffer)
@@ -128,14 +138,14 @@ void OEGLGPGPUTest::captureOutput(cv::Size size, void* pixelBuffer)
     gpgpuInputHandler->prepareInput(frameSize.width, frameSize.height, GL_BGRA, pixelBuffer);
 #endif
     
+    return;
+    
 #if USE_INPUT_TEXTURE
     // set the input texture id - we do not copy any data, we use the camera frame directly as texture!
     gpgpuMngr->setInputTexId(gpgpuInputHandler->getInputTexId());
 #else
     gpgpuMngr->setInputData(pixelBuffer);
 #endif
-    
-    return;
 
     // run processing pipeline
     gpgpuMngr->process();
