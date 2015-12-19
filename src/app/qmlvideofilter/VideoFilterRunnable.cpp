@@ -43,7 +43,6 @@
 
 #if GATHERER_IOS
 # include "CVPixelBufferWrapper.hpp"
-# include "EAGLContext.h" // extern C wrapper
 #endif
 
 #include "libyuv.h"
@@ -65,14 +64,14 @@ VideoFilterRunnable::VideoFilterRunnable(VideoFilter *filter) :
 
   const char *vendor = (const char *) f->glGetString(GL_VENDOR);
   qDebug("GL_VENDOR: %s", vendor);
-    
+
 #if USE_OGLES_GPGPU
-  void * glContext = 0;
-#if GATHERER_IOS
-  glContext = currentEAGLContext();
-#else
+  void* glContext = 0;
+# if GATHERER_IOS
+  glContext = ogles_gpgpu::Core::getCurrentEAGLContext();
+# else
   glContext = QOpenGLContext::currentContext();
-#endif
+# endif
   m_pipeline = std::make_shared<gatherer::graphics::OEGLGPGPUTest>(glContext, 1.0); // TODO: resolution
 #endif
 }
