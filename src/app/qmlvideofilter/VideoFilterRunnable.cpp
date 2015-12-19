@@ -208,7 +208,7 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
   cv::Size frameSize(input->size().width(), input->size().height());
   m_pipeline->captureOutput(frameSize, bufferWrapper.getCVPixelBufferRef());
   // TODO: Here we need to prevent the render to display and return a handle to the final render to texture.
-  return m_pipeline->getTexture();
+  return m_pipeline->getInputTexture();
 #else
 
   assert(input->handleType() == QAbstractVideoBuffer::NoHandle);
