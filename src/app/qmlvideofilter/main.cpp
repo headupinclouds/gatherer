@@ -42,6 +42,8 @@
 #include "VideoFilter.hpp"
 #include "InfoFilter.hpp"
 
+#include <iostream>
+
 #if defined(Q_OS_IOS)
 extern "C" int qtmn(int argc, char** argv) {
 #else
@@ -70,9 +72,14 @@ int main(int argc, char **argv) {
   QCameraViewfinderSettings viewfinderFoundSetting;
   assert(viewfinderFoundSetting.isNull());
 
+#if 0
+    // Format_ARGB32 == 1
+    // Format_NV12 == 22
   auto viewfinderSettings = camera->supportedViewfinderSettings();
   for (auto i: viewfinderSettings) {
+    std::cout << "Pixel format: " << i.pixelFormat() << std::endl;
     bool good = true;
+    
     if (i.pixelFormat() != QVideoFrame::Format_ARGB32) {
       good = false;
     }
@@ -91,6 +98,7 @@ int main(int argc, char **argv) {
 
   assert(viewfinderFoundSetting.pixelFormat() == QVideoFrame::Format_ARGB32);
   camera->setViewfinderSettings(viewfinderFoundSetting);
+#endif
 #endif
 
   view.show();
