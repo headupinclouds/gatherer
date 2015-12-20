@@ -55,6 +55,8 @@
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 
+static cv::Mat QVideoFrameToCV(QVideoFrame *input);
+
 VideoFilterRunnable::VideoFilterRunnable(VideoFilter *filter) :
     m_filter(filter),
     m_tempTexture(0),
@@ -64,16 +66,6 @@ VideoFilterRunnable::VideoFilterRunnable(VideoFilter *filter) :
 
   const char *vendor = (const char *) f->glGetString(GL_VENDOR);
   qDebug("GL_VENDOR: %s", vendor);
-
-#if USE_OGLES_GPGPU
-  void* glContext = 0;
-# if GATHERER_IOS
-  glContext = ogles_gpgpu::Core::getCurrentEAGLContext();
-# else
-  glContext = QOpenGLContext::currentContext();
-# endif
-  m_pipeline = std::make_shared<gatherer::graphics::OEGLGPGPUTest>(glContext, 1.0); // TODO: resolution
-#endif
 }
 
 VideoFilterRunnable::~VideoFilterRunnable() {
@@ -85,6 +77,22 @@ QVideoFrame VideoFilterRunnable::run(
 ) {
   Q_UNUSED(surfaceFormat);
   Q_UNUSED(flags);
+    
+#if USE_OGLES_GPGPU
+    void* glContext = 0;
+# if GATHERER_IOS
+    glContext = ogles_gpgpu::Core::getCurrentEAGLContext();
+# else
+    glContext = QOpenGLContext::currentContext();
+# endif
+    if(!m_pipeline)
+    {
+        int params = 0;
+        glGetIntegerv(GL_ACTIVE_TEXTURE, &params);
+        m_pipeline = std::make_shared<gatherer::graphics::OEGLGPGPUTest>(glContext, 1.0); // TODO: resolution
+    }
+#endif
+
 
   // This example supports RGB data only, either in system memory (typical with
   // cameras on all platforms) or as an OpenGL texture (e.g. video playback on
@@ -116,7 +124,6 @@ QVideoFrame VideoFilterRunnable::run(
   // Accessing dynamic properties on the filter element is simple:
   qreal factor = m_filter->factor();
    return TextureBuffer::createVideoFrame(m_outTexture, m_size);
-
 }
 
 void VideoFilterRunnable::releaseTextures() {
@@ -202,17 +209,31 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
     m_lastInputTexture = texture;
     return texture;
   }
-
+    
 #if USE_OGLES_GPGPU && GATHERER_IOS
-  CVPixelBufferWrapper bufferWrapper(*input);
-  cv::Size frameSize(input->size().width(), input->size().height());
-  m_pipeline->captureOutput(frameSize, bufferWrapper.getCVPixelBufferRef());
-  // TODO: Here we need to prevent the render to display and return a handle to the final render to texture.
-  return m_pipeline->getInputTexture();
+    {
+        //std::cout << "Input pixel format: " << input->pixelFormat() << std::endl;
+        //std::cout << "Input width : " << input->width() << std::endl;
+        //std::cout << "Input height : " << input->height() << std::endl;
+        cv::Mat frame = QVideoFrameToCV(input);
+
+        // For ABGR input types we see the mean is zero
+        //std::cout << "mean: " << cv::mean(frame) << std::endl;
+        
+        m_pipeline->captureOutput(frame.size(), frame.ptr(), true);
+        
+        // QT is expecting GL_TEXTURE0 to be active
+        glActiveTexture(GL_TEXTURE0);
+        GLuint texture = m_pipeline->getInputTexture();
+        f->glBindTexture(GL_TEXTURE_2D, texture);
+        return texture;
+    }
 #else
-
-  assert(input->handleType() == QAbstractVideoBuffer::NoHandle);
-
+    
+    assert(input->handleType() == QAbstractVideoBuffer::NoHandle);
+    
+    glActiveTexture(GL_TEXTURE0);
+    
   // Upload.
   if (m_tempTexture) {
     f->glBindTexture(GL_TEXTURE_2D, m_tempTexture);
@@ -221,30 +242,10 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
   else {
     m_tempTexture = newTexture();
   }
-
-  bool ok = input->map(QAbstractVideoBuffer::ReadOnly);
-  if (!ok) {
-    qWarning("Can't map!");
-    return 0;
-  }
-
+ 
   // Convert NV12 TO BGRA format:
   // TODO: Handle other formats
-  cv::Mat frame;
-  switch(input->pixelFormat())
-  {
-    case QVideoFrame::Format_NV21:
-      frame.create(input->size().height(), input->size().width(), CV_8UC4);
-      libyuv::NV21ToARGB(input->bits(), input->bytesPerLine(), input->bits(1), input->bytesPerLine(1), frame.ptr<uint8_t>(), frame.step1(), frame.cols, frame.rows);
-      break;
-    case QVideoFrame::Format_NV12:
-      frame.create(input->size().height(), input->size().width(), CV_8UC4);
-      libyuv::NV12ToARGB(input->bits(), input->bytesPerLine(), input->bits(1), input->bytesPerLine(1), frame.ptr<uint8_t>(), frame.step1(), frame.cols, frame.rows);
-      break;
-    default: CV_Assert(false);
-  }
-
-  input->unmap();
+  cv::Mat frame = QVideoFrameToCV(input);
 
   // glTexImage2D only once and use TexSubImage later on. This avoids the need
   // to recreate the CL image object on every frame.
@@ -262,4 +263,62 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
   GATHERER_OPENGL_DEBUG;
   return m_tempTexture;
 #endif
+}
+
+struct QVideoFrameScopeMap
+{
+    QVideoFrameScopeMap(QVideoFrame *frame, QAbstractVideoBuffer::MapMode mode) : frame(frame)
+    {
+        status = frame->map(mode);
+        if (!status)
+        {
+            qWarning("Can't map!");
+            return 0;
+        }
+    }
+    ~QVideoFrameScopeMap()
+    {
+        frame->unmap();
+    }
+    operator bool() const { return status; }
+    QVideoFrame *frame = nullptr;
+    bool status = false;
+};
+
+static cv::Mat QVideoFrameToCV(QVideoFrame *input)
+{
+    QVideoFrameScopeMap scopeMap(input, QAbstractVideoBuffer::ReadOnly);
+    
+    cv::Mat frame;
+    switch(input->pixelFormat())
+    {
+        case QVideoFrame::Format_ARGB32:
+        case QVideoFrame::Format_BGRA32:
+            frame = cv::Mat(input->height(), input->width(), CV_8UC4, input->bits());
+            break;
+        case QVideoFrame::Format_NV21:
+            frame.create(input->height(), input->width(), CV_8UC4);
+            libyuv::NV21ToARGB(input->bits(),
+                               input->bytesPerLine(),
+                               input->bits(1),
+                               input->bytesPerLine(1),
+                               frame.ptr<uint8_t>(),
+                               int(frame.step1()),
+                               frame.cols,
+                               frame.rows);
+            break;
+        case QVideoFrame::Format_NV12:
+            frame.create(input->height(), input->width(), CV_8UC4);
+            libyuv::NV12ToARGB(input->bits(),
+                               input->bytesPerLine(),
+                               input->bits(1),
+                               input->bytesPerLine(1),
+                               frame.ptr<uint8_t>(),
+                               int(frame.step1()),
+                               frame.cols,
+                               frame.rows);
+            break;
+        default: CV_Assert(false);
+    }
+    return frame;
 }

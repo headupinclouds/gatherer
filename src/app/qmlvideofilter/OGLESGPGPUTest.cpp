@@ -120,12 +120,7 @@ GLuint OEGLGPGPUTest::getOutputTexture() const
     return gpgpuInputHandler->getOutputTexId();
 }
 
-void OEGLGPGPUTest::setUseRawPixels(bool flag)
-{
-    gpgpuInputHandler->setUseRawPixels(flag);
-}
-
-void OEGLGPGPUTest::captureOutput(cv::Size size, void* pixelBuffer)
+void OEGLGPGPUTest::captureOutput(cv::Size size, void* pixelBuffer, bool useRawPixels)
 {
     // when we get the first frame, prepare the system for the size of the incoming frames
     if (firstFrame)
