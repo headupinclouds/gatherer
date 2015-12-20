@@ -20,9 +20,10 @@ public:
     void initOGLESGPGPU() ;
     void initGPUPipeline(int type);
     void prepareForFrameOfSize(const cv::Size &size);
-    void captureOutput(cv::Size, void* pixelBuffer) ;
+    void captureOutput(cv::Size, void* pixelBuffer);
     void initCam();
     void setDisplaySize(int width, int height);
+    void setUseRawPixels(bool flag);
  
     GLuint getDisplayTexture() const;
     GLuint getInputTexture() const;

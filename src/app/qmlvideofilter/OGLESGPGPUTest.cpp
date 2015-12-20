@@ -120,6 +120,11 @@ GLuint OEGLGPGPUTest::getOutputTexture() const
     return gpgpuInputHandler->getOutputTexId();
 }
 
+void OEGLGPGPUTest::setUseRawPixels(bool flag)
+{
+    gpgpuInputHandler->setUseRawPixels(flag);
+}
+
 void OEGLGPGPUTest::captureOutput(cv::Size size, void* pixelBuffer)
 {
     // when we get the first frame, prepare the system for the size of the incoming frames
@@ -130,15 +135,15 @@ void OEGLGPGPUTest::captureOutput(cv::Size size, void* pixelBuffer)
         firstFrame = false;
     }
     
+    gpgpuInputHandler->setUseRawPixels(useRawPixels);
+    
     // on each new frame, this will release the input buffers and textures, and prepare new ones
     // texture format must be GL_BGRA because this is one of the native camera formats (see initCam)
+    GLenum inputPixFormat = GL_BGRA;
 #if __ANDROID__
-    gpgpuInputHandler->prepareInput(frameSize.width, frameSize.height, GL_RGBA, pixelBuffer);
-#else
-    gpgpuInputHandler->prepareInput(frameSize.width, frameSize.height, GL_BGRA, pixelBuffer);
+    inputPixFormat = GL_RGBA;
 #endif
-    
-    return;
+    gpgpuInputHandler->prepareInput(frameSize.width, frameSize.height, inputPixFormat, pixelBuffer);
     
 #if USE_INPUT_TEXTURE
     // set the input texture id - we do not copy any data, we use the camera frame directly as texture!
@@ -147,6 +152,8 @@ void OEGLGPGPUTest::captureOutput(cv::Size size, void* pixelBuffer)
     gpgpuMngr->setInputData(pixelBuffer);
 #endif
 
+    return;
+    
     // run processing pipeline
     gpgpuMngr->process();
     
