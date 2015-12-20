@@ -42,6 +42,7 @@ Item {
 
   Camera {
     id: camera
+    position: Camera.FrontFace
     objectName: "CameraObject"
   }
 
