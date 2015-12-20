@@ -55,6 +55,26 @@
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 
+struct QVideoFrameScopeMap
+{
+    QVideoFrameScopeMap(QVideoFrame *frame, QAbstractVideoBuffer::MapMode mode) : frame(frame)
+    {
+        status = frame->map(mode);
+        if (!status)
+        {
+            qWarning("Can't map!");
+            return 0;
+        }
+    }
+    ~QVideoFrameScopeMap()
+    {
+        frame->unmap();
+    }
+    operator bool() const { return status; }
+    QVideoFrame *frame = nullptr;
+    bool status = false;
+};
+
 static cv::Mat QVideoFrameToCV(QVideoFrame *input);
 
 VideoFilterRunnable::VideoFilterRunnable(VideoFilter *filter) :
@@ -92,7 +112,6 @@ QVideoFrame VideoFilterRunnable::run(
         m_pipeline = std::make_shared<gatherer::graphics::OEGLGPGPUTest>(glContext, 1.0); // TODO: resolution
     }
 #endif
-
 
   // This example supports RGB data only, either in system memory (typical with
   // cameras on all platforms) or as an OpenGL texture (e.g. video playback on
@@ -212,19 +231,18 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
     
 #if USE_OGLES_GPGPU && GATHERER_IOS
     {
-        cv::Mat frame = QVideoFrameToCV(input);
-        cv::circle(frame, {frame.cols/2,frame.rows/2}, 100, {0,255,0}, 2, 8);
-
-        // For ABGR input types we see the mean is zero
-        //std::cout << "mean: " << cv::mean(frame) << std::endl;
+        QVideoFrameScopeMap scopeMap(input, QAbstractVideoBuffer::ReadOnly);
+        if(scopeMap)
+        {
+            cv::Mat frame = QVideoFrameToCV(input);
+            m_pipeline->captureOutput(frame.size(), frame.ptr(), true);
         
-        m_pipeline->captureOutput(frame.size(), frame.ptr(), true);
-        
-        // QT is expecting GL_TEXTURE0 to be active
-        glActiveTexture(GL_TEXTURE0);
-        GLuint texture = m_pipeline->getLastShaderOutputTexture();
-        f->glBindTexture(GL_TEXTURE_2D, texture);
-        return texture;
+            // QT is expecting GL_TEXTURE0 to be active
+            glActiveTexture(GL_TEXTURE0);
+            GLuint texture = m_pipeline->getLastShaderOutputTexture();
+            f->glBindTexture(GL_TEXTURE_2D, texture);
+            return texture;
+        }
     }
 #else
     
@@ -243,6 +261,8 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
  
   // Convert NV12 TO BGRA format:
   // TODO: Handle other formats
+
+  QVideoFrameScopeMap scopeMap(input, QAbstractVideoBuffer::ReadOnly);
   cv::Mat frame = QVideoFrameToCV(input);
 
   // glTexImage2D only once and use TexSubImage later on. This avoids the need
@@ -263,30 +283,8 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
 #endif
 }
 
-struct QVideoFrameScopeMap
-{
-    QVideoFrameScopeMap(QVideoFrame *frame, QAbstractVideoBuffer::MapMode mode) : frame(frame)
-    {
-        status = frame->map(mode);
-        if (!status)
-        {
-            qWarning("Can't map!");
-            return 0;
-        }
-    }
-    ~QVideoFrameScopeMap()
-    {
-        frame->unmap();
-    }
-    operator bool() const { return status; }
-    QVideoFrame *frame = nullptr;
-    bool status = false;
-};
-
 static cv::Mat QVideoFrameToCV(QVideoFrame *input)
 {
-    QVideoFrameScopeMap scopeMap(input, QAbstractVideoBuffer::ReadOnly);
-    
     cv::Mat frame;
     switch(input->pixelFormat())
     {
