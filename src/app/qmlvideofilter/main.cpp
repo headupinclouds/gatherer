@@ -66,18 +66,17 @@ int main(int argc, char **argv) {
   QObject* qmlCamera = root->findChild<QObject*>("CameraObject");
   assert(qmlCamera != nullptr);
 
-  QCamera* camera = qvariant_cast<QCamera*>(qmlCamera->property("mediaObject"));
+  QCamera* camera = qvariant_cast<QCamera*>(qmlCamera->property("mediaObject")); 
   assert(camera != nullptr);
 
+#if 0
   QCameraViewfinderSettings viewfinderFoundSetting;
   assert(viewfinderFoundSetting.isNull());
-
-#if 0
-    // Format_ARGB32 == 1
-    // Format_NV12 == 22
+    
+  // Format_ARGB32 == 1
+  // Format_NV12 == 22
   auto viewfinderSettings = camera->supportedViewfinderSettings();
   for (auto i: viewfinderSettings) {
-    std::cout << "Pixel format: " << i.pixelFormat() << std::endl;
     bool good = true;
     
     if (i.pixelFormat() != QVideoFrame::Format_ARGB32) {
@@ -95,10 +94,27 @@ int main(int argc, char **argv) {
       viewfinderFoundSetting = i;
     }
   }
-
   assert(viewfinderFoundSetting.pixelFormat() == QVideoFrame::Format_ARGB32);
   camera->setViewfinderSettings(viewfinderFoundSetting);
 #endif
+    // Try the highest resolution ARGB32 format:
+    QVideoFrame::PixelFormat desiredFormat = QVideoFrame::Format_ARGB32;
+    auto viewfinderSettings = camera->supportedViewfinderSettings();
+    std::pair<int, QCameraViewfinderSettings> best;
+    for (auto i: viewfinderSettings)
+    {
+        if (i.pixelFormat() == desiredFormat)
+        {
+            int area = (i.resolution().height() * i.resolution().width());
+            if(area > best.first)
+            {
+                best = { area, i };
+            }
+        }
+    }
+    assert(!best.second.isNull());
+    assert(best.second.pixelFormat() == desiredFormat);
+    camera->setViewfinderSettings(best.second);
 #endif
 
   view.show();
