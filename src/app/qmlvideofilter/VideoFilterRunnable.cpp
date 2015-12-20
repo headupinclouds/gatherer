@@ -212,10 +212,8 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
     
 #if USE_OGLES_GPGPU && GATHERER_IOS
     {
-        //std::cout << "Input pixel format: " << input->pixelFormat() << std::endl;
-        //std::cout << "Input width : " << input->width() << std::endl;
-        //std::cout << "Input height : " << input->height() << std::endl;
         cv::Mat frame = QVideoFrameToCV(input);
+        cv::circle(frame, {frame.cols/2,frame.rows/2}, 100, {0,255,0}, 2, 8);
 
         // For ABGR input types we see the mean is zero
         //std::cout << "mean: " << cv::mean(frame) << std::endl;
@@ -224,7 +222,7 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
         
         // QT is expecting GL_TEXTURE0 to be active
         glActiveTexture(GL_TEXTURE0);
-        GLuint texture = m_pipeline->getInputTexture();
+        GLuint texture = m_pipeline->getLastShaderOutputTexture();
         f->glBindTexture(GL_TEXTURE_2D, texture);
         return texture;
     }
