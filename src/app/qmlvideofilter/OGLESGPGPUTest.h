@@ -27,6 +27,7 @@ public:
     GLuint getDisplayTexture() const;
     GLuint getInputTexture() const;
     GLuint getOutputTexture() const;
+    GLuint getLastShaderOutputTexture() const;
     
 protected:
 

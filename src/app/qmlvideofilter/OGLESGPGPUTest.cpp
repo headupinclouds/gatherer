@@ -120,6 +120,11 @@ GLuint OEGLGPGPUTest::getOutputTexture() const
     return gpgpuInputHandler->getOutputTexId();
 }
 
+GLuint OEGLGPGPUTest::getLastShaderOutputTexture() const
+{
+    return gpgpuMngr->getOutputTexId();
+}
+
 void OEGLGPGPUTest::captureOutput(cv::Size size, void* pixelBuffer, bool useRawPixels)
 {
     // when we get the first frame, prepare the system for the size of the incoming frames
@@ -147,10 +152,10 @@ void OEGLGPGPUTest::captureOutput(cv::Size size, void* pixelBuffer, bool useRawP
     gpgpuMngr->setInputData(pixelBuffer);
 #endif
 
-    return;
-    
     // run processing pipeline
     gpgpuMngr->process();
+    
+    return;
     
     // update the GL view to display the output directly
     outputDispRenderer->render();
