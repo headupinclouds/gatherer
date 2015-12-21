@@ -4,4 +4,4 @@
 	branch = hunter
 [submodule "src/3rdparty/GPUImage"]
 	path = src/3rdparty/GPUImage
-	url = git@github.com:headupinclouds/GPUImage.git
+	url = https://github.com/headupinclouds/GPUImage.git
