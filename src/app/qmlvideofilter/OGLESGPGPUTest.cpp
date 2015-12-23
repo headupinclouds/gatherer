@@ -8,15 +8,13 @@
 
 _GATHERER_GRAPHICS_BEGIN
 
-// ==========
-
 OEGLGPGPUTest::OEGLGPGPUTest(void *glContext, const float resolution)
 : glContext(glContext)
 , resolution(resolution)
 , dispRenderOrientation(ogles_gpgpu::RenderOrientationFlipped)
 {
     initCam();
-    initOGLESGPGPU();
+    initOGLESGPGPU(glContext);
 }
 
 OEGLGPGPUTest::~OEGLGPGPUTest()
@@ -30,7 +28,7 @@ void OEGLGPGPUTest::initCam()
     
 }
 
-void OEGLGPGPUTest::initOGLESGPGPU()
+void OEGLGPGPUTest::initOGLESGPGPU(void* glContext)
 {
     // get ogles_gpgpu::Core singleton instance
     gpgpuMngr = ogles_gpgpu::Core::getInstance();
@@ -51,8 +49,7 @@ void OEGLGPGPUTest::initOGLESGPGPU()
     initGPUPipeline(4);
     
     // initialize the pipeline (TODO)
-    gpgpuMngr->init(ogles_gpgpu::Core::getCurrentEAGLContext());
-    
+    gpgpuMngr->init(glContext);
 }
 
 void OEGLGPGPUTest::setDisplaySize(int width, int height)
@@ -144,7 +141,7 @@ void OEGLGPGPUTest::captureOutput(cv::Size size, void* pixelBuffer, bool useRawP
     inputPixFormat = GL_RGBA;
 #endif
     gpgpuInputHandler->prepareInput(frameSize.width, frameSize.height, inputPixFormat, pixelBuffer);
-    
+
 #if USE_INPUT_TEXTURE
     // set the input texture id - we do not copy any data, we use the camera frame directly as texture!
     gpgpuMngr->setInputTexId(gpgpuInputHandler->getInputTexId());

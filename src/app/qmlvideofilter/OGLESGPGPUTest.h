@@ -1,3 +1,6 @@
+#ifndef OGLESGPGPUTEST_H
+#define OGLESGPGPUTEST_H
+
 #include "graphics/gatherer_graphics.h"
 
 #include "ogles_gpgpu/ogles_gpgpu.h"
@@ -5,30 +8,25 @@
 
 #include <opencv2/core/core.hpp>
 
-#ifndef OGLESGPGPUTEST_H
-#define OGLESGPGPUTEST_H
-
 _GATHERER_GRAPHICS_BEGIN
 
 class OEGLGPGPUTest
 {
-
 public:
-
     OEGLGPGPUTest(void *glContext, const float resolution=1.f);
     ~OEGLGPGPUTest();
-    void initOGLESGPGPU() ;
+    void initOGLESGPGPU(void* glContext) ;
     void initGPUPipeline(int type);
     void prepareForFrameOfSize(const cv::Size &size);
     void captureOutput(cv::Size, void* pixelBuffer, bool useRawPixels);
     void initCam();
     void setDisplaySize(int width, int height);
- 
+
     GLuint getDisplayTexture() const;
     GLuint getInputTexture() const;
     GLuint getOutputTexture() const;
     GLuint getLastShaderOutputTexture() const;
-    
+
 protected:
 
     void *glContext = 0;
@@ -53,4 +51,3 @@ protected:
 _GATHERER_GRAPHICS_END
 
 #endif // OGLESGPGPUTEST_H
-
