@@ -217,7 +217,17 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
     assert(texture != 0);
     f->glBindTexture(GL_TEXTURE_2D, texture);
     m_lastInputTexture = texture;
-    return texture;
+
+    const cv::Size size(input->width(), input->height());
+    void* pixelBuffer = nullptr; //  we are using texture
+    const bool useRawPixels = false; //  - // -
+    m_pipeline->captureOutput(size, pixelBuffer, useRawPixels, texture);
+
+    glActiveTexture(GL_TEXTURE0);
+    GLuint outputTexture = m_pipeline->getLastShaderOutputTexture();
+    f->glBindTexture(GL_TEXTURE_2D, outputTexture);
+
+    return outputTexture;
   }
     
 #if GATHERER_IOS
