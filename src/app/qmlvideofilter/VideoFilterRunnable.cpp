@@ -63,7 +63,6 @@ struct QVideoFrameScopeMap
         if (!status)
         {
             qWarning("Can't map!");
-            return 0;
         }
     }
     ~QVideoFrameScopeMap()
