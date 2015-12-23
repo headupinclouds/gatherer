@@ -77,3 +77,6 @@ install(
   DESTINATION "${config_install_dir}"
   )
 
+###################
+
+add_subdirectory("OGLESGPGPUTest")
