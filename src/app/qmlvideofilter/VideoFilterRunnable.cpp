@@ -41,10 +41,6 @@
 #include "VideoFilter.hpp"
 #include "TextureBuffer.hpp"
 
-#if GATHERER_IOS
-# include "CVPixelBufferWrapper.hpp"
-#endif
-
 #include "libyuv.h"
 
 #if USE_OGLES_GPGPU

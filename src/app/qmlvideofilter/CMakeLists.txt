@@ -26,7 +26,7 @@ set(
 )
 
 if(IOS)
-  list(APPEND sources CVPixelBufferWrapper.hpp CVPixelBufferWrapper.mm
+  list(APPEND sources
     EAGLContext.h
     EAGLContext.mm
 	)
