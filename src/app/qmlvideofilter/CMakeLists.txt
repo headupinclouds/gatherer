@@ -23,13 +23,6 @@ set(
     main.qml
 )
 
-if(IOS)
-  list(APPEND sources
-    EAGLContext.h
-    EAGLContext.mm
-	)
-endif()
-
 if(ANDROID)
   add_library(qmlvideofilter SHARED ${sources})
 
