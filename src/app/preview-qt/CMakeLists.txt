@@ -65,7 +65,7 @@ target_link_libraries(preview-qt
   Qt5::Widgets
   ${OpenCV_LIBS}
   gatherer_graphics
-	OGLESGPGPUTest
+  OGLESGPGPUTest
   ogles_gpgpu
 )
 
