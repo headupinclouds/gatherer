@@ -60,6 +60,7 @@ if(ANDROID)
   message("Path to `android`: ${ANDROID-SDK_ROOT}/android-sdk/tools/android")
   message("Path to `emulator`: ${ANDROID-SDK_ROOT}/android-sdk/tools/emulator")
   message("Path to `adb`: ${ANDROID-SDK_ROOT}/android-sdk/platform-tools/adb")
+
 else()
   find_package(Qt5Quick REQUIRED) # Qt5::Quick
   find_package(Qt5Qml REQUIRED) # Qt5::QmlQtQuick2Plugin
@@ -97,12 +98,47 @@ else()
   endif()
 
   target_link_libraries(qmlvideofilter Qt5::Quick)
-
+  
   ### Plugins
-  target_link_libraries(qmlvideofilter Qt5::QMultimediaDeclarativeModule)
-  target_link_libraries(qmlvideofilter Qt5::QmlQtQuick2Plugin)
-  target_link_libraries(qmlvideofilter ${Qt5Gui_PLUGINS})
-  target_link_libraries(qmlvideofilter ${Qt5Multimedia_PLUGINS})
+  if(IOS)
+	target_link_libraries(qmlvideofilter Qt5::QMultimediaDeclarativeModule)
+	target_link_libraries(qmlvideofilter Qt5::QmlQtQuick2Plugin)
+	target_link_libraries(qmlvideofilter ${Qt5Gui_PLUGINS})
+	target_link_libraries(qmlvideofilter ${Qt5Multimedia_PLUGINS})
+  else()
+
+	 get_cmake_property(_variableNames VARIABLES)
+	 foreach (_variableName ${_variableNames})
+	   message(STATUS "VARIABLE: ${_variableName}=${${_variableName}}")
+	 endforeach()
+
+	 #Undefined symbols for architecture x86_64:
+	 #"QTcpServerConnection::QTcpServerConnection()", referenced from:
+	
+	target_link_libraries(qmlvideofilter
+	  Qt5::Quick
+	  Qt5::Multimedia
+	  Qt5::Widgets
+	  ${Qt5Gui_PLUGINS}
+	  ${Qt5Qml_PLUGINS}
+	  ${Qt5Network_PLUGINS}
+	  ${Qt5Multimedia_PLUGINS})
+
+	if(APPLE)
+	  target_link_libraries(qmlvideofilter
+		"-framework OpenGL"
+		"-framework IOKit"
+		"-framework Cocoa"
+		"-framework OpenGL"
+		"-framework QuartzCore"
+		"-framework CoreMedia"
+		"-framework AVFoundation"
+		"-framework AppKit"
+		"-framework CoreData"
+		"-framework Foundation"
+		)
+	endif()
+  endif()
 endif()
 
 target_link_libraries(qmlvideofilter gatherer_graphics ogles_gpgpu libyuv::yuv OGLESGPGPUTest)
