@@ -80,6 +80,7 @@ Item {
       infoResolution.v = result.frameResolution.width + "x" + result.frameResolution.height;
       infoFrameType.v = result.handleType;
       infoPixelFormat.v = result.pixelFormat;
+      infoFramesPerSecond.v = result.fps;
     }
   }
 
@@ -115,6 +116,14 @@ Item {
       color: "red"
       property string v
       text: v ? "Pixel format: " + v : ""
+    }
+    Text {
+      id: infoFramesPerSecond
+      font.pointSize: 14
+      font.bold: true
+      color: "green"
+      property int v
+      text: (v != 0 ? v.toString() : "???" ) + " fps"
     }
   }
 

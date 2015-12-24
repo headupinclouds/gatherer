@@ -19,6 +19,8 @@ set(
     InfoFilterResult.hpp
     InfoFilterRunnable.hpp
     InfoFilterRunnable.cpp
+    FPSCalculator.hpp
+    FPSCalculator.cpp
     qmlvideofilter.qrc
     main.qml
 )

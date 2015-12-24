@@ -37,6 +37,8 @@
 
 #include <QVideoFilterRunnable>
 
+#include "FPSCalculator.hpp"
+
 class InfoFilter;
 
 class InfoFilterRunnable: public QVideoFilterRunnable {
@@ -50,6 +52,7 @@ class InfoFilterRunnable: public QVideoFilterRunnable {
   ) Q_DECL_OVERRIDE;
 
  private:
+  FPSCalculator m_fps_calculator;
   InfoFilter *m_filter;
 };
 
