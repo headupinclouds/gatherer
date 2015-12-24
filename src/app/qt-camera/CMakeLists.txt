@@ -75,4 +75,17 @@ if(UNIX AND NOT APPLE AND CMAKE_COMPILER_IS_GNUCXX)
 endif()
 # --
 
+if(IOS)
+  set_target_properties(
+      qt-camera
+      PROPERTIES
+      MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_LIST_DIR}/plist.in"
+      XCODE_ATTRIBUTE_PRODUCT_NAME
+      "QtCameraExample"
+      XCODE_ATTRIBUTE_BUNDLE_IDENTIFIER
+      "com.github.headupinclouds.gatherer.qtcamera"
+      XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY "1,2" # iPhone/iPad
+  )
+endif()
+
 set_property(TARGET qt-camera PROPERTY FOLDER "app/gui")
