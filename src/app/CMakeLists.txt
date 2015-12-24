@@ -17,6 +17,7 @@ if(BUILD_QT)
   add_subdirectory(qt-camera)
   if(GATHERER_OPENGL_ES)
     add_subdirectory(declarative-camera)
+	add_subdirectory(qmlvideofilter)
   else()
     # See issue #55
   endif()
@@ -26,5 +27,5 @@ if(BUILD_QT)
     add_subdirectory(opencv-qt-video)
   endif()
 
-  add_subdirectory(qmlvideofilter)
+
 endif()
