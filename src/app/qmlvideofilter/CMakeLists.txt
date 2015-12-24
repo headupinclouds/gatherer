@@ -112,17 +112,18 @@ else()
 	   message(STATUS "VARIABLE: ${_variableName}=${${_variableName}}")
 	 endforeach()
 
-	 #Undefined symbols for architecture x86_64:
-	 #"QTcpServerConnection::QTcpServerConnection()", referenced from:
-	
+	 #_builds/libcxx-Release/src/app/qmlvideofilter/qmlvideofilter 
+	 #qrc:///main.qml:36:1: module "QtMultimedia" is not installed
+	 #qrc:///main.qml:35:1: module "QtQuick" is not installed
+
 	target_link_libraries(qmlvideofilter
-	  Qt5::Quick
 	  Qt5::Multimedia
 	  Qt5::Widgets
-	  ${Qt5Gui_PLUGINS}
+	  Qt5::Quick
+	  ${Qt5Multimedia_PLUGINS}
 	  ${Qt5Qml_PLUGINS}
-	  ${Qt5Network_PLUGINS}
-	  ${Qt5Multimedia_PLUGINS})
+	  ${Qt5Gui_PLUGINS}
+	  )
 
 	if(APPLE)
 	  target_link_libraries(qmlvideofilter
