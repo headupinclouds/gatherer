@@ -43,9 +43,7 @@
 
 #include "libyuv.h"
 
-#if USE_OGLES_GPGPU
-#  include "OGLESGPGPUTest.h"
-#endif
+#include "OGLESGPGPUTest.h"
 
 #include <opencv2/imgproc.hpp>
 #include <opencv2/core.hpp>
@@ -93,20 +91,18 @@ QVideoFrame VideoFilterRunnable::run(
   Q_UNUSED(surfaceFormat);
   Q_UNUSED(flags);
     
-#if USE_OGLES_GPGPU
     void* glContext = 0;
-# if GATHERER_IOS
+#if GATHERER_IOS
     glContext = ogles_gpgpu::Core::getCurrentEAGLContext();
-# else
+#else
     glContext = QOpenGLContext::currentContext();
-# endif
+#endif
     if(!m_pipeline)
     {
         int params = 0;
         glGetIntegerv(GL_ACTIVE_TEXTURE, &params);
         m_pipeline = std::make_shared<gatherer::graphics::OEGLGPGPUTest>(glContext, 1.0); // TODO: resolution
     }
-#endif
 
   // This example supports RGB data only, either in system memory (typical with
   // cameras on all platforms) or as an OpenGL texture (e.g. video playback on
@@ -224,7 +220,7 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
     return texture;
   }
     
-#if USE_OGLES_GPGPU && GATHERER_IOS
+#if GATHERER_IOS
     {
         QVideoFrameScopeMap scopeMap(input, QAbstractVideoBuffer::ReadOnly);
         if(scopeMap)

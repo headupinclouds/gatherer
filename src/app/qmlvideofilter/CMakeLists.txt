@@ -106,11 +106,3 @@ else()
 endif()
 
 target_link_libraries(qmlvideofilter gatherer_graphics ogles_gpgpu libyuv::yuv OGLESGPGPUTest)
-
-option(USE_OGLES_GPGPU "Use OGLES GPGPU" OFF)
-
-if(USE_OGLES_GPGPU)
-  target_compile_definitions(qmlvideofilter PUBLIC USE_OGLES_GPGPU=1)
-else()
-  target_compile_definitions(qmlvideofilter PUBLIC USE_OGLES_GPGPU=0)
-endif()
