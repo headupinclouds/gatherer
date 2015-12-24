@@ -7,8 +7,6 @@ set(OGLES_GPGPU_TEST_SRCS
   ogles_gpgpu_test.cpp 
   GLContextWindow.h 
   GLContextWindow.cpp
-  OGLESGPGPUTest.h
-  OGLESGPGPUTest.cpp
 )
 
 add_executable(ogles_gpgpu_test ${OGLES_GPGPU_TEST_SRCS})
@@ -18,6 +16,7 @@ target_link_libraries(ogles_gpgpu_test
   ogles_gpgpu
   ${OpenCV_LIBS}
   ${GLFW_LIBRARIES}
+  OGLESGPGPUTest
   glew
   "-framework OpenGL"
   "-framework IOKit"

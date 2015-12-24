@@ -11,8 +11,6 @@ add_definitions(-DUSE_OGLESGPGPU=0)
 
 set(
     SOURCES
-	OGLESGPGPUTest.cpp	
-	OGLESGPGPUTest.h
     VideoCapture.cpp
     VideoCapture.h
     glwidget.cpp
@@ -67,6 +65,7 @@ target_link_libraries(preview-qt
   Qt5::Widgets
   ${OpenCV_LIBS}
   gatherer_graphics
+	OGLESGPGPUTest
   ogles_gpgpu
 )
 
