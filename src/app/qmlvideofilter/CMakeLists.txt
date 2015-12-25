@@ -19,8 +19,8 @@ set(
   InfoFilterResult.hpp
   InfoFilterRunnable.hpp
   InfoFilterRunnable.cpp
-    FPSCalculator.hpp
-    FPSCalculator.cpp
+  FPSCalculator.hpp
+  FPSCalculator.cpp
   qmlvideofilter.qrc
   main.qml
   )
@@ -41,7 +41,7 @@ if(ANDROID)
   hunter_add_package(QtAndroidCMake)
   list(APPEND CMAKE_MODULE_PATH "${QTANDROIDCMAKE_ROOT}")
   include(AddQtAndroidApk)
-
+  
   add_qt_android_apk(
     TARGET qmlvideofilter-apk
     BASE_TARGET qmlvideofilter
