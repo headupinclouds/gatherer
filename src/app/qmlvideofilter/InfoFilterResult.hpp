@@ -42,16 +42,19 @@ class InfoFilterResult: public QObject {
   Q_PROPERTY(QSize frameResolution READ frameResolution)
   Q_PROPERTY(QString handleType READ handleType)
   Q_PROPERTY(QString pixelFormat READ pixelFormat)
+  Q_PROPERTY(int fps READ fps)
 
  public:
   QSize frameResolution() const { return m_frameResolution; }
   QString handleType() const { return m_handleType; }
   QString pixelFormat() const { return m_pixelFormat; }
+  int fps() const { return m_fps; }
 
  private:
   QSize m_frameResolution;
   QString m_handleType;
   QString m_pixelFormat;
+  int m_fps;
   friend class InfoFilterRunnable;
 };
 
