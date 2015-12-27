@@ -4,20 +4,28 @@
 #include <opencv2/highgui.hpp>
 
 #define INITIAL_PROC_TYPE 1
-#define USE_INPUT_TEXTURE 0
 
 _GATHERER_GRAPHICS_BEGIN
-
-// ==========
 
 OEGLGPGPUTest::OEGLGPGPUTest(void *glContext, const float resolution)
 : glContext(glContext)
 , resolution(resolution)
-, dispRenderOrientation(ogles_gpgpu::RenderOrientationFlipped)
+, dispRenderOrientation(ogles_gpgpu::RenderOrientationStd)
 {
     initCam();
-    initOGLESGPGPU();
+    initOGLESGPGPU(glContext);
 }
+
+OEGLGPGPUTest::OEGLGPGPUTest(void *glContext, const cv::Size &screenSize, const float resolution)
+: glContext(glContext)
+, screenSize(screenSize)
+, resolution(resolution)
+, dispRenderOrientation(ogles_gpgpu::RenderOrientationDiagonalMirrored)
+{
+    initCam();
+    initOGLESGPGPU(glContext);
+}
+
 
 OEGLGPGPUTest::~OEGLGPGPUTest()
 {
@@ -27,32 +35,27 @@ OEGLGPGPUTest::~OEGLGPGPUTest()
 
 void OEGLGPGPUTest::initCam()
 {
-    
+
 }
 
-void OEGLGPGPUTest::initOGLESGPGPU()
+void OEGLGPGPUTest::initOGLESGPGPU(void* glContext)
 {
     // get ogles_gpgpu::Core singleton instance
     gpgpuMngr = ogles_gpgpu::Core::getInstance();
-    
+
     // enable iOS optimizations (fast texture access)
     ogles_gpgpu::Core::tryEnablePlatformOptimizations();
-    
+
     // do not use mipmaps (will not work with NPOT images)
     gpgpuMngr->setUseMipmaps(false);
-    
-    // set up grayscale processor
-    //grayscaleProc.setOutputSize(0.5f);  // downscale to half size
 
-    // needed, because we actually have BGRA input data when we use iOS optimized memory access
-    //grayscaleProc.setGrayscaleConvType(ogles_gpgpu::GRAYSCALE_INPUT_CONVERSION_BGR);
-    
     // create the pipeline
     initGPUPipeline(4);
     
+    outputDispRenderer->setOutputSize(screenSize.width, screenSize.height);
+
     // initialize the pipeline (TODO)
-    gpgpuMngr->init(glContext); // <= diff context
-    
+    gpgpuMngr->init(glContext);
 }
 
 void OEGLGPGPUTest::setDisplaySize(int width, int height)
@@ -63,7 +66,7 @@ void OEGLGPGPUTest::setDisplaySize(int width, int height)
 void OEGLGPGPUTest::initGPUPipeline(int type)
 {
     if (selectedProcType == type) return;   // no change
-    
+
     // reset the pipeline
     gpgpuMngr->reset();
     
@@ -84,19 +87,36 @@ void OEGLGPGPUTest::initGPUPipeline(int type)
     }
     else if (type == 4)
     {
+
+#define USE_TRANSFORM 1
+#if USE_TRANSFORM
+        ogles_gpgpu::Mat44f transfomMatrix =
+        {{
+            {1.f,0.f,0.f,0.f},
+            {0.f,1.f,0.f,0.f},
+            {0.f,0.f,0.f,0.f},
+            {0.f,0.f,0.f,1.f}
+        }};
+        transfomMatrix.data[0][0] = 1.0;
+        transfomMatrix.data[1][1] = 1.0;
+        
+        transformProc.setTransformMatrix(transfomMatrix);
+        //transformProc.setOutputRenderOrientation(ogles_gpgpu::RenderOrientationDiagonalMirrored);
+        gpgpuMngr->addProcToPipeline(&transformProc);
+#endif
+        
         gpgpuMngr->addProcToPipeline(&grayscaleProc);
     }
     else
     {
         std::cout << "GPU pipeline definition #%d not supported" << type << std::endl;
     }
-    
+
     // create the display renderer with which we can directly render the output
     // to the screen via OpenGL
-    outputDispRenderer = gpgpuMngr->createRenderDisplay();
-    outputDispRenderer->setOutputRenderOrientation(dispRenderOrientation);
+    outputDispRenderer = gpgpuMngr->createRenderDisplay(screenSize.width, screenSize.height, dispRenderOrientation);
     outputDispRenderer->setDisplayResolution(resolution, resolution);
-    
+
     // reset this to call prepareForFramesOfSize again
     firstFrame = true;
     if (prepared)
@@ -105,39 +125,71 @@ void OEGLGPGPUTest::initGPUPipeline(int type)
     }
 }
 
-GLuint OEGLGPGPUTest::getTexture()
+GLuint OEGLGPGPUTest::getDisplayTexture() const
 {
-    return outputDispRenderer->getInputTexId();
+    return outputDispRenderer->getOutputTexId();
 }
 
-void OEGLGPGPUTest::captureOutput(const cv::Mat &image)
+GLuint OEGLGPGPUTest::getInputTexture() const
+{
+    return gpgpuInputHandler->getInputTexId();
+}
+
+GLuint OEGLGPGPUTest::getOutputTexture() const
+{
+    return gpgpuInputHandler->getOutputTexId();
+}
+
+GLuint OEGLGPGPUTest::getLastShaderOutputTexture() const
+{
+    return gpgpuMngr->getOutputTexId();
+}
+
+void OEGLGPGPUTest::captureOutput(cv::Size size, void* pixelBuffer, bool useRawPixels, GLuint inputTexture)
 {
     // when we get the first frame, prepare the system for the size of the incoming frames
     if (firstFrame)
     {
-        frameSize = image.size();
+        frameSize = size;
+        if(!screenSize.area())
+        {
+            screenSize = frameSize;
+        }
         prepareForFrameOfSize(frameSize);
+
+        outputDispRenderer->setOutputSize(screenSize.width, screenSize.height);
+        
         firstFrame = false;
     }
-    
+
+    gpgpuInputHandler->setUseRawPixels(useRawPixels);
+
     // on each new frame, this will release the input buffers and textures, and prepare new ones
     // texture format must be GL_BGRA because this is one of the native camera formats (see initCam)
 #if __ANDROID__
-    gpgpuInputHandler->prepareInput(frameSize.width, frameSize.height, GL_RGBA, (void *)image.ptr());
+    GLenum inputPixFormat = GL_RGBA;
 #else
-    gpgpuInputHandler->prepareInput(frameSize.width, frameSize.height, GL_BGRA, (void *)image.ptr());
+    GLenum inputPixFormat = GL_BGRA;
 #endif
-    
-#if USE_INPUT_TEXTURE
+
+    gpgpuInputHandler->prepareInput(frameSize.width, frameSize.height, inputPixFormat, pixelBuffer);
+
     // set the input texture id - we do not copy any data, we use the camera frame directly as texture!
-    gpgpuMngr->setInputTexId(gpgpuInputHandler->getInputTexId());
-#else
-    gpgpuMngr->setInputData(image.ptr());
-#endif
-    
+    if (inputTexture)
+    {
+      gpgpuMngr->setInputTexId(inputTexture);
+    }
+    else
+    {
+      gpgpuMngr->setInputTexId(gpgpuInputHandler->getInputTexId());
+    }
+
     // run processing pipeline
     gpgpuMngr->process();
-    
+
+    std::cerr << "Skipping render..." << std::endl;
+    return;
+
     // update the GL view to display the output directly
     outputDispRenderer->render();
 }
@@ -145,12 +197,9 @@ void OEGLGPGPUTest::captureOutput(const cv::Mat &image)
 void OEGLGPGPUTest::prepareForFrameOfSize(const cv::Size &size)
 {
     float frameAspectRatio = size.width / size.height;
-    
-    fprintf(stderr, "camera frames are of size %dx%d (aspect %f)", (int)size.width, (int)size.height, frameAspectRatio);
- 
-    // update the display renderer's output size
-    outputDispRenderer->setOutputSize(size.width, size.height);
-    
+
+    fprintf(stderr, "camera frames are of size %dx%d (aspect %f)\n", (int)size.width, (int)size.height, frameAspectRatio);
+
     // prepare ogles_gpgpu for the incoming frame size
     // GL_NONE means that the input memory transfer object is NOT prepared
     // this will be done in captureOutput: on each new frame
@@ -160,7 +209,7 @@ void OEGLGPGPUTest::prepareForFrameOfSize(const cv::Size &size)
     gpgpuMngr->prepare(size.width, size.height, true ? GL_BGRA : GL_NONE);
 #endif
     gpgpuInputHandler = gpgpuMngr->getInputMemTransfer();
-    
+
     // everything prepared
     prepared = true;
 }

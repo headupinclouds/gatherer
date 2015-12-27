@@ -15,6 +15,7 @@ rename_tab gatherer $TOOLCHAIN
 function build_all
 {
 	build.py --toolchain ${TOOLCHAIN} --verbose --fwd HUNTER_CONFIGURATION_TYPES=Release \
+			 USE_OGLES_GPGPU=ON \
 			 ${GATHERER_BUILD_ARGS[*]} \
 			 CMAKE_XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET=8.0 \
 			 --config Release \

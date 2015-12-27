@@ -29,7 +29,7 @@ int main(int argc, char **argv)
         capture >> frame;
         cv::resize(frame, frame, size);
         cv::cvtColor(frame, frame, cv::COLOR_BGR2BGRA);
-        test.captureOutput(frame);
+        test.captureOutput(frame.size(), frame.ptr(), true);
         window.swapBuffers();
     }
 }

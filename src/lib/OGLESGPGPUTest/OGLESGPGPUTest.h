@@ -1,3 +1,6 @@
+#ifndef OGLESGPGPUTEST_H
+#define OGLESGPGPUTEST_H
+
 #include "graphics/gatherer_graphics.h"
 
 #include "ogles_gpgpu/ogles_gpgpu.h"
@@ -5,26 +8,26 @@
 
 #include <opencv2/core/core.hpp>
 
-#ifndef OGLESGPGPUTEST_H
-#define OGLESGPGPUTEST_H
-
 _GATHERER_GRAPHICS_BEGIN
 
 class OEGLGPGPUTest
 {
-
 public:
-
+    OEGLGPGPUTest(void *glContext, const cv::Size &size, const float resolution=1.f);
     OEGLGPGPUTest(void *glContext, const float resolution=1.f);
     ~OEGLGPGPUTest();
-    void initOGLESGPGPU() ;
+    void initOGLESGPGPU(void* glContext) ;
     void initGPUPipeline(int type);
     void prepareForFrameOfSize(const cv::Size &size);
-    void captureOutput(const cv::Mat &image) ;
+    void captureOutput(cv::Size size, void* pixelBuffer, bool useRawPixels, GLuint inputTexture=0);
     void initCam();
     void setDisplaySize(int width, int height);
- 
-    GLuint getTexture();
+
+    GLuint getDisplayTexture() const;
+    GLuint getInputTexture() const;
+    GLuint getOutputTexture() const;
+    GLuint getLastShaderOutputTexture() const;
+
 protected:
 
     void *glContext = 0;
@@ -34,10 +37,14 @@ protected:
     bool showCamPreview;        // is YES if the camera preview is shown or NO if the processed frames are shown
     bool firstFrame;            // is YES when the current frame is the very first camera frame
     bool prepared;              // is YES when everything is ready to process camera frames
-    cv::Size frameSize;           // original camera frame size
+    cv::Size frameSize;         // original camera frame size
+    cv::Size screenSize;        // screen size
 
     ogles_gpgpu::Core *gpgpuMngr;                   // ogles_gpgpu manager
     ogles_gpgpu::MemTransfer *gpgpuInputHandler;    // input handler for direct access to the camera frames. weak ref!
+    
+    ogles_gpgpu::TransformProc transformProc;  // 2D parametric transformations
+    
     ogles_gpgpu::GrayscaleProc grayscaleProc;       // pipeline processor 1: convert input to grayscale image
     ogles_gpgpu::ThreshProc simpleThreshProc;       // pipeline processor 2 (alternative 1): simple thresholding
     ogles_gpgpu::AdaptThreshProc adaptThreshProc;   // pipeline processor 2 (alternative 2): adaptive thresholding (two passes)
@@ -49,4 +56,3 @@ protected:
 _GATHERER_GRAPHICS_END
 
 #endif // OGLESGPGPUTEST_H
-

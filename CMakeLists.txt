@@ -6,8 +6,8 @@ cmake_minimum_required(VERSION 3.0)
 ### Hunter snapshot that will be used ###
 include("cmake/HunterGate.cmake")
 HunterGate(
-    URL "https://github.com/ruslo/hunter/archive/v0.12.22.tar.gz"
-    SHA1 "868408f1f3d8deeaab13f4ebca28b02ec2dfcade"
+    URL "https://github.com/ruslo/hunter/archive/v0.12.33.tar.gz"
+    SHA1 "f64eda11326e12d84b6aa7f4aed80c09c182aa64"
     LOCAL
 )
 project(gatherer VERSION 0.1.0)
@@ -83,6 +83,13 @@ find_package(OpenCV REQUIRED)
 
 hunter_add_package(cereal)
 find_package(cereal CONFIG REQUIRED)
+
+## #################################################################
+## Dependencies - libyuv
+## #################################################################
+
+hunter_add_package(libyuv)
+find_package(libyuv CONFIG REQUIRED)
 
 ## #################################################################
 ## Dependencies - OpenGL stuff
