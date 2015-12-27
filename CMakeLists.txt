@@ -36,7 +36,7 @@ if(is_xcode)
   if(GATHERER_DISABLE_DSYM)
     set(CMAKE_XCODE_ATTRIBUTE_DEBUG_INFORMATION_FORMAT "dwarf")
   endif()
-  set(CMAKE_CONFIGURATION_TYPES "Debug;Release")
+  set(CMAKE_CONFIGURATION_TYPES "Debug;Release;MinSizeRel;RelWithDebInfo") 
   set(CMAKE_XCODE_ATTRIBUTE_ENABLE_BITCODE NO)
 endif()
 
