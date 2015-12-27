@@ -10,11 +10,22 @@ _GATHERER_GRAPHICS_BEGIN
 OEGLGPGPUTest::OEGLGPGPUTest(void *glContext, const float resolution)
 : glContext(glContext)
 , resolution(resolution)
-, dispRenderOrientation(ogles_gpgpu::RenderOrientationFlipped)
+, dispRenderOrientation(ogles_gpgpu::RenderOrientationStd)
 {
     initCam();
     initOGLESGPGPU(glContext);
 }
+
+OEGLGPGPUTest::OEGLGPGPUTest(void *glContext, const cv::Size &screenSize, const float resolution)
+: glContext(glContext)
+, screenSize(screenSize)
+, resolution(resolution)
+, dispRenderOrientation(ogles_gpgpu::RenderOrientationDiagonalMirrored)
+{
+    initCam();
+    initOGLESGPGPU(glContext);
+}
+
 
 OEGLGPGPUTest::~OEGLGPGPUTest()
 {
@@ -38,14 +49,10 @@ void OEGLGPGPUTest::initOGLESGPGPU(void* glContext)
     // do not use mipmaps (will not work with NPOT images)
     gpgpuMngr->setUseMipmaps(false);
 
-    // set up grayscale processor
-    //grayscaleProc.setOutputSize(0.5f);  // downscale to half size
-
-    // needed, because we actually have BGRA input data when we use iOS optimized memory access
-    //grayscaleProc.setGrayscaleConvType(ogles_gpgpu::GRAYSCALE_INPUT_CONVERSION_BGR);
-
     // create the pipeline
     initGPUPipeline(4);
+    
+    outputDispRenderer->setOutputSize(screenSize.width, screenSize.height);
 
     // initialize the pipeline (TODO)
     gpgpuMngr->init(glContext);
@@ -62,7 +69,7 @@ void OEGLGPGPUTest::initGPUPipeline(int type)
 
     // reset the pipeline
     gpgpuMngr->reset();
-
+    
     // create the pipeline
     if (type == 1)
     {
@@ -80,6 +87,24 @@ void OEGLGPGPUTest::initGPUPipeline(int type)
     }
     else if (type == 4)
     {
+
+#define USE_TRANSFORM 1
+#if USE_TRANSFORM
+        ogles_gpgpu::Mat44f transfomMatrix =
+        {{
+            {1.f,0.f,0.f,0.f},
+            {0.f,1.f,0.f,0.f},
+            {0.f,0.f,0.f,0.f},
+            {0.f,0.f,0.f,1.f}
+        }};
+        transfomMatrix.data[0][0] = 1.0;
+        transfomMatrix.data[1][1] = 1.0;
+        
+        transformProc.setTransformMatrix(transfomMatrix);
+        //transformProc.setOutputRenderOrientation(ogles_gpgpu::RenderOrientationDiagonalMirrored);
+        gpgpuMngr->addProcToPipeline(&transformProc);
+#endif
+        
         gpgpuMngr->addProcToPipeline(&grayscaleProc);
     }
     else
@@ -89,8 +114,7 @@ void OEGLGPGPUTest::initGPUPipeline(int type)
 
     // create the display renderer with which we can directly render the output
     // to the screen via OpenGL
-    outputDispRenderer = gpgpuMngr->createRenderDisplay();
-    outputDispRenderer->setOutputRenderOrientation(dispRenderOrientation);
+    outputDispRenderer = gpgpuMngr->createRenderDisplay(screenSize.width, screenSize.height, dispRenderOrientation);
     outputDispRenderer->setDisplayResolution(resolution, resolution);
 
     // reset this to call prepareForFramesOfSize again
@@ -103,7 +127,7 @@ void OEGLGPGPUTest::initGPUPipeline(int type)
 
 GLuint OEGLGPGPUTest::getDisplayTexture() const
 {
-    return outputDispRenderer->getInputTexId();
+    return outputDispRenderer->getOutputTexId();
 }
 
 GLuint OEGLGPGPUTest::getInputTexture() const
@@ -127,7 +151,14 @@ void OEGLGPGPUTest::captureOutput(cv::Size size, void* pixelBuffer, bool useRawP
     if (firstFrame)
     {
         frameSize = size;
+        if(!screenSize.area())
+        {
+            screenSize = frameSize;
+        }
         prepareForFrameOfSize(frameSize);
+
+        outputDispRenderer->setOutputSize(screenSize.width, screenSize.height);
+        
         firstFrame = false;
     }
 
@@ -156,6 +187,7 @@ void OEGLGPGPUTest::captureOutput(cv::Size size, void* pixelBuffer, bool useRawP
     // run processing pipeline
     gpgpuMngr->process();
 
+    std::cerr << "Skipping render..." << std::endl;
     return;
 
     // update the GL view to display the output directly
@@ -167,9 +199,6 @@ void OEGLGPGPUTest::prepareForFrameOfSize(const cv::Size &size)
     float frameAspectRatio = size.width / size.height;
 
     fprintf(stderr, "camera frames are of size %dx%d (aspect %f)\n", (int)size.width, (int)size.height, frameAspectRatio);
-
-    // update the display renderer's output size
-    outputDispRenderer->setOutputSize(size.width, size.height);
 
     // prepare ogles_gpgpu for the incoming frame size
     // GL_NONE means that the input memory transfer object is NOT prepared
