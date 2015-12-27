@@ -87,21 +87,27 @@ VideoFilterRunnable::~VideoFilterRunnable() {
 
 QVideoFrame VideoFilterRunnable::run(
     QVideoFrame *input, const QVideoSurfaceFormat &surfaceFormat, RunFlags flags
-) {
+)
+{
   Q_UNUSED(surfaceFormat);
   Q_UNUSED(flags);
     
+    float resolution = 1.0f;
     void* glContext = 0;
 #if GATHERER_IOS
     glContext = ogles_gpgpu::Core::getCurrentEAGLContext();
+    resolution = 2.0f;
 #else
     glContext = QOpenGLContext::currentContext();
 #endif
     if(!m_pipeline)
     {
-        int params = 0;
-        glGetIntegerv(GL_ACTIVE_TEXTURE, &params);
-        m_pipeline = std::make_shared<gatherer::graphics::OEGLGPGPUTest>(glContext, 1.0); // TODO: resolution
+        GLint backingWidth, backingHeight;
+        glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &backingWidth);
+        glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &backingHeight);
+        cv::Size screenSize(backingWidth, backingHeight);
+        
+        m_pipeline = std::make_shared<gatherer::graphics::OEGLGPGPUTest>(glContext, screenSize, resolution);
     }
 
   // This example supports RGB data only, either in system memory (typical with
@@ -241,6 +247,7 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
             // QT is expecting GL_TEXTURE0 to be active
             glActiveTexture(GL_TEXTURE0);
             GLuint texture = m_pipeline->getLastShaderOutputTexture();
+            //GLuint texture = m_pipeline->getDisplayTexture();
             f->glBindTexture(GL_TEXTURE_2D, texture);
             return texture;
         }
