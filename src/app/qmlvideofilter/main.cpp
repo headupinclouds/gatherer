@@ -45,60 +45,66 @@
 #include <iostream>
 
 #if defined(Q_OS_IOS)
-extern "C" int qtmn(int argc, char** argv) {
+extern "C" int qtmn(int argc, char** argv)
+{
 #else
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
 #endif
 #ifdef Q_OS_WIN // avoid ANGLE on Windows
-  QCoreApplication::setAttribute(Qt::AA_UseDesktopOpenGL);
+    QCoreApplication::setAttribute(Qt::AA_UseDesktopOpenGL);
 #endif
-  QGuiApplication app(argc, argv);
-
-  qmlRegisterType<VideoFilter>("qmlvideofilter.test", 1, 0, "VideoFilter");
-  qmlRegisterType<InfoFilter>("qmlvideofilter.test", 1, 0, "InfoFilter");
-
-  QQuickView view;
-  view.setSource(QUrl("qrc:///main.qml"));
-
+    QGuiApplication app(argc, argv);
+    
+    qmlRegisterType<VideoFilter>("qmlvideofilter.test", 1, 0, "VideoFilter");
+    qmlRegisterType<InfoFilter>("qmlvideofilter.test", 1, 0, "InfoFilter");
+    
+    QQuickView view;
+    view.setSource(QUrl("qrc:///main.qml"));
+    view.setResizeMode( QQuickView::SizeRootObjectToView );
+    
 #if defined(Q_OS_IOS)
-  // Default camera on iOS is not setting good parameters by default
-  QQuickItem* root = view.rootObject();
-  QObject* qmlCamera = root->findChild<QObject*>("CameraObject");
-  assert(qmlCamera != nullptr);
-
-  QCamera* camera = qvariant_cast<QCamera*>(qmlCamera->property("mediaObject")); 
-  assert(camera != nullptr);
-
+    // Default camera on iOS is not setting good parameters by default
+    QQuickItem* root = view.rootObject();
+    
+    //root->setSize({960,1280});
+    
+    QObject* qmlCamera = root->findChild<QObject*>("CameraObject");
+    assert(qmlCamera != nullptr);
+    
+    QCamera* camera = qvariant_cast<QCamera*>(qmlCamera->property("mediaObject"));
+    assert(camera != nullptr);
+    
 #if 0
-  QCameraViewfinderSettings viewfinderFoundSetting;
-  assert(viewfinderFoundSetting.isNull());
+    QCameraViewfinderSettings viewfinderFoundSetting;
+    assert(viewfinderFoundSetting.isNull());
     
-  // Format_ARGB32 == 1
-  // Format_NV12 == 22
-  auto viewfinderSettings = camera->supportedViewfinderSettings();
-  for (auto i: viewfinderSettings) {
-    bool good = true;
-    
-    if (i.pixelFormat() != QVideoFrame::Format_ARGB32) {
-      good = false;
+    // Format_ARGB32 == 1
+    // Format_NV12 == 22
+    auto viewfinderSettings = camera->supportedViewfinderSettings();
+    for (auto i: viewfinderSettings) {
+        bool good = true;
+        
+        if (i.pixelFormat() != QVideoFrame::Format_ARGB32) {
+            good = false;
+        }
+        if (i.resolution().height() > view.height()) {
+            good = false;
+        }
+        if (i.resolution().width() > view.width()) {
+            good = false;
+        }
+        if (good) {
+            // Get last setting if several RGB available.
+            // Goes from lower resolution to higher (verify?)
+            viewfinderFoundSetting = i;
+        }
     }
-    if (i.resolution().height() > view.height()) {
-      good = false;
-    }
-    if (i.resolution().width() > view.width()) {
-      good = false;
-    }
-    if (good) {
-      // Get last setting if several RGB available.
-      // Goes from lower resolution to higher (verify?)
-      viewfinderFoundSetting = i;
-    }
-  }
-  assert(viewfinderFoundSetting.pixelFormat() == QVideoFrame::Format_ARGB32);
-  camera->setViewfinderSettings(viewfinderFoundSetting);
+    assert(viewfinderFoundSetting.pixelFormat() == QVideoFrame::Format_ARGB32);
+    camera->setViewfinderSettings(viewfinderFoundSetting);
 #endif
     // Try the highest resolution ARGB32 format:
-    QVideoFrame::PixelFormat desiredFormat = QVideoFrame::Format_ARGB32;
+    QVideoFrame::PixelFormat desiredFormat = QVideoFrame::Format_NV12;// QVideoFrame::Format_ARGB32;
     auto viewfinderSettings = camera->supportedViewfinderSettings();
     std::pair<int, QCameraViewfinderSettings> best;
     for (auto i: viewfinderSettings)
@@ -116,8 +122,8 @@ int main(int argc, char **argv) {
     assert(best.second.pixelFormat() == desiredFormat);
     camera->setViewfinderSettings(best.second);
 #endif
-
-  view.show();
-
-  return app.exec();
+    
+    view.show();
+    
+    return app.exec();
 }
