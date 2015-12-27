@@ -51,6 +51,9 @@ Item {
     source: camera
     filters: [ infofilter, videofilter ]
     anchors.fill: parent
+    fillMode: Image.PreserveAspectFit
+    width: sourceSize.width
+    orientation: 90
   }
 
   VideoFilter {
