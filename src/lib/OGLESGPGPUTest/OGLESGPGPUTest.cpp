@@ -119,6 +119,7 @@ void OEGLGPGPUTest::initGPUPipeline(int type)
         // TODO: investigate QT mechanism for avoiding this.
         transformProc2.setTransformMatrix(transfomMatrix);
         transformProc2.setOutputRenderOrientation(ogles_gpgpu::RenderOrientationDiagonalFlipped);
+        transformProc2.setOutputSize(0.25);
 
         gpgpuMngr->addProcToPipeline(&transformProc2);
 #endif
