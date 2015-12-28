@@ -63,11 +63,11 @@ int main(int argc, char **argv)
     view.setSource(QUrl("qrc:///main.qml"));
     view.setResizeMode( QQuickView::SizeRootObjectToView );
     
+    //QVideoSurfaceFormat
+    
 #if defined(Q_OS_IOS)
     // Default camera on iOS is not setting good parameters by default
     QQuickItem* root = view.rootObject();
-    
-    //root->setSize({960,1280});
     
     QObject* qmlCamera = root->findChild<QObject*>("CameraObject");
     assert(qmlCamera != nullptr);
@@ -75,6 +75,9 @@ int main(int argc, char **argv)
     QCamera* camera = qvariant_cast<QCamera*>(qmlCamera->property("mediaObject"));
     assert(camera != nullptr);
     
+    QObject * qmlVideoOutput = root->findChild<QObject*>("VideoOutput");
+    assert(qmlVideoOutput);
+
 #if 0
     QCameraViewfinderSettings viewfinderFoundSetting;
     assert(viewfinderFoundSetting.isNull());
@@ -123,7 +126,8 @@ int main(int argc, char **argv)
     camera->setViewfinderSettings(best.second);
 #endif
     
-    view.show();
+    //view.show();
+    view.showFullScreen();
     
     return app.exec();
 }

@@ -37,6 +37,8 @@ import QtMultimedia 5.5
 import qmlvideofilter.test 1.0 // VideoFilter, InfoFilter
 
 Item {
+
+  // width/height is ignored (on iOS at least)
   width: 1024
   height: 768
 
@@ -49,11 +51,12 @@ Item {
   VideoOutput {
     id: output
     source: camera
+    focus : visible
     filters: [ infofilter, videofilter ]
     anchors.fill: parent
-    fillMode: Image.PreserveAspectFit
-    width: sourceSize.width
-    orientation: 90
+    fillMode: VideoOutput.PreserveAspectFit
+    rotation: 270 // TODO: QML for device independent upright (!= "auto")
+    objectName: "VideoOutput"
   }
 
   VideoFilter {
