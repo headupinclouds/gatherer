@@ -137,9 +137,7 @@ QVideoFrame VideoFilterRunnable::run(
   //    m_outTexture = newTexture();
   m_outTexture = createTextureForFrame(input);
 
-  // Accessing dynamic properties on the filter element is simple:
-  qreal factor = m_filter->factor();
-   return TextureBuffer::createVideoFrame(m_outTexture, m_size);
+  return TextureBuffer::createVideoFrame(m_outTexture, m_size.transposed());
 }
 
 void VideoFilterRunnable::releaseTextures() {
