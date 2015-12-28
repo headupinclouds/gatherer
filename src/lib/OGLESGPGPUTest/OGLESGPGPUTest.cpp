@@ -97,15 +97,31 @@ void OEGLGPGPUTest::initGPUPipeline(int type)
             {0.f,0.f,0.f,0.f},
             {0.f,0.f,0.f,1.f}
         }};
-        transfomMatrix.data[0][0] = 1.0;
-        transfomMatrix.data[1][1] = 1.0;
         
-        transformProc.setTransformMatrix(transfomMatrix);
-        //transformProc.setOutputRenderOrientation(ogles_gpgpu::RenderOrientationDiagonalMirrored);
-        gpgpuMngr->addProcToPipeline(&transformProc);
+        // Use this to place the texture upright for processing (object, detection, etc)
+        transformProc1.setTransformMatrix(transfomMatrix);
+        transformProc1.setOutputRenderOrientation(ogles_gpgpu::RenderOrientationDiagonalMirrored);
+        
+        gpgpuMngr->addProcToPipeline(&transformProc1);
 #endif
         
         gpgpuMngr->addProcToPipeline(&grayscaleProc);
+        
+#if USE_TRANSFORM
+        // Use this to place the texture back in the native orientation (and aspect ratio)
+        // provided by the QML Camera since the QML VideoOutput object that displays the
+        // frames is expecting that and I don't see a trivial way to work around that.
+        // It seems we need to override either the VideoObject class or encapsulate this
+        // native processing pipeline in some kind of ExtendedCamera qml object that
+        // reports the size and orientation of the final processed texture.  Since this
+        // is all on the GPU it may not matter much from a performance standpoint.
+        //
+        // TODO: investigate QT mechanism for avoiding this.
+        transformProc2.setTransformMatrix(transfomMatrix);
+        transformProc2.setOutputRenderOrientation(ogles_gpgpu::RenderOrientationDiagonalFlipped);
+
+        gpgpuMngr->addProcToPipeline(&transformProc2);
+#endif
     }
     else
     {

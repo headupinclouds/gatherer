@@ -43,7 +43,8 @@ protected:
     ogles_gpgpu::Core *gpgpuMngr;                   // ogles_gpgpu manager
     ogles_gpgpu::MemTransfer *gpgpuInputHandler;    // input handler for direct access to the camera frames. weak ref!
     
-    ogles_gpgpu::TransformProc transformProc;  // 2D parametric transformations
+    ogles_gpgpu::TransformProc transformProc1;  // 2D parametric transformations
+    ogles_gpgpu::TransformProc transformProc2;  // 2D parametric transformations
     
     ogles_gpgpu::GrayscaleProc grayscaleProc;       // pipeline processor 1: convert input to grayscale image
     ogles_gpgpu::ThreshProc simpleThreshProc;       // pipeline processor 2 (alternative 1): simple thresholding
