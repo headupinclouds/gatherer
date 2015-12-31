@@ -15,7 +15,7 @@
         android:configChanges="orientation|uiMode|screenLayout|screenSize|smallestScreenSize|layoutDirection|locale|fontScale|keyboard|keyboardHidden|navigation"
         android:name="org.qtproject.qt5.android.bindings.QtActivity"
         android:label="qmlvideofilter"
-        android:screenOrientation="unspecified"
+        android:screenOrientation="portrait"
         android:launchMode="singleTop"
     >
       <intent-filter>
