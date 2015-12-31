@@ -239,8 +239,8 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
         QVideoFrameScopeMap scopeMap(input, QAbstractVideoBuffer::ReadOnly);
         if(scopeMap)
         {
-            cv::Mat frame = QVideoFrameToCV(input);
-            m_pipeline->captureOutput(frame.size(), frame.ptr(), true);
+            GLenum textureFormat = input->pixelFormat() == QVideoFrame::Format_ARGB32 ? GL_BGRA : 0;
+            m_pipeline->captureOutput({input->width(), input->height()}, input->bits(), true, 0, textureFormat);
         
             // QT is expecting GL_TEXTURE0 to be active
             glActiveTexture(GL_TEXTURE0);

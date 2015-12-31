@@ -6,9 +6,17 @@
 #include "ogles_gpgpu/ogles_gpgpu.h"
 #include "ogles_gpgpu/common/gl/memtransfer.h"
 
+#include "common/proc/yuv2rgb.h"
+
 #include <opencv2/core/core.hpp>
 
 _GATHERER_GRAPHICS_BEGIN
+
+#if __ANDROID__
+#  define DFLT_PIX_FORMAT GL_RGBA
+#else
+#  define DFLT_PIX_FORMAT GL_BGRA
+#endif
 
 class OEGLGPGPUTest
 {
@@ -19,7 +27,7 @@ public:
     void initOGLESGPGPU(void* glContext) ;
     void initGPUPipeline(int type);
     void prepareForFrameOfSize(const cv::Size &size);
-    void captureOutput(cv::Size size, void* pixelBuffer, bool useRawPixels, GLuint inputTexture=0);
+    void captureOutput(cv::Size size, void* pixelBuffer, bool useRawPixels, GLuint inputTexture=0, GLenum inputPixFormat=DFLT_PIX_FORMAT);
     void initCam();
     void setDisplaySize(int width, int height);
 
@@ -43,6 +51,8 @@ protected:
     ogles_gpgpu::Core *gpgpuMngr;                   // ogles_gpgpu manager
     ogles_gpgpu::MemTransfer *gpgpuInputHandler;    // input handler for direct access to the camera frames. weak ref!
     
+    ogles_gpgpu::MemTransfer *yuvInputHandler; // special yuv input handler (weak ref!)
+    
     ogles_gpgpu::TransformProc transformProc1;  // 2D parametric transformations
     ogles_gpgpu::TransformProc transformProc2;  // 2D parametric transformations
     
@@ -52,6 +62,8 @@ protected:
     ogles_gpgpu::GaussProc gaussProc;               // pipeline processor 2 (alternative 3): gaussian smoothing (two passes)
     ogles_gpgpu::Disp *outputDispRenderer;          // display renderer to directly display the output in the GL view. weak ref!
     ogles_gpgpu::RenderOrientation dispRenderOrientation;   // current output orientation of the display renderer
+    
+    ogles_gpgpu::Yuv2RgbProc yuv2RgbProc;
 };
 
 _GATHERER_GRAPHICS_END

@@ -107,11 +107,12 @@ int main(int argc, char **argv)
     camera->setViewfinderSettings(viewfinderFoundSetting);
 #endif
     // Try the highest resolution ARGB32 format:
-    QVideoFrame::PixelFormat desiredFormat = QVideoFrame::Format_ARGB32;
+    QVideoFrame::PixelFormat desiredFormat = QVideoFrame::Format_NV12; // QVideoFrame::Format_ARGB32;
     auto viewfinderSettings = camera->supportedViewfinderSettings();
     std::pair<int, QCameraViewfinderSettings> best;
     for (auto i: viewfinderSettings)
     {
+        std::cout << i.resolution().width() << "x" << i.resolution().height() << " : " << int(i.pixelFormat()) << std::endl;
         if (i.pixelFormat() == desiredFormat)
         {
             int area = (i.resolution().height() * i.resolution().width());

@@ -50,7 +50,7 @@ void OEGLGPGPUTest::initOGLESGPGPU(void* glContext)
     gpgpuMngr->setUseMipmaps(false);
 
     // create the pipeline
-    initGPUPipeline(4);
+    initGPUPipeline(3);
     
     outputDispRenderer->setOutputSize(screenSize.width, screenSize.height);
 
@@ -88,7 +88,7 @@ void OEGLGPGPUTest::initGPUPipeline(int type)
     else if (type == 4)
     {
 
-#define USE_TRANSFORM 1
+#define USE_TRANSFORM 0
 #if USE_TRANSFORM
         ogles_gpgpu::Mat44f transfomMatrix =
         {{
@@ -162,7 +162,7 @@ GLuint OEGLGPGPUTest::getLastShaderOutputTexture() const
     return gpgpuMngr->getOutputTexId();
 }
 
-void OEGLGPGPUTest::captureOutput(cv::Size size, void* pixelBuffer, bool useRawPixels, GLuint inputTexture)
+void OEGLGPGPUTest::captureOutput(cv::Size size, void* pixelBuffer, bool useRawPixels, GLuint inputTexture, GLenum inputPixFormat)
 {
     // when we get the first frame, prepare the system for the size of the incoming frames
     if (firstFrame)
@@ -176,6 +176,10 @@ void OEGLGPGPUTest::captureOutput(cv::Size size, void* pixelBuffer, bool useRawP
 
         outputDispRenderer->setOutputSize(screenSize.width, screenSize.height);
         
+        // YUV:
+        yuv2RgbProc.init(frameSize.width, frameSize.height, 0, true); // TODO: NEW
+        yuv2RgbProc.createFBOTex(false);
+        
         firstFrame = false;
     }
 
@@ -183,13 +187,25 @@ void OEGLGPGPUTest::captureOutput(cv::Size size, void* pixelBuffer, bool useRawP
 
     // on each new frame, this will release the input buffers and textures, and prepare new ones
     // texture format must be GL_BGRA because this is one of the native camera formats (see initCam)
-#if __ANDROID__
-    GLenum inputPixFormat = GL_RGBA;
-#else
-    GLenum inputPixFormat = GL_BGRA;
-#endif
 
-    gpgpuInputHandler->prepareInput(frameSize.width, frameSize.height, inputPixFormat, pixelBuffer);
+    if(inputPixFormat == 0)
+    {
+        // YUV: Special case NV12=>BGR
+        auto manager = yuv2RgbProc.getMemTransferObj();
+        manager->setUseRawPixels(true);
+        manager->prepareInput(frameSize.width, frameSize.height, inputPixFormat, pixelBuffer);
+
+        yuv2RgbProc.setTextures(manager->getLuminanceTexId(), manager->getChrominanceTexId());
+        yuv2RgbProc.render();
+        glFinish();
+        
+        inputTexture = yuv2RgbProc.getOutputTexId(); // will be used below
+        gpgpuInputHandler->prepareInput(frameSize.width, frameSize.height, GL_NONE, nullptr);
+    }
+    else
+    {
+        gpgpuInputHandler->prepareInput(frameSize.width, frameSize.height, inputPixFormat, pixelBuffer);
+    }
 
     // set the input texture id - we do not copy any data, we use the camera frame directly as texture!
     if (inputTexture)
