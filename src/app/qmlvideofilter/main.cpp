@@ -63,9 +63,6 @@ int main(int argc, char **argv)
     view.setSource(QUrl("qrc:///main.qml"));
     view.setResizeMode( QQuickView::SizeRootObjectToView );
     
-    //QVideoSurfaceFormat
-    
-#if defined(Q_OS_IOS)
     // Default camera on iOS is not setting good parameters by default
     QQuickItem* root = view.rootObject();
     
@@ -78,35 +75,7 @@ int main(int argc, char **argv)
     QObject * qmlVideoOutput = root->findChild<QObject*>("VideoOutput");
     assert(qmlVideoOutput);
 
-#if 0
-    QCameraViewfinderSettings viewfinderFoundSetting;
-    assert(viewfinderFoundSetting.isNull());
-    
-    // Format_ARGB32 == 1
-    // Format_NV12 == 22
-    auto viewfinderSettings = camera->supportedViewfinderSettings();
-    for (auto i: viewfinderSettings) {
-        bool good = true;
-        
-        if (i.pixelFormat() != QVideoFrame::Format_ARGB32) {
-            good = false;
-        }
-        if (i.resolution().height() > view.height()) {
-            good = false;
-        }
-        if (i.resolution().width() > view.width()) {
-            good = false;
-        }
-        if (good) {
-            // Get last setting if several RGB available.
-            // Goes from lower resolution to higher (verify?)
-            viewfinderFoundSetting = i;
-        }
-    }
-    assert(viewfinderFoundSetting.pixelFormat() == QVideoFrame::Format_ARGB32);
-    camera->setViewfinderSettings(viewfinderFoundSetting);
-#endif
-    // Try the highest resolution ARGB32 format:
+    // Try the highest resolution NV12 format format:
     QVideoFrame::PixelFormat desiredFormat = QVideoFrame::Format_NV12; // QVideoFrame::Format_ARGB32;
     auto viewfinderSettings = camera->supportedViewfinderSettings();
     std::pair<int, QCameraViewfinderSettings> best;
@@ -125,7 +94,6 @@ int main(int argc, char **argv)
     assert(!best.second.isNull());
     assert(best.second.pixelFormat() == desiredFormat);
     camera->setViewfinderSettings(best.second);
-#endif
     
     //view.show();
     view.showFullScreen();
