@@ -42,6 +42,8 @@
 #include "VideoFilter.hpp"
 #include "InfoFilter.hpp"
 
+#include "graphics/Logger.h"
+
 #include <iostream>
 
 #if defined(Q_OS_IOS)
@@ -56,6 +58,9 @@ int main(int argc, char **argv)
 #endif
     QGuiApplication app(argc, argv);
     
+    auto logger = gatherer::graphics::Logger::create("qmlvideofilter");
+    logger->info("Start");
+    
     qmlRegisterType<VideoFilter>("qmlvideofilter.test", 1, 0, "VideoFilter");
     qmlRegisterType<InfoFilter>("qmlvideofilter.test", 1, 0, "InfoFilter");
     
@@ -63,6 +68,7 @@ int main(int argc, char **argv)
     view.setSource(QUrl("qrc:///main.qml"));
     view.setResizeMode( QQuickView::SizeRootObjectToView );
     
+#if defined(Q_OS_IOS)
     // Default camera on iOS is not setting good parameters by default
     QQuickItem* root = view.rootObject();
     
@@ -75,14 +81,18 @@ int main(int argc, char **argv)
     QObject * qmlVideoOutput = root->findChild<QObject*>("VideoOutput");
     assert(qmlVideoOutput);
 
-    // Try the highest resolution NV12 format format:
-    QVideoFrame::PixelFormat desiredFormat = QVideoFrame::Format_NV12; // QVideoFrame::Format_ARGB32;
+    // Try the highest resolution NV{12,21} format format:
+    // This should work for both Android and iOS
+    std::vector<QVideoFrame::PixelFormat> desiredFormats { QVideoFrame::Format_NV12, QVideoFrame::Format_NV21 };
     auto viewfinderSettings = camera->supportedViewfinderSettings();
+    
+    logger->info() << "# of settings: " << viewfinderSettings.size() << "\n";
+    
     std::pair<int, QCameraViewfinderSettings> best;
     for (auto i: viewfinderSettings)
     {
-        std::cout << i.resolution().width() << "x" << i.resolution().height() << " : " << int(i.pixelFormat()) << std::endl;
-        if (i.pixelFormat() == desiredFormat)
+        logger->info() << "settings: " << i.resolution().width() << "x" << i.resolution().height() << " : " << int(i.pixelFormat()) << "\n";
+        if(std::find(desiredFormats.begin(), desiredFormats.end(), i.pixelFormat()) != desiredFormats.end())
         {
             int area = (i.resolution().height() * i.resolution().width());
             if(area > best.first)
@@ -92,10 +102,9 @@ int main(int argc, char **argv)
         }
     }
     assert(!best.second.isNull());
-    assert(best.second.pixelFormat() == desiredFormat);
     camera->setViewfinderSettings(best.second);
-    
-    //view.show();
+#endif // Q_OS_IOS
+
     view.showFullScreen();
     
     return app.exec();
