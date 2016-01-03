@@ -30,6 +30,7 @@ public:
     void captureOutput(cv::Size size, void* pixelBuffer, bool useRawPixels, GLuint inputTexture=0, GLenum inputPixFormat=DFLT_PIX_FORMAT);
     void initCam();
     void setDisplaySize(int width, int height);
+    cv::Size getOutputSize() const;
 
     GLuint getDisplayTexture() const;
     GLuint getInputTexture() const;

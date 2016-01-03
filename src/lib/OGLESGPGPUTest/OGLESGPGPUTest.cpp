@@ -162,6 +162,11 @@ GLuint OEGLGPGPUTest::getLastShaderOutputTexture() const
     return gpgpuMngr->getOutputTexId();
 }
 
+cv::Size OEGLGPGPUTest::getOutputSize() const
+{
+    return cv::Size(gpgpuMngr->getOutputFrameW(), gpgpuMngr->getOutputFrameH());
+}
+
 void OEGLGPGPUTest::captureOutput(cv::Size size, void* pixelBuffer, bool useRawPixels, GLuint inputTexture, GLenum inputPixFormat)
 {
     // when we get the first frame, prepare the system for the size of the incoming frames
