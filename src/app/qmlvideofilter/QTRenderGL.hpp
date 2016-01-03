@@ -35,6 +35,8 @@
 #define QTRENDERGL_H
 
 // Previously squircle class from QT Squircle example
+// See:
+// http://doc.qt.io/qt-5/qtquick-scenegraph-openglunderqml-example.html
 
 #include <QtQuick/QQuickItem>
 #include <QtGui/QOpenGLShaderProgram>
