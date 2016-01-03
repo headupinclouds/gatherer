@@ -38,9 +38,11 @@ import qmlvideofilter.test 1.0 // VideoFilter, InfoFilter
 
 Item {
 
-  // width/height is ignored (on iOS at least)
-  width: 1024
-  height: 768
+  // Using view.setResizeMode(QQuickView::SizeRootObjectToView);
+  // http://stackoverflow.com/a/21826542/5724090
+  id: fullScreen
+  width: 0
+  height: 0
 
   Camera {
     id: camera
@@ -49,14 +51,22 @@ Item {
   }
 
   VideoOutput {
-    id: output
+    id: output    
     source: camera
+    objectName: "VideoOutput"    
     focus : visible
     filters: [ infofilter, videofilter ]
-    anchors.fill: parent
+    anchors.fill: fullScreen
+    anchors.centerIn: parent
+    anchors.margins: 0
     fillMode: VideoOutput.PreserveAspectFit
-    rotation: 270 // TODO: QML for device independent upright (!= "auto")
-    objectName: "VideoOutput"
+
+    // Using:
+    // QObject* qmlCamera = root->findChild<QObject*>("CameraObject");
+    // QCamera* camera = qvariant_cast<QCamera*>(qmlCamera->property("mediaObject"));
+    // QCameraInfo cameraInfo(*camera);
+    // qmlVideoOutput->setProperty("rotation", cameraInfo.orientation());
+    // rotation: 0
   }
 
   VideoFilter {

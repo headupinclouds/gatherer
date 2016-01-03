@@ -38,6 +38,8 @@
 #include <QQuickView>
 #include <QQuickItem>
 #include <QCamera>
+#include <QQuickWindow>
+#include <QCameraInfo>
 
 #include "VideoFilter.hpp"
 #include "InfoFilter.hpp"
@@ -56,6 +58,7 @@ int main(int argc, char **argv)
 #ifdef Q_OS_WIN // avoid ANGLE on Windows
     QCoreApplication::setAttribute(Qt::AA_UseDesktopOpenGL);
 #endif
+    
     QGuiApplication app(argc, argv);
     
     auto logger = gatherer::graphics::Logger::create("qmlvideofilter");
@@ -64,11 +67,15 @@ int main(int argc, char **argv)
     qmlRegisterType<VideoFilter>("qmlvideofilter.test", 1, 0, "VideoFilter");
     qmlRegisterType<InfoFilter>("qmlvideofilter.test", 1, 0, "InfoFilter");
     
+    //QQuickWindow view;
     QQuickView view;
     view.setSource(QUrl("qrc:///main.qml"));
     view.setResizeMode( QQuickView::SizeRootObjectToView );
+    view.reportContentOrientationChange(Qt::PortraitOrientation);
+
+    // Note available:
+    //view.setAttribute(Qt::PortraitOrientation, true);
     
-#if defined(Q_OS_IOS)
     // Default camera on iOS is not setting good parameters by default
     QQuickItem* root = view.rootObject();
     
@@ -80,7 +87,11 @@ int main(int argc, char **argv)
     
     QObject * qmlVideoOutput = root->findChild<QObject*>("VideoOutput");
     assert(qmlVideoOutput);
-
+    
+    QCameraInfo cameraInfo(*camera);
+    qmlVideoOutput->setProperty("rotation", cameraInfo.orientation());
+    
+#if defined(Q_OS_IOS)
     // Try the highest resolution NV{12,21} format format:
     // This should work for both Android and iOS
     std::vector<QVideoFrame::PixelFormat> desiredFormats { QVideoFrame::Format_NV12, QVideoFrame::Format_NV21 };
