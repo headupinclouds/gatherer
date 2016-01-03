@@ -97,12 +97,12 @@ int main(int argc, char **argv)
     std::vector<QVideoFrame::PixelFormat> desiredFormats { QVideoFrame::Format_NV12, QVideoFrame::Format_NV21 };
     auto viewfinderSettings = camera->supportedViewfinderSettings();
     
-    logger->info() << "# of settings: " << viewfinderSettings.size() << "\n";
+    logger->info() << "# of settings: " << viewfinderSettings.size();
     
     std::pair<int, QCameraViewfinderSettings> best;
     for (auto i: viewfinderSettings)
     {
-        logger->info() << "settings: " << i.resolution().width() << "x" << i.resolution().height() << " : " << int(i.pixelFormat()) << "\n";
+        logger->info() << "settings: " << i.resolution().width() << "x" << i.resolution().height() << " : " << int(i.pixelFormat());
         if(std::find(desiredFormats.begin(), desiredFormats.end(), i.pixelFormat()) != desiredFormats.end())
         {
             int area = (i.resolution().height() * i.resolution().width());
