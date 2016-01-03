@@ -36,6 +36,8 @@ import QtQuick 2.0
 import QtMultimedia 5.5
 import qmlvideofilter.test 1.0 // VideoFilter, InfoFilter
 
+import OpenGLUnderQML 1.0 // direct rendering
+
 Item {
 
   // Using view.setResizeMode(QQuickView::SizeRootObjectToView);
@@ -48,6 +50,10 @@ Item {
     id: camera
     position: Camera.FrontFace
     objectName: "CameraObject"
+  }
+
+  QTRenderGL {
+    id: qtrendergl
   }
 
   VideoOutput {
@@ -72,20 +78,6 @@ Item {
   VideoFilter {
     id: videofilter
     active: false
-    // Animate a property which is passed to filter.
-    SequentialAnimation on factor {
-      loops: Animation.Infinite
-      NumberAnimation {
-        from: 1
-        to: 20
-        duration: 6000
-      }
-      NumberAnimation {
-        from: 20
-        to: 1
-        duration: 3000
-      }
-    }
   }
 
   InfoFilter {

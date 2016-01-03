@@ -23,6 +23,8 @@ set(
   FPSCalculator.cpp
   qmlvideofilter.qrc
   main.qml
+  QTRenderGL.hpp
+  QTRenderGL.cpp
   )
 
 if(ANDROID)

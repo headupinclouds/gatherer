@@ -43,6 +43,7 @@
 
 #include "VideoFilter.hpp"
 #include "InfoFilter.hpp"
+#include "QTRenderGL.hpp"
 
 #include "graphics/Logger.h"
 
@@ -66,6 +67,7 @@ int main(int argc, char **argv)
     
     qmlRegisterType<VideoFilter>("qmlvideofilter.test", 1, 0, "VideoFilter");
     qmlRegisterType<InfoFilter>("qmlvideofilter.test", 1, 0, "InfoFilter");
+    qmlRegisterType<QTRenderGL>("OpenGLUnderQML", 1, 0, "QTRenderGL");
     
     //QQuickWindow view;
     QQuickView view;
