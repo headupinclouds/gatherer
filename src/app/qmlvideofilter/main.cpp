@@ -62,7 +62,7 @@ int main(int argc, char **argv)
     QGuiApplication app(argc, argv);
     
     auto logger = gatherer::graphics::Logger::create("qmlvideofilter");
-    logger->info("Start");
+    logger->info() << "Start";
     
     qmlRegisterType<VideoFilter>("qmlvideofilter.test", 1, 0, "VideoFilter");
     qmlRegisterType<InfoFilter>("qmlvideofilter.test", 1, 0, "InfoFilter");
