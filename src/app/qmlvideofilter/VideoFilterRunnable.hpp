@@ -45,32 +45,27 @@ class VideoFilter;
 namespace gatherer { namespace graphics { class OEGLGPGPUTest; } }
 
 class VideoFilterRunnable: public QVideoFilterRunnable {
- public:
-  VideoFilterRunnable(VideoFilter *filter);
-  ~VideoFilterRunnable();
-
-  QVideoFrame run(
-      QVideoFrame *input,
-      const QVideoSurfaceFormat &surfaceFormat,
-      RunFlags flags
-  ) Q_DECL_OVERRIDE;
-
- private:
-  void releaseTextures();
-  uint newTexture();
-
-  static bool isFrameValid(const QVideoFrame& frame);
-  static bool isFrameFormatYUV(const QVideoFrame& frame);
-
-  GLuint createTextureForFrame(QVideoFrame* input);
-
-  VideoFilter* m_filter;
-  QSize m_size;
-  uint m_tempTexture;
-  uint m_outTexture;
-  uint m_lastInputTexture;
-  
-  std::shared_ptr<gatherer::graphics::OEGLGPGPUTest> m_pipeline;
+public:
+    VideoFilterRunnable(VideoFilter *filter);
+    ~VideoFilterRunnable();
+    
+    QVideoFrame run(
+                    QVideoFrame *input,
+                    const QVideoSurfaceFormat &surfaceFormat,
+                    RunFlags flags
+                    ) Q_DECL_OVERRIDE;
+    
+private:
+    
+    static bool isFrameValid(const QVideoFrame& frame);
+    static bool isFrameFormatYUV(const QVideoFrame& frame);
+    
+    GLuint createTextureForFrame(QVideoFrame* input);
+    VideoFilter* m_filter;
+    
+    uint m_lastInputTexture;
+    uint m_outTexture;
+    std::shared_ptr<gatherer::graphics::OEGLGPGPUTest> m_pipeline;
 };
 
 #endif // VIDEO_FILTER_RUNNABLE_HPP_
