@@ -137,7 +137,10 @@ QVideoFrame VideoFilterRunnable::run(
   //    m_outTexture = newTexture();
   m_outTexture = createTextureForFrame(input);
 
-  return TextureBuffer::createVideoFrame(m_outTexture, m_size.transposed());
+  auto size = m_pipeline->getOutputSize();
+    
+    
+  return TextureBuffer::createVideoFrame(m_outTexture, {size.width, size.height});
 }
 
 void VideoFilterRunnable::releaseTextures() {
