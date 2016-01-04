@@ -1,11 +1,31 @@
 #include "OGLESGPGPUTest.h"
 
+#include "ogles_gpgpu/common/gl/memtransfer_optimized.h"
+
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 
 #define INITIAL_PROC_TYPE 1
 
 _GATHERER_GRAPHICS_BEGIN
+
+class MemTransferScopeLock
+{
+public:
+    MemTransferScopeLock(ogles_gpgpu::MemTransferOptimized *transfer) : transfer(transfer)
+    {
+        ptr = transfer->lockBufferAndGetPtr(ogles_gpgpu::BUF_TYPE_OUTPUT);
+    }
+    ~MemTransferScopeLock()
+    {
+        transfer->unlockBuffer(ogles_gpgpu::BUF_TYPE_OUTPUT);
+    }
+    const void *data() const { return ptr; }
+    operator const void *() const { return ptr; }
+protected:
+    const void *ptr = 0;
+    ogles_gpgpu::MemTransferOptimized *transfer = 0;
+};
 
 OEGLGPGPUTest::OEGLGPGPUTest(void *glContext, const float resolution)
 : glContext(glContext)
@@ -35,7 +55,22 @@ OEGLGPGPUTest::~OEGLGPGPUTest()
 
 void OEGLGPGPUTest::initCam()
 {
-
+    /*
+     * Some temporary code to test the optimized gpu to cpu frame handler.
+     * This should be instantiated form a higher level (i.e., main.cpp)
+     * but this class hasn't been allocated at that point yet.  This at
+     * least supports testing of the concept.
+     */
+    
+#define TEST_FRAME_HANDLER 0
+#if TEST_FRAME_HANDLER
+    frameHandler = [](const cv::Mat &frame)
+    {
+        std::stringstream ss;
+        ss << getenv("HOME") << "/Documents/frame.png";
+        cv::imwrite(ss.str(), frame);
+    };
+#endif
 }
 
 void OEGLGPGPUTest::initOGLESGPGPU(void* glContext)
@@ -50,7 +85,7 @@ void OEGLGPGPUTest::initOGLESGPGPU(void* glContext)
     gpgpuMngr->setUseMipmaps(false);
 
     // create the pipeline
-    initGPUPipeline(3);
+    initGPUPipeline(5);
     
     outputDispRenderer->setOutputSize(screenSize.width, screenSize.height);
 
@@ -88,9 +123,11 @@ void OEGLGPGPUTest::initGPUPipeline(int type)
     else if (type == 4)
     {
 
-#define USE_TRANSFORM 0
-#if USE_TRANSFORM
-        ogles_gpgpu::Mat44f transfomMatrix =
+#define USE_TRANSFORM1 1
+#define USE_TRANSFORM2 0
+
+#if USE_TRANSFORM1
+        ogles_gpgpu::Mat44f transformMatrix =
         {{
             {1.f,0.f,0.f,0.f},
             {0.f,1.f,0.f,0.f},
@@ -99,15 +136,16 @@ void OEGLGPGPUTest::initGPUPipeline(int type)
         }};
         
         // Use this to place the texture upright for processing (object, detection, etc)
-        transformProc1.setTransformMatrix(transfomMatrix);
+        transformProc1.setTransformMatrix(transformMatrix);
         transformProc1.setOutputRenderOrientation(ogles_gpgpu::RenderOrientationDiagonalMirrored);
+        transformProc1.setOutputSize(0.25);
         
         gpgpuMngr->addProcToPipeline(&transformProc1);
 #endif
         
         gpgpuMngr->addProcToPipeline(&grayscaleProc);
         
-#if USE_TRANSFORM
+#if USE_TRANSFORM2
         // Use this to place the texture back in the native orientation (and aspect ratio)
         // provided by the QML Camera since the QML VideoOutput object that displays the
         // frames is expecting that and I don't see a trivial way to work around that.
@@ -117,12 +155,49 @@ void OEGLGPGPUTest::initGPUPipeline(int type)
         // is all on the GPU it may not matter much from a performance standpoint.
         //
         // TODO: investigate QT mechanism for avoiding this.
-        transformProc2.setTransformMatrix(transfomMatrix);
+        transformProc2.setTransformMatrix(transformMatrix);
         transformProc2.setOutputRenderOrientation(ogles_gpgpu::RenderOrientationDiagonalFlipped);
         transformProc2.setOutputSize(0.25);
 
         gpgpuMngr->addProcToPipeline(&transformProc2);
 #endif
+    }
+    else if (type == 5) // upright transformation
+    {
+        auto interpolation = ogles_gpgpu::TransformProc::BICUBIC;
+        
+        transformProc1.setInterpolation(interpolation);
+        float theta = 15.0 * M_PI / 180.0;
+        float ct = std::cos(theta);
+        float st = std::sin(theta);
+        ogles_gpgpu::Mat44f transformMatrix1, transformMatrix2;
+        
+        transformMatrix1 = transformMatrix2 =
+        {{
+            {1.f,0.f,0.f,0.f},
+            {0.f,1.f,0.f,0.f},
+            {0.f,0.f,0.f,0.f},
+            {0.f,0.f,0.f,1.f}
+        }};
+        
+        transformMatrix2.data[0][0] = +ct;
+        transformMatrix2.data[1][1] = +ct;
+        transformMatrix2.data[1][0] = +st;
+        transformMatrix2.data[0][1] = -st;
+        
+        // Use this to place the texture upright for processing (object, detection, etc)
+        transformProc1.setTransformMatrix(transformMatrix1); // don't rotate
+        transformProc1.setOutputRenderOrientation(ogles_gpgpu::RenderOrientationDiagonalMirrored);
+        transformProc1.setOutputSize(0.25);
+        
+        gpgpuMngr->addProcToPipeline(&transformProc1);
+        
+        transformProc2.setInterpolation(interpolation);
+        transformProc2.setTransformMatrix(transformMatrix2); // rotate output
+        transformProc2.setOutputRenderOrientation(ogles_gpgpu::RenderOrientationDiagonalFlipped);
+        transformProc2.setOutputSize(1.0);
+        
+        gpgpuMngr->addProcToPipeline(&transformProc2);
     }
     else
     {
@@ -225,6 +300,20 @@ void OEGLGPGPUTest::captureOutput(cv::Size size, void* pixelBuffer, bool useRawP
     // run processing pipeline
     gpgpuMngr->process();
 
+#if 1
+    if(frameHandler)
+    {
+        auto transfer = dynamic_cast<ogles_gpgpu::MemTransferOptimized *>(gpgpuMngr->getOutputMemTransfer());
+        if(transfer)
+        {
+            MemTransferScopeLock data(transfer);
+            cv::Size outSize(transformProc1.getOutFrameW(), transformProc1.getOutFrameH());
+            cv::Mat frame(outSize.height, outSize.width, CV_8UC4, (void *)data.data());
+            frameHandler(frame);
+        }
+    }
+#endif
+    
     std::cerr << "Skipping render..." << std::endl;
     return;
 

@@ -21,6 +21,9 @@ _GATHERER_GRAPHICS_BEGIN
 class OEGLGPGPUTest
 {
 public:
+    
+    typedef std::function<void(const cv::Mat &)> FrameHandler;
+    
     OEGLGPGPUTest(void *glContext, const cv::Size &size, const float resolution=1.f);
     OEGLGPGPUTest(void *glContext, const float resolution=1.f);
     ~OEGLGPGPUTest();
@@ -36,6 +39,8 @@ public:
     GLuint getInputTexture() const;
     GLuint getOutputTexture() const;
     GLuint getLastShaderOutputTexture() const;
+    
+    void setFrameHandler(FrameHandler &handler) { frameHandler = handler; }
 
 protected:
 
@@ -49,6 +54,8 @@ protected:
     cv::Size frameSize;         // original camera frame size
     cv::Size screenSize;        // screen size
 
+    FrameHandler frameHandler;
+    
     ogles_gpgpu::Core *gpgpuMngr;                   // ogles_gpgpu manager
     ogles_gpgpu::MemTransfer *gpgpuInputHandler;    // input handler for direct access to the camera frames. weak ref!
     
