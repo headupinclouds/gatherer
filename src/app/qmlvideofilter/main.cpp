@@ -41,11 +41,18 @@
 #include <QQuickWindow>
 #include <QCameraInfo>
 
+#include "VideoFilterRunnable.hpp"
 #include "VideoFilter.hpp"
 #include "InfoFilter.hpp"
 #include "QTRenderGL.hpp"
 
 #include "graphics/Logger.h"
+
+#define TEST_CALLBACK 0
+#if TEST_CALLBACK
+#  include "OGLESGPGPUTest.h"
+#  include <opencv2/highgui.hpp>
+#endif
 
 #include <iostream>
 
@@ -75,7 +82,7 @@ int main(int argc, char **argv)
     view.setResizeMode( QQuickView::SizeRootObjectToView );
     view.reportContentOrientationChange(Qt::PortraitOrientation);
 
-    // Note available:
+    // Not available:
     //view.setAttribute(Qt::PortraitOrientation, true);
     
     // Default camera on iOS is not setting good parameters by default
@@ -118,6 +125,21 @@ int main(int argc, char **argv)
     camera->setViewfinderSettings(best.second);
 #endif // Q_OS_IOS
 
+#if TEST_CALLBACK
+    // TODO: We need a way to register this callback after VideoFilterRunnable is instantiated:
+    gatherer::graphics::OEGLGPGPUTest *pipeline = 0; // ??? use signal/slot ?
+    if(pipeline)
+    {
+        gatherer::graphics::OEGLGPGPUTest::FrameHandler frameHandler = [](const cv::Mat &frame)
+        {
+            std::stringstream ss;
+            ss << getenv("HOME") << "/Documents/frame.png";
+            cv::imwrite(ss.str(), frame);
+        };
+        pipeline->setFrameHandler(frameHandler);
+    }
+#endif
+    
     view.showFullScreen();
     
     return app.exec();
