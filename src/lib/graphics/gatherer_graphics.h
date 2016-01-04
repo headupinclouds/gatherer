@@ -45,6 +45,10 @@
 // POSIX
 #endif
 
+#if !defined(GATHERER_IOS)
+# define GATHERER_IOS 0
+#endif
+
 // ANDROID
 //#include <GLES2/gl2.h>
 //#include <GLES2/gl2ext.h>
