@@ -40,6 +40,8 @@
 #include <QCamera>
 #include <QQuickWindow>
 #include <QCameraInfo>
+#include <QCameraImageCapture>
+#include <QMediaRecorder>
 
 #include "VideoFilterRunnable.hpp"
 #include "VideoFilter.hpp"
@@ -96,33 +98,82 @@ int main(int argc, char **argv)
     
     QObject * qmlVideoOutput = root->findChild<QObject*>("VideoOutput");
     assert(qmlVideoOutput);
-    
-    QCameraInfo cameraInfo(*camera);
-    qmlVideoOutput->setProperty("rotation", cameraInfo.orientation());
-    
-#if defined(Q_OS_IOS)
-    // Try the highest resolution NV{12,21} format format:
-    // This should work for both Android and iOS
-    std::vector<QVideoFrame::PixelFormat> desiredFormats { QVideoFrame::Format_NV12, QVideoFrame::Format_NV21 };
-    auto viewfinderSettings = camera->supportedViewfinderSettings();
-    
-    logger->info() << "# of settings: " << viewfinderSettings.size();
-    
-    std::pair<int, QCameraViewfinderSettings> best;
-    for (auto i: viewfinderSettings)
+
+#define DO_EXP_ANDROID_CONFIG 0
+#if DO_EXP_ANDROID_CONFIG
     {
-        logger->info() << "settings: " << i.resolution().width() << "x" << i.resolution().height() << " : " << int(i.pixelFormat());
-        if(std::find(desiredFormats.begin(), desiredFormats.end(), i.pixelFormat()) != desiredFormats.end())
+        std::pair<QSize, int> best;
+        QMediaRecorder *videoCapture = new QMediaRecorder(camera);
+        QCameraImageCapture *imageCapture = new QCameraImageCapture(camera);
+        QList<QVideoFrame::PixelFormat> formats = imageCapture->supportedBufferFormats();
+        
+        QList<QSize> resolutions = imageCapture->supportedResolutions();
+        //QList<QSize> resolutions = videoCapture->supportedResolutions(); // recording only?
+        if(resolutions.size())
         {
-            int area = (i.resolution().height() * i.resolution().width());
-            if(area > best.first)
+            // This seems to work on Android, but not for iOS
+            for(auto &i : resolutions)
             {
-                best = { area, i };
+                int area = i.width() * i.height();
+                if(area > best.second)
+                {
+                    best = {i, area};
+                }
+                logger->info() << "video: " << i.width() << " " << i.height();
             }
+            
+            logger->info() << "best: " << best.first.width() << " " << best.first.height();
+            
+            QVideoEncoderSettings videoEncoderSettings;
+            videoEncoderSettings.setResolution(best.first);
+            videoCapture->setVideoSettings(videoEncoderSettings);
+            
+            QImageEncoderSettings imageSettings;
+            imageSettings.setResolution(best.first);
+            imageCapture->setEncodingSettings(imageSettings);
+            
+            QCameraViewfinderSettings settings;
+            settings.setResolution(best.first);
+#if defined(Q_OS_IOS)
+            settings.setPixelFormat(QVideoFrame::Format_NV12);
+#else
+            settings.setPixelFormat(QVideoFrame::Format_NV21);
+#endif
+            
+            camera->setViewfinderSettings(settings);
+            auto result = camera->viewfinderSettings();
         }
     }
-    assert(!best.second.isNull());
-    camera->setViewfinderSettings(best.second);
+#endif // DO_EXP_ANDROID_CONFIG
+
+#if defined(Q_OS_IOS)
+    {
+        // Not available in Android:
+        // https://bugreports.qt.io/browse/QTBUG-46470
+        
+        // Try the highest resolution NV{12,21} format format:
+        // This should work for both Android and iOS
+        std::vector<QVideoFrame::PixelFormat> desiredFormats { QVideoFrame::Format_NV12, QVideoFrame::Format_NV21 };
+        auto viewfinderSettings = camera->supportedViewfinderSettings();
+        
+        logger->info() << "# of settings: " << viewfinderSettings.size();
+        
+        std::pair<int, QCameraViewfinderSettings> best;
+        for (auto i: viewfinderSettings)
+        {
+            logger->info() << "settings: " << i.resolution().width() << "x" << i.resolution().height() << " : " << int(i.pixelFormat());
+            if(std::find(desiredFormats.begin(), desiredFormats.end(), i.pixelFormat()) != desiredFormats.end())
+            {
+                int area = (i.resolution().height() * i.resolution().width());
+                if(area > best.first)
+                {
+                    best = { area, i };
+                }
+            }
+        }
+        assert(!best.second.isNull());
+        camera->setViewfinderSettings(best.second);
+    }
 #endif // Q_OS_IOS
 
 #if TEST_CALLBACK
@@ -140,6 +191,13 @@ int main(int argc, char **argv)
     }
 #endif
     
+    const QCameraInfo cameraInfo(*camera);
+    const bool hasTranspose = (cameraInfo.orientation() / 90) % 2;
+    const auto &resolution = camera->viewfinderSettings().resolution();
+    double scale = hasTranspose ? double(resolution.width())/resolution.height() : 1.0;
+    qmlVideoOutput->setProperty("scale", scale);
+    qmlVideoOutput->setProperty("rotation", cameraInfo.orientation());
+
     view.showFullScreen();
     
     return app.exec();

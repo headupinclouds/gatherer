@@ -8,5 +8,6 @@ build.py --toolchain ${ANDROID_TOOLCHAIN} --verbose --fwd ANDROID=TRUE \
 		 ${GATHERER_BUILD_ARGS[*]} \
 		 --config Release \
 		 --jobs 8 \
-		 --target qmlvideofilter-apk
+         --reconfig \
+		 --target qmlvideofilter-launch
 

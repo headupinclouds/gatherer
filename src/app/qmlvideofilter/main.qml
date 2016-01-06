@@ -62,17 +62,23 @@ Item {
     objectName: "VideoOutput"    
     focus : visible
     filters: [ infofilter, videofilter ]
-    anchors.fill: fullScreen
+    anchors.fill: parent
     anchors.centerIn: parent
     anchors.margins: 0
     fillMode: VideoOutput.PreserveAspectFit
 
-    // Using:
+    // rotation: 0
+    //
+    // Using this C++ for fixed upright orientation:
+    //
     // QObject* qmlCamera = root->findChild<QObject*>("CameraObject");
     // QCamera* camera = qvariant_cast<QCamera*>(qmlCamera->property("mediaObject"));
-    // QCameraInfo cameraInfo(*camera);
+    // const QCameraInfo cameraInfo(*camera);
+    // const bool hasTranspose = (cameraInfo.orientation() / 90) % 2;
+    // const auto &resolution = camera->viewfinderSettings().resolution();
+    // double scale = hasTranspose ? double(resolution.width())/resolution.height() : 1.0;
+    // qmlVideoOutput->setProperty("scale", scale);
     // qmlVideoOutput->setProperty("rotation", cameraInfo.orientation());
-    // rotation: 0
   }
 
   VideoFilter {

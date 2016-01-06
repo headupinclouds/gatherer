@@ -22,6 +22,7 @@ function build_all
 			 --jobs 8 \
 			 --open \
 			 --reconfig \
+             --nobuild \
 			 ${EXTRA_ARGS}
 }
 
