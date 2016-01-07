@@ -78,14 +78,9 @@ int main(int argc, char **argv)
     qmlRegisterType<InfoFilter>("qmlvideofilter.test", 1, 0, "InfoFilter");
     qmlRegisterType<QTRenderGL>("OpenGLUnderQML", 1, 0, "QTRenderGL");
     
-    //QQuickWindow view;
     QQuickView view;
     view.setSource(QUrl("qrc:///main.qml"));
     view.setResizeMode( QQuickView::SizeRootObjectToView );
-    view.reportContentOrientationChange(Qt::PortraitOrientation);
-
-    // Not available:
-    //view.setAttribute(Qt::PortraitOrientation, true);
     
     // Default camera on iOS is not setting good parameters by default
     QQuickItem* root = view.rootObject();
@@ -190,13 +185,6 @@ int main(int argc, char **argv)
         pipeline->setFrameHandler(frameHandler);
     }
 #endif
-    
-    const QCameraInfo cameraInfo(*camera);
-    const bool hasTranspose = (cameraInfo.orientation() / 90) % 2;
-    const auto &resolution = camera->viewfinderSettings().resolution();
-    double scale = hasTranspose ? double(resolution.width())/resolution.height() : 1.0;
-    qmlVideoOutput->setProperty("scale", scale);
-    qmlVideoOutput->setProperty("rotation", cameraInfo.orientation());
 
     view.showFullScreen();
     
