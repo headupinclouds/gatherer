@@ -45,3 +45,11 @@ void VideoFilter::setFactor(qreal v) {
     emit factorChanged();
   }
 }
+
+void VideoFilter::setOutputString(QString newOutput) {
+  if (m_outputString == newOutput) {
+    return;
+  }
+  m_outputString = newOutput;
+  emit outputStringChanged();
+}

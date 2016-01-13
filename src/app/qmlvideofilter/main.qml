@@ -123,6 +123,10 @@ Item {
       property int v
       text: (v != 0 ? v.toString() : "???" ) + " fps"
     }
+    Text {
+      color: "blue"
+      text: (videofilter.active && videofilter.outputString) ? videofilter.outputString : ""
+    }
   }
 
   MouseArea {
