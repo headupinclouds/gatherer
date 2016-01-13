@@ -49,6 +49,8 @@
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 
+#include <QDateTime>
+
 struct QVideoFrameScopeMap
 {
     QVideoFrameScopeMap(QVideoFrame *frame, QAbstractVideoBuffer::MapMode mode) : frame(frame)
@@ -205,7 +207,8 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
             m_outTexture = outputTexture;
         }
     }
-    
+
+    emit m_filter->updateOutputString(QDateTime::currentDateTime().toString());
     return m_outTexture;
 }
 

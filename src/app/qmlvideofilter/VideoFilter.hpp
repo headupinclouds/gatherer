@@ -41,19 +41,31 @@
 class VideoFilter: public QAbstractVideoFilter {
   Q_OBJECT
   Q_PROPERTY(qreal factor READ factor WRITE setFactor NOTIFY factorChanged)
+  Q_PROPERTY(QString outputString READ outputString NOTIFY outputStringChanged)
 
  public:
-  VideoFilter() : m_factor(1) { }
+  VideoFilter() : m_factor(1), m_outputString("Filter output") {
+    connect(this, SIGNAL(updateOutputString(QString)), this, SLOT(setOutputString(QString)));
+  }
   qreal factor() const { return m_factor; }
   void setFactor(qreal v);
+
+  QString outputString() const { return m_outputString; }
 
   QVideoFilterRunnable *createFilterRunnable() Q_DECL_OVERRIDE;
 
  signals:
   void factorChanged();
+  void outputStringChanged();
+
+  void updateOutputString(QString newOutput);
+
+ public slots:
+  void setOutputString(QString newOutput);
 
  private:
   qreal m_factor;
+  QString m_outputString;
 };
 
 #endif // VIDEO_FILTER_HPP_
