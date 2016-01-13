@@ -94,16 +94,20 @@ int main(int argc, char **argv)
     QObject * qmlVideoOutput = root->findChild<QObject*>("VideoOutput");
     assert(qmlVideoOutput);
 
-#define DO_EXP_ANDROID_CONFIG 0
-#if DO_EXP_ANDROID_CONFIG
+#if defined(Q_OS_ANDROID)
     {
+        // viewfinderSettings doesn't work for Android:
+        // * https://bugreports.qt.io/browse/QTBUG-50422
+        // Experiments show that QCameraImageCapture can be used for this:
+        // * https://github.com/headupinclouds/gatherer/issues/109
+        // (probably not quite correctly)
+
         std::pair<QSize, int> best;
-        QMediaRecorder *videoCapture = new QMediaRecorder(camera);
         QCameraImageCapture *imageCapture = new QCameraImageCapture(camera);
         QList<QVideoFrame::PixelFormat> formats = imageCapture->supportedBufferFormats();
         
         QList<QSize> resolutions = imageCapture->supportedResolutions();
-        //QList<QSize> resolutions = videoCapture->supportedResolutions(); // recording only?
+
         if(resolutions.size())
         {
             // This seems to work on Android, but not for iOS
@@ -119,27 +123,12 @@ int main(int argc, char **argv)
             
             logger->info() << "best: " << best.first.width() << " " << best.first.height();
             
-            QVideoEncoderSettings videoEncoderSettings;
-            videoEncoderSettings.setResolution(best.first);
-            videoCapture->setVideoSettings(videoEncoderSettings);
-            
             QImageEncoderSettings imageSettings;
             imageSettings.setResolution(best.first);
             imageCapture->setEncodingSettings(imageSettings);
-            
-            QCameraViewfinderSettings settings;
-            settings.setResolution(best.first);
-#if defined(Q_OS_IOS)
-            settings.setPixelFormat(QVideoFrame::Format_NV12);
-#else
-            settings.setPixelFormat(QVideoFrame::Format_NV21);
-#endif
-            
-            camera->setViewfinderSettings(settings);
-            auto result = camera->viewfinderSettings();
         }
     }
-#endif // DO_EXP_ANDROID_CONFIG
+#endif // Q_OS_ANDROID
 
 #if defined(Q_OS_IOS)
     {
