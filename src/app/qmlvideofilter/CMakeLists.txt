@@ -43,7 +43,7 @@ if(ANDROID)
   hunter_add_package(QtAndroidCMake)
   list(APPEND CMAKE_MODULE_PATH "${QTANDROIDCMAKE_ROOT}")
   include(AddQtAndroidApk)
-  
+
   add_qt_android_apk(
     TARGET qmlvideofilter-apk
     BASE_TARGET qmlvideofilter
@@ -98,47 +98,46 @@ else()
       )
   endif()
   target_link_libraries(qmlvideofilter Qt5::Quick)
-  
+
   ### Plugins
   if(IOS)
-	target_link_libraries(qmlvideofilter Qt5::QMultimediaDeclarativeModule)
-	target_link_libraries(qmlvideofilter Qt5::QmlQtQuick2Plugin)
-	target_link_libraries(qmlvideofilter ${Qt5Gui_PLUGINS})
-	target_link_libraries(qmlvideofilter ${Qt5Multimedia_PLUGINS})
+    target_link_libraries(qmlvideofilter Qt5::QMultimediaDeclarativeModule)
+    target_link_libraries(qmlvideofilter Qt5::QmlQtQuick2Plugin)
+    target_link_libraries(qmlvideofilter ${Qt5Gui_PLUGINS})
+    target_link_libraries(qmlvideofilter ${Qt5Multimedia_PLUGINS})
   else()
-    
-	get_cmake_property(_variableNames VARIABLES)
-	foreach (_variableName ${_variableNames})
-	  message(STATUS "VARIABLE: ${_variableName}=${${_variableName}}")
-	endforeach()
+    get_cmake_property(_variableNames VARIABLES)
+    foreach (_variableName ${_variableNames})
+      message(STATUS "VARIABLE: ${_variableName}=${${_variableName}}")
+    endforeach()
 
-	#_builds/libcxx-Release/src/app/qmlvideofilter/qmlvideofilter 
-	#qrc:///main.qml:36:1: module "QtMultimedia" is not installed
-	#qrc:///main.qml:35:1: module "QtQuick" is not installed
+    #_builds/libcxx-Release/src/app/qmlvideofilter/qmlvideofilter
+    #qrc:///main.qml:36:1: module "QtMultimedia" is not installed
+    #qrc:///main.qml:35:1: module "QtQuick" is not installed
 
-	target_link_libraries(qmlvideofilter
-	  Qt5::Multimedia
-	  Qt5::Widgets
-	  Qt5::Quick
-	  ${Qt5Multimedia_PLUGINS}
-	  ${Qt5Qml_PLUGINS}
-	  ${Qt5Gui_PLUGINS}
-	  )
+    target_link_libraries(qmlvideofilter
+      Qt5::Multimedia
+      Qt5::Widgets
+      Qt5::Quick
+      ${Qt5Multimedia_PLUGINS}
+      ${Qt5Qml_PLUGINS}
+      ${Qt5Gui_PLUGINS}
+      )
 
-	if(APPLE)
-	  target_link_libraries(qmlvideofilter
-		"-framework OpenGL"
-		"-framework IOKit"
-		"-framework Cocoa"
-		"-framework OpenGL"
-		"-framework QuartzCore"
-		"-framework CoreMedia"
-		"-framework AVFoundation"
-		"-framework AppKit"
-		"-framework CoreData"
-		"-framework Foundation"
-		)
-	endif()
+    if(APPLE)
+      target_link_libraries(qmlvideofilter
+      "-framework OpenGL"
+      "-framework IOKit"
+      "-framework Cocoa"
+      "-framework OpenGL"
+      "-framework QuartzCore"
+      "-framework CoreMedia"
+      "-framework AVFoundation"
+      "-framework AppKit"
+      "-framework CoreData"
+      "-framework Foundation"
+      )
+    endif()
   endif()
 endif()
 
