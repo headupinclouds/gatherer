@@ -73,17 +73,13 @@ else()
   include(QtCopyQmlTo)
   QtCopyQmlTo(${qml_dir})
 
-  add_executable(qmlvideofilter ${sources} ${qt_conf} ${qml_dir})
+  add_executable(qmlvideofilter MACOSX_BUNDLE ${sources} ${qt_conf} ${qml_dir})
 
   set_target_properties(
     qmlvideofilter
     PROPERTIES
     RESOURCE "${qt_conf};${qml_dir}"
     )
-
-  if(APPLE)
-    SET_TARGET_PROPERTIES(qmlvideofilter PROPERTIES MACOSX_BUNDLE TRUE)
-  endif()
 
   if(IOS)
     set_target_properties(
