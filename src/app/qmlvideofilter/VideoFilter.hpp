@@ -42,30 +42,45 @@ class VideoFilter: public QAbstractVideoFilter {
   Q_OBJECT
   Q_PROPERTY(qreal factor READ factor WRITE setFactor NOTIFY factorChanged)
   Q_PROPERTY(QString outputString READ outputString NOTIFY outputStringChanged)
+  Q_PROPERTY(QPoint rectanglePosition READ rectanglePosition NOTIFY rectangleChanged)
+  Q_PROPERTY(QSize rectangleSize READ rectangleSize NOTIFY rectangleChanged)
+  Q_PROPERTY(bool rectangleVisible READ rectangleVisible NOTIFY rectangleChanged)
 
  public:
   VideoFilter() : m_factor(1), m_outputString("Filter output") {
     connect(this, SIGNAL(updateOutputString(QString)), this, SLOT(setOutputString(QString)));
+    connect(this, SIGNAL(updateRectangle(QPoint, QSize, bool)), this, SLOT(setRectangle(QPoint, QSize, bool)));
   }
   qreal factor() const { return m_factor; }
   void setFactor(qreal v);
 
   QString outputString() const { return m_outputString; }
 
+  QPoint rectanglePosition() const { return m_rectanglePosition; }
+  QSize rectangleSize() const { return m_rectangleSize; }
+  bool rectangleVisible() const { return m_rectangleVisible; }
+
   QVideoFilterRunnable *createFilterRunnable() Q_DECL_OVERRIDE;
 
  signals:
   void factorChanged();
   void outputStringChanged();
+  void rectangleChanged();
 
   void updateOutputString(QString newOutput);
+  void updateRectangle(QPoint position, QSize size, bool visible);
 
  public slots:
   void setOutputString(QString newOutput);
+  void setRectangle(QPoint position, QSize size, bool visible);
 
  private:
   qreal m_factor;
   QString m_outputString;
+
+  QPoint m_rectanglePosition;
+  QSize m_rectangleSize;
+  bool m_rectangleVisible;
 };
 
 #endif // VIDEO_FILTER_HPP_
