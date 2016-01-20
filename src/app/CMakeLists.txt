@@ -1,5 +1,4 @@
 if(NOT GATHERER_OPENGL_ES)
-  add_subdirectory(preview)
   add_subdirectory(ogles_gpgpu_test)
 endif()
 
