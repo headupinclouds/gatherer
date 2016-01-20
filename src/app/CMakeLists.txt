@@ -18,9 +18,4 @@ if(BUILD_QT)
   endif()
 
   add_subdirectory(qmlvideofilter)
-  if(NOT GATHERER_OPENGL_ES)
-    add_subdirectory(opencv-qt-video)
-  endif()
-
-
 endif()
