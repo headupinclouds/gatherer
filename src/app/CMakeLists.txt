@@ -1,7 +1,4 @@
-add_subdirectory(camera_test)
-
 if(NOT GATHERER_OPENGL_ES)
-  add_subdirectory(preview)
   add_subdirectory(ogles_gpgpu_test)
 endif()
 
@@ -14,7 +11,6 @@ if(BUILD_QT)
   # http://doc.qt.io/qt-5/qtmultimediawidgets-camera-example.html
 
   # Currently not linking, working through plugin issues and lack of Qt5MultimediaQuick_p
-  add_subdirectory(qt-camera)
   if(GATHERER_OPENGL_ES)
     add_subdirectory(declarative-camera)
   else()
@@ -22,10 +18,4 @@ if(BUILD_QT)
   endif()
 
   add_subdirectory(qmlvideofilter)
-  add_subdirectory(preview-qt)
-  if(NOT GATHERER_OPENGL_ES)
-    add_subdirectory(opencv-qt-video)
-  endif()
-
-
 endif()
