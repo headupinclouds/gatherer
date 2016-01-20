@@ -42,6 +42,8 @@
 #include <QCameraInfo>
 #include <QCameraImageCapture>
 #include <QMediaRecorder>
+#include <QtPlugin> // Q_IMPORT_PLUGIN
+#include <QQmlExtensionPlugin>
 
 #include "VideoFilterRunnable.hpp"
 #include "VideoFilter.hpp"
@@ -57,6 +59,11 @@
 #endif
 
 #include <iostream>
+
+#if defined(Q_OS_OSX)
+Q_IMPORT_PLUGIN(QtQuick2Plugin);
+Q_IMPORT_PLUGIN(QMultimediaDeclarativeModule);
+#endif
 
 #if defined(Q_OS_IOS)
 extern "C" int qtmn(int argc, char** argv)
@@ -77,6 +84,11 @@ int main(int argc, char **argv)
     qmlRegisterType<VideoFilter>("qmlvideofilter.test", 1, 0, "VideoFilter");
     qmlRegisterType<InfoFilter>("qmlvideofilter.test", 1, 0, "InfoFilter");
     qmlRegisterType<QTRenderGL>("OpenGLUnderQML", 1, 0, "QTRenderGL");
+
+#if defined(Q_OS_OSX)
+    qobject_cast<QQmlExtensionPlugin*>(qt_static_plugin_QtQuick2Plugin().instance())->registerTypes("QtQuick");
+    qobject_cast<QQmlExtensionPlugin*>(qt_static_plugin_QMultimediaDeclarativeModule().instance())->registerTypes("QtMultimedia");
+#endif
     
     QQuickView view;
     view.setSource(QUrl("qrc:///main.qml"));
