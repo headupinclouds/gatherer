@@ -129,6 +129,16 @@ Item {
     }
   }
 
+  Rectangle {
+    border.color: "blue"
+    color: "transparent"
+    x: videofilter.rectanglePosition.x
+    y: videofilter.rectanglePosition.y
+    width: videofilter.rectangleSize.width
+    height: videofilter.rectangleSize.height
+    visible: videofilter.active && videofilter.rectangleVisible
+  }
+
   MouseArea {
     anchors.fill: parent
     onClicked: videofilter.active = !videofilter.active

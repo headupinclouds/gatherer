@@ -208,6 +208,15 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
         }
     }
 
+    const QPoint oldPosition = m_filter->rectanglePosition();
+    const QSize rectangleSize(100, 100);
+    const bool visible = true;
+    const int xDelta = std::rand() % 10;
+    const int yDelta = std::rand() % 10;
+    const int newX = (oldPosition.x() + xDelta) % input->size().width();
+    const int newY = (oldPosition.y() + yDelta) % input->size().height();
+    emit m_filter->updateRectangle(QPoint(newX, newY), rectangleSize, visible);
+
     emit m_filter->updateOutputString(QDateTime::currentDateTime().toString());
     return m_outTexture;
 }

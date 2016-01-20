@@ -53,3 +53,28 @@ void VideoFilter::setOutputString(QString newOutput) {
   m_outputString = newOutput;
   emit outputStringChanged();
 }
+
+void VideoFilter::setRectangle(QPoint position, QSize size, bool visible) {
+  bool changed = false;
+
+  if (m_rectanglePosition != position) {
+    changed = true;
+    m_rectanglePosition = position;
+  }
+
+  if (m_rectangleSize != size) {
+    changed = true;
+    m_rectangleSize = size;
+  }
+
+  if (m_rectangleVisible != visible) {
+    changed = true;
+    m_rectangleVisible = visible;
+  }
+
+  if (!changed) {
+    return;
+  }
+
+  emit rectangleChanged();
+}
