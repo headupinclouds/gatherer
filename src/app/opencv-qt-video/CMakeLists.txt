@@ -18,5 +18,10 @@ target_link_libraries(opencv-qt-video
   ${OpenCV_LIBS}
 )
 
+if(APPLE)
+  find_package(Qt5PrintSupport REQUIRED)
+  target_link_libraries(opencv-qt-video Qt5::PrintSupport)
+endif()
+
 install(TARGETS opencv-qt-video DESTINATION bin)
 set_property(TARGET opencv-qt-video PROPERTY FOLDER "app/gui")

@@ -43,7 +43,7 @@ if(ANDROID)
   hunter_add_package(QtAndroidCMake)
   list(APPEND CMAKE_MODULE_PATH "${QTANDROIDCMAKE_ROOT}")
   include(AddQtAndroidApk)
-  
+
   add_qt_android_apk(
     TARGET qmlvideofilter-apk
     BASE_TARGET qmlvideofilter
@@ -65,25 +65,26 @@ else()
   # We should load this manually because of cyclic dependencies in Qt
   find_package(Qt5MultimediaWidgets REQUIRED)
 
-  set(qt_conf "${CMAKE_CURRENT_LIST_DIR}/qt.conf")
-  set(qml_dir "${CMAKE_CURRENT_BINARY_DIR}/qt_qml")
+  if(IOS)
+    set(qt_conf "${CMAKE_CURRENT_LIST_DIR}/qt.conf")
+    set(qml_dir "${CMAKE_CURRENT_BINARY_DIR}/qt_qml")
 
-  hunter_add_package(QtQmlManager)
-  list(APPEND CMAKE_MODULE_PATH "${QTQMLMANAGER_ROOT}/cmake")
-  include(QtCopyQmlTo)
-  QtCopyQmlTo(${qml_dir})
+    hunter_add_package(QtQmlManager)
+    list(APPEND CMAKE_MODULE_PATH "${QTQMLMANAGER_ROOT}/cmake")
+    include(QtCopyQmlTo)
+    QtCopyQmlTo(${qml_dir})
+  else()
+    set(qt_conf "")
+    set(qml_dir "")
+  endif()
 
-  add_executable(qmlvideofilter ${sources} ${qt_conf} ${qml_dir})
+  add_executable(qmlvideofilter MACOSX_BUNDLE ${sources} ${qt_conf} ${qml_dir})
 
   set_target_properties(
     qmlvideofilter
     PROPERTIES
     RESOURCE "${qt_conf};${qml_dir}"
     )
-
-  if(APPLE)
-    SET_TARGET_PROPERTIES(qmlvideofilter PROPERTIES MACOSX_BUNDLE TRUE)
-  endif()
 
   if(IOS)
     set_target_properties(
@@ -98,47 +99,17 @@ else()
       )
   endif()
   target_link_libraries(qmlvideofilter Qt5::Quick)
-  
+  target_link_libraries(qmlvideofilter Qt5::Multimedia)
+
   ### Plugins
+  target_link_libraries(qmlvideofilter Qt5::QmlQtQuick2Plugin)
+  target_link_libraries(qmlvideofilter ${Qt5Multimedia_PLUGINS})
+  target_link_libraries(qmlvideofilter Qt5::QMultimediaDeclarativeModule)
   if(IOS)
-	target_link_libraries(qmlvideofilter Qt5::QMultimediaDeclarativeModule)
-	target_link_libraries(qmlvideofilter Qt5::QmlQtQuick2Plugin)
-	target_link_libraries(qmlvideofilter ${Qt5Gui_PLUGINS})
-	target_link_libraries(qmlvideofilter ${Qt5Multimedia_PLUGINS})
+    target_link_libraries(qmlvideofilter ${Qt5Gui_PLUGINS})
   else()
-    
-	get_cmake_property(_variableNames VARIABLES)
-	foreach (_variableName ${_variableNames})
-	  message(STATUS "VARIABLE: ${_variableName}=${${_variableName}}")
-	endforeach()
-
-	#_builds/libcxx-Release/src/app/qmlvideofilter/qmlvideofilter 
-	#qrc:///main.qml:36:1: module "QtMultimedia" is not installed
-	#qrc:///main.qml:35:1: module "QtQuick" is not installed
-
-	target_link_libraries(qmlvideofilter
-	  Qt5::Multimedia
-	  Qt5::Widgets
-	  Qt5::Quick
-	  ${Qt5Multimedia_PLUGINS}
-	  ${Qt5Qml_PLUGINS}
-	  ${Qt5Gui_PLUGINS}
-	  )
-
-	if(APPLE)
-	  target_link_libraries(qmlvideofilter
-		"-framework OpenGL"
-		"-framework IOKit"
-		"-framework Cocoa"
-		"-framework OpenGL"
-		"-framework QuartzCore"
-		"-framework CoreMedia"
-		"-framework AVFoundation"
-		"-framework AppKit"
-		"-framework CoreData"
-		"-framework Foundation"
-		)
-	endif()
+    find_package(Qt5PrintSupport REQUIRED)
+    target_link_libraries(qmlvideofilter Qt5::PrintSupport)
   endif()
 endif()
 
