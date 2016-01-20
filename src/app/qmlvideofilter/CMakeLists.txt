@@ -104,12 +104,12 @@ else()
   ### Plugins
   target_link_libraries(qmlvideofilter Qt5::QmlQtQuick2Plugin)
   target_link_libraries(qmlvideofilter ${Qt5Multimedia_PLUGINS})
+  target_link_libraries(qmlvideofilter Qt5::QMultimediaDeclarativeModule)
   if(IOS)
     target_link_libraries(qmlvideofilter ${Qt5Gui_PLUGINS})
   else()
     find_package(Qt5PrintSupport REQUIRED)
     target_link_libraries(qmlvideofilter Qt5::PrintSupport)
-    target_link_libraries(qmlvideofilter Qt5::QMultimediaDeclarativeModule)
   endif()
 endif()
 
