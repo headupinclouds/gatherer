@@ -197,7 +197,9 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
             const GLenum rgbaFormat = GL_RGBA;
 #endif
             GLenum textureFormat = input->pixelFormat() == QVideoFrame::Format_ARGB32 ? rgbaFormat : 0; // 0 indicates YUV
-            m_pipeline->captureOutput({input->width(), input->height()}, input->bits(), true, 0, textureFormat);
+            const bool useRawPixels = true;
+            const GLuint inputTexture = 0;
+            m_pipeline->captureOutput({input->width(), input->height()}, input->bits(), useRawPixels, inputTexture, textureFormat);
             
             // QT is expecting GL_TEXTURE0 to be active
             glActiveTexture(GL_TEXTURE0);
