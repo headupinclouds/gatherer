@@ -51,25 +51,6 @@
 
 #include <QDateTime>
 
-struct QVideoFrameScopeMap
-{
-    QVideoFrameScopeMap(QVideoFrame *frame, QAbstractVideoBuffer::MapMode mode) : frame(frame)
-    {
-        status = frame->map(mode);
-        if (!status)
-        {
-            qWarning("Can't map!");
-        }
-    }
-    ~QVideoFrameScopeMap()
-    {
-        frame->unmap();
-    }
-    operator bool() const { return status; }
-    QVideoFrame *frame = nullptr;
-    bool status = false;
-};
-
 static cv::Mat QVideoFrameToCV(QVideoFrame *input);
 
 VideoFilterRunnable::VideoFilterRunnable(VideoFilter *filter) :
@@ -186,11 +167,6 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
     }
     else
     {
-        QVideoFrameScopeMap scopeMap(input, QAbstractVideoBuffer::ReadOnly);
-        if (!scopeMap)
-        {
-            return 0;
-        }
         assert(input->pixelFormat() == QVideoFrame::Format_ARGB32 || (GATHERER_IOS && input->pixelFormat() == QVideoFrame::Format_NV12));
             
 #if GATHERER_IOS
@@ -199,9 +175,10 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
         const GLenum rgbaFormat = GL_RGBA;
 #endif
         GLenum textureFormat = input->pixelFormat() == QVideoFrame::Format_ARGB32 ? rgbaFormat : 0; // 0 indicates YUV
-        const bool useRawPixels = true;
+        const bool useRawPixels = false;
         const GLuint inputTexture = 0;
-        void* const pixelBuffer = input->bits();
+        void* const pixelBuffer = input->pixelBufferRef();
+        assert(pixelBuffer != nullptr);
         m_pipeline->captureOutput({input->width(), input->height()}, pixelBuffer, useRawPixels, inputTexture, textureFormat);
             
         // QT is expecting GL_TEXTURE0 to be active
