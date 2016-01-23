@@ -187,27 +187,28 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
     else
     {
         QVideoFrameScopeMap scopeMap(input, QAbstractVideoBuffer::ReadOnly);
-        if(scopeMap)
+        if (!scopeMap)
         {
-            assert(input->pixelFormat() == QVideoFrame::Format_ARGB32 || (GATHERER_IOS && input->pixelFormat() == QVideoFrame::Format_NV12));
+            return 0;
+        }
+        assert(input->pixelFormat() == QVideoFrame::Format_ARGB32 || (GATHERER_IOS && input->pixelFormat() == QVideoFrame::Format_NV12));
             
 #if GATHERER_IOS
-            const GLenum rgbaFormat = GL_BGRA;
+        const GLenum rgbaFormat = GL_BGRA;
 #else
-            const GLenum rgbaFormat = GL_RGBA;
+        const GLenum rgbaFormat = GL_RGBA;
 #endif
-            GLenum textureFormat = input->pixelFormat() == QVideoFrame::Format_ARGB32 ? rgbaFormat : 0; // 0 indicates YUV
-            const bool useRawPixels = true;
-            const GLuint inputTexture = 0;
-            m_pipeline->captureOutput({input->width(), input->height()}, input->bits(), useRawPixels, inputTexture, textureFormat);
+        GLenum textureFormat = input->pixelFormat() == QVideoFrame::Format_ARGB32 ? rgbaFormat : 0; // 0 indicates YUV
+        const bool useRawPixels = true;
+        const GLuint inputTexture = 0;
+        m_pipeline->captureOutput({input->width(), input->height()}, input->bits(), useRawPixels, inputTexture, textureFormat);
             
-            // QT is expecting GL_TEXTURE0 to be active
-            glActiveTexture(GL_TEXTURE0);
-            GLuint outputTexture = m_pipeline->getLastShaderOutputTexture();
-            //GLuint texture = m_pipeline->getDisplayTexture();
-            f->glBindTexture(GL_TEXTURE_2D, outputTexture);
-            m_outTexture = outputTexture;
-        }
+        // QT is expecting GL_TEXTURE0 to be active
+        glActiveTexture(GL_TEXTURE0);
+        GLuint outputTexture = m_pipeline->getLastShaderOutputTexture();
+        //GLuint texture = m_pipeline->getDisplayTexture();
+        f->glBindTexture(GL_TEXTURE_2D, outputTexture);
+        m_outTexture = outputTexture;
     }
 
     const QPoint oldPosition = m_filter->rectanglePosition();
