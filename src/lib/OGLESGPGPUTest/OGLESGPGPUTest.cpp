@@ -317,7 +317,9 @@ void OEGLGPGPUTest::captureOutput(cv::Size size, void* pixelBuffer, bool useRawP
     }
 #endif
     
+#if !defined(NDEBUG)
     std::cerr << "Skipping render..." << std::endl;
+#endif
     return;
 
     // update the GL view to display the output directly
