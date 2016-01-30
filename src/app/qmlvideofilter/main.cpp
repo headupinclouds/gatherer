@@ -142,14 +142,21 @@ int main(int argc, char **argv)
     }
 #endif // Q_OS_ANDROID
 
-#if defined(Q_OS_IOS)
+#if defined(Q_OS_IOS) || defined(Q_OS_OSX)
     {
         // Not available in Android:
         // https://bugreports.qt.io/browse/QTBUG-46470
         
         // Try the highest resolution NV{12,21} format format:
         // This should work for both Android and iOS
-        std::vector<QVideoFrame::PixelFormat> desiredFormats { QVideoFrame::Format_NV12, QVideoFrame::Format_NV21 };
+        std::vector<QVideoFrame::PixelFormat> desiredFormats;
+        
+#if defined(Q_OS_IOS)
+        desiredFormats = { QVideoFrame::Format_NV12, QVideoFrame::Format_NV21 };
+#else
+        // TODO: add OS X texture cache for Y + UV texture loads
+        desiredFormats = { QVideoFrame::Format_ARGB32 };
+#endif
         auto viewfinderSettings = camera->supportedViewfinderSettings();
         
         logger->info() << "# of settings: " << viewfinderSettings.size();
