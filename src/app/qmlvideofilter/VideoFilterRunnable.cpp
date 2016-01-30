@@ -75,7 +75,8 @@ static cv::Mat QVideoFrameToCV(QVideoFrame *input);
 VideoFilterRunnable::VideoFilterRunnable(VideoFilter *filter) :
 m_filter(filter),
 m_outTexture(0),
-m_lastInputTexture(0) {
+m_lastInputTexture(0)
+{
     QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
 
     const char *vendor = (const char *) f->glGetString(GL_VENDOR);
@@ -97,13 +98,20 @@ QVideoFrame VideoFilterRunnable::run(QVideoFrame *input, const QVideoSurfaceForm
     glContext = ogles_gpgpu::Core::getCurrentEAGLContext();
     resolution = 2.0f;
 #else
-    glContext = QOpenGLContext::currentContext();
+    QOpenGLContext *qContext = QOpenGLContext::currentContext();
+    glContext = qContext;
 #endif
     if(!m_pipeline)
     {
-        GLint backingWidth, backingHeight;
+        QSize qSize = surfaceFormat.sizeHint(); // TODO: need real alternative to render buffer size
+        GLint backingWidth = qSize.width(), backingHeight = qSize.height();
+        
+#if !defined(Q_OS_OSX)
+        // This is failing for OS X builds:
         glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &backingWidth);
         glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &backingHeight);
+        ogles_gpgpu::Tools::checkGLErr("VideoFilterRunnable", "run");
+#endif
         cv::Size screenSize(backingWidth, backingHeight);
         
         m_pipeline = std::make_shared<gatherer::graphics::OEGLGPGPUTest>(glContext, screenSize, resolution);
@@ -189,20 +197,23 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
         QVideoFrameScopeMap scopeMap(input, QAbstractVideoBuffer::ReadOnly);
         if(scopeMap)
         {
-            assert(input->pixelFormat() == QVideoFrame::Format_ARGB32 || (GATHERER_IOS && input->pixelFormat() == QVideoFrame::Format_NV12));
+            //std::cout << input->pixelFormat() << std::endl;
+            assert((input->pixelFormat() == QVideoFrame::Format_ARGB32) || (input->pixelFormat() == QVideoFrame::Format_NV12));
             
-#if GATHERER_IOS
+            
+#if defined(Q_OS_IOS) || defined(Q_OS_OSX)
             const GLenum rgbaFormat = GL_BGRA;
 #else
             const GLenum rgbaFormat = GL_RGBA;
 #endif
-            GLenum textureFormat = input->pixelFormat() == QVideoFrame::Format_ARGB32 ? rgbaFormat : 0; // 0 indicates YUV
+
+            GLenum textureFormat = (input->pixelFormat() == QVideoFrame::Format_ARGB32) ? rgbaFormat : 0; // 0 indicates YUV
             m_pipeline->captureOutput({input->width(), input->height()}, input->bits(), true, 0, textureFormat);
             
             // QT is expecting GL_TEXTURE0 to be active
             glActiveTexture(GL_TEXTURE0);
             GLuint outputTexture = m_pipeline->getLastShaderOutputTexture();
-            //GLuint texture = m_pipeline->getDisplayTexture();
+            //GLuint outputTexture = m_pipeline->getInputTexture(); // OS X input texture works
             f->glBindTexture(GL_TEXTURE_2D, outputTexture);
             m_outTexture = outputTexture;
         }
