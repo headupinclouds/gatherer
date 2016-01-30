@@ -114,3 +114,4 @@ else()
 endif()
 
 target_link_libraries(qmlvideofilter gatherer_graphics ogles_gpgpu libyuv::yuv OGLESGPGPUTest)
+install(TARGETS qmlvideofilter DESTINATION bin)
