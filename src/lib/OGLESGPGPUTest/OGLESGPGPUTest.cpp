@@ -272,7 +272,10 @@ void OEGLGPGPUTest::captureOutput(cv::Size size, void* pixelBuffer, bool useRawP
     {
         // YUV: Special case NV12=>BGR
         auto manager = yuv2RgbProc.getMemTransferObj();
-        manager->setUseRawPixels(true);
+        if (useRawPixels)
+        {
+            manager->setUseRawPixels(true);
+        }
         manager->prepareInput(frameSize.width, frameSize.height, inputPixFormat, pixelBuffer);
 
         yuv2RgbProc.setTextures(manager->getLuminanceTexId(), manager->getChrominanceTexId());
@@ -314,7 +317,9 @@ void OEGLGPGPUTest::captureOutput(cv::Size size, void* pixelBuffer, bool useRawP
     }
 #endif
     
+#if !defined(NDEBUG)
     std::cerr << "Skipping render..." << std::endl;
+#endif
     return;
 
     // update the GL view to display the output directly
