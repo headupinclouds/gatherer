@@ -100,6 +100,7 @@ else()
   endif()
   target_link_libraries(qmlvideofilter Qt5::Quick)
   target_link_libraries(qmlvideofilter Qt5::Multimedia)
+  target_link_libraries(qmlvideofilter Qt5::OpenGL)
 
   ### Plugins
   target_link_libraries(qmlvideofilter Qt5::QmlQtQuick2Plugin)
