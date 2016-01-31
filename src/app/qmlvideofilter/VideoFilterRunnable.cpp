@@ -51,12 +51,38 @@
 
 #include <QDateTime>
 
+struct QVideoFrameScopeMap
+{
+    QVideoFrameScopeMap(QVideoFrame *frame, QAbstractVideoBuffer::MapMode mode) : frame(frame)
+    {
+        if(frame)
+        {
+            status = frame->map(mode);
+            if (!status)
+            {
+                qWarning("Can't map!");
+            }
+        }
+    }
+    ~QVideoFrameScopeMap()
+    {
+        if(frame)
+        {
+            frame->unmap();
+        }
+    }
+    operator bool() const { return status; }
+    QVideoFrame *frame = nullptr;
+    bool status = false;
+};
+
 static cv::Mat QVideoFrameToCV(QVideoFrame *input);
 
 VideoFilterRunnable::VideoFilterRunnable(VideoFilter *filter) :
 m_filter(filter),
 m_outTexture(0),
-m_lastInputTexture(0) {
+m_lastInputTexture(0)
+{
     QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
 
     const char *vendor = (const char *) f->glGetString(GL_VENDOR);
@@ -78,16 +104,24 @@ QVideoFrame VideoFilterRunnable::run(QVideoFrame *input, const QVideoSurfaceForm
     glContext = ogles_gpgpu::Core::getCurrentEAGLContext();
     resolution = 2.0f;
 #else
-    glContext = QOpenGLContext::currentContext();
+    QOpenGLContext * qContext = QOpenGLContext::currentContext();
+    glContext = qContext;
+    
+    QOpenGLFunctions glFuncs(qContext);
 #endif
     if(!m_pipeline)
     {
-        GLint backingWidth, backingHeight;
-        glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &backingWidth);
-        glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &backingHeight);
-        cv::Size screenSize(backingWidth, backingHeight);
+        QSize size = surfaceFormat.sizeHint();
+        GLint backingWidth = size.width(), backingHeight = size.height();
+
+        // TODO: These calls are failing on OS X
+        glFuncs.glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &backingWidth);
+        glFuncs.glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &backingHeight);
+        ogles_gpgpu::Tools::checkGLErr("VideoFilterRunnable", "run");
         
+        cv::Size screenSize(backingWidth, backingHeight);
         m_pipeline = std::make_shared<gatherer::graphics::OEGLGPGPUTest>(glContext, screenSize, resolution);
+        m_pipeline->setDoDisplay(false);
     }
     
     // This example supports RGB data only, either in system memory (typical with
@@ -167,26 +201,40 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
     }
     else
     {
-        assert(input->pixelFormat() == QVideoFrame::Format_ARGB32 || (GATHERER_IOS && input->pixelFormat() == QVideoFrame::Format_NV12));
-            
-#if GATHERER_IOS
-        const GLenum rgbaFormat = GL_BGRA;
+        // Scope based pixel buffer lock for no nios platforms
+        QVideoFrameScopeMap scopeMap(GATHERER_IOS ? nullptr : input, QAbstractVideoBuffer::ReadOnly);
+        if(!(GATHERER_IOS && !scopeMap)) // for non ios platforms
+        {
+            assert((input->pixelFormat() == QVideoFrame::Format_ARGB32) || (GATHERER_IOS && input->pixelFormat() == QVideoFrame::Format_NV12));
+
+#if GATHERER_IOS || defined(Q_OS_OSX)
+            const GLenum rgbaFormat = GL_BGRA;
 #else
-        const GLenum rgbaFormat = GL_RGBA;
+            const GLenum rgbaFormat = GL_RGBA;
 #endif
-        GLenum textureFormat = input->pixelFormat() == QVideoFrame::Format_ARGB32 ? rgbaFormat : 0; // 0 indicates YUV
-        const bool useRawPixels = false;
-        const GLuint inputTexture = 0;
-        void* const pixelBuffer = input->pixelBufferRef();
-        assert(pixelBuffer != nullptr);
-        m_pipeline->captureOutput({input->width(), input->height()}, pixelBuffer, useRawPixels, inputTexture, textureFormat);
+    
+#if GATHERER_IOS
+            void * const pixelBuffer = input->pixelBufferRef()
+#else
+            void * const pixelBuffer = input->bits();
+            //cv::Mat frame({input->width(), input->height()}, CV_8UC4, pixelBuffer );
+            //cv::imwrite("/tmp/frame.png", frame);
+#endif
             
-        // QT is expecting GL_TEXTURE0 to be active
-        glActiveTexture(GL_TEXTURE0);
-        GLuint outputTexture = m_pipeline->getLastShaderOutputTexture();
-        //GLuint texture = m_pipeline->getDisplayTexture();
-        f->glBindTexture(GL_TEXTURE_2D, outputTexture);
-        m_outTexture = outputTexture;
+            GLenum textureFormat = input->pixelFormat() == QVideoFrame::Format_ARGB32 ? rgbaFormat : 0; // 0 indicates YUV
+            const bool useRawPixels = !(GATHERER_IOS); // ios uses texture cache / pixel buffer
+            const GLuint inputTexture = 0;
+            assert(pixelBuffer != nullptr);
+            m_pipeline->captureOutput({input->width(), input->height()}, pixelBuffer, useRawPixels, inputTexture, textureFormat);
+            
+            // QT is expecting GL_TEXTURE0 to be active
+            glActiveTexture(GL_TEXTURE0);
+            GLuint outputTexture = m_pipeline->getLastShaderOutputTexture();
+            //GLuint outputTexture = m_pipeline->getInputTexture();
+            //GLuint outputTexture = m_pipeline->getDisplayTexture();
+            f->glBindTexture(GL_TEXTURE_2D, outputTexture);
+            m_outTexture = outputTexture;
+        }
     }
 
     const QPoint oldPosition = m_filter->rectanglePosition();
