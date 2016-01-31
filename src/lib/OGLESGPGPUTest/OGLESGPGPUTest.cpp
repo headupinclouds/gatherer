@@ -85,7 +85,7 @@ void OEGLGPGPUTest::initOGLESGPGPU(void* glContext)
     gpgpuMngr->setUseMipmaps(false);
 
     // create the pipeline
-    initGPUPipeline(5);
+    initGPUPipeline(2);
     
     outputDispRenderer->setOutputSize(screenSize.width, screenSize.height);
 
@@ -114,7 +114,7 @@ void OEGLGPGPUTest::initGPUPipeline(int type)
     else if (type == 2)
     {
         gpgpuMngr->addProcToPipeline(&grayscaleProc);
-        gpgpuMngr->addProcToPipeline(&simpleThreshProc);
+        //gpgpuMngr->addProcToPipeline(&simpleThreshProc);
     }
     else if (type == 3)
     {
@@ -320,10 +320,12 @@ void OEGLGPGPUTest::captureOutput(cv::Size size, void* pixelBuffer, bool useRawP
 #if !defined(NDEBUG)
     std::cerr << "Skipping render..." << std::endl;
 #endif
-    return;
 
-    // update the GL view to display the output directly
-    outputDispRenderer->render();
+    if(m_doDisplay)
+    {
+        // update the GL view to display the output directly
+        outputDispRenderer->render();
+    }
 }
 
 void OEGLGPGPUTest::prepareForFrameOfSize(const cv::Size &size)

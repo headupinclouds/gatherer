@@ -42,10 +42,14 @@ public:
     
     void setFrameHandler(FrameHandler &handler) { frameHandler = handler; }
 
+    void setDoDisplay(bool flag) { m_doDisplay = flag; }
+    
 protected:
 
     void *glContext = 0;
     float resolution = 1.f;
+    
+    bool m_doDisplay = true;
 
     unsigned int selectedProcType;  // selected processors
     bool showCamPreview;        // is YES if the camera preview is shown or NO if the processed frames are shown
