@@ -22,6 +22,7 @@ int main(int argc, char **argv)
     // Create the context
     gatherer::graphics::GLContextWindow window(size, "display");
     gatherer::graphics::OEGLGPGPUTest test(&window, window.getResolution().x);
+    test.setDoDisplay(true);
     
     while( /*capture */ true )
     {
@@ -29,7 +30,7 @@ int main(int argc, char **argv)
         capture >> frame;
         cv::resize(frame, frame, size);
         cv::cvtColor(frame, frame, cv::COLOR_BGR2BGRA);
-        test.captureOutput(frame.size(), frame.ptr(), true);
+        test.captureOutput(frame.size(), frame.ptr(), true, 0, GL_BGRA);
         window.swapBuffers();
     }
 }
