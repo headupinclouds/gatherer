@@ -26,6 +26,7 @@ function build_all
 			 --config Release \
 			 --strip \
 			 --jobs 8  \
+             --reconfig \
 			 ${EXTRA_ARGS}
 }
 

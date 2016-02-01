@@ -85,7 +85,7 @@ void OEGLGPGPUTest::initOGLESGPGPU(void* glContext)
     gpgpuMngr->setUseMipmaps(false);
 
     // create the pipeline
-    initGPUPipeline(5);
+    initGPUPipeline(2);
     
     outputDispRenderer->setOutputSize(screenSize.width, screenSize.height);
 
@@ -124,7 +124,7 @@ void OEGLGPGPUTest::initGPUPipeline(int type)
     {
 
 #define USE_TRANSFORM1 1
-#define USE_TRANSFORM2 0
+#define USE_TRANSFORM2 1
 
 #if USE_TRANSFORM1
         ogles_gpgpu::Mat44f transformMatrix =
@@ -204,10 +204,13 @@ void OEGLGPGPUTest::initGPUPipeline(int type)
         std::cout << "GPU pipeline definition #%d not supported" << type << std::endl;
     }
 
-    // create the display renderer with which we can directly render the output
-    // to the screen via OpenGL
-    outputDispRenderer = gpgpuMngr->createRenderDisplay(screenSize.width, screenSize.height, dispRenderOrientation);
-    outputDispRenderer->setDisplayResolution(resolution, resolution);
+    if(m_doDisplay)
+    {
+        // create the display renderer with which we can directly render the output
+        // to the screen via OpenGL
+        outputDispRenderer = gpgpuMngr->createRenderDisplay(screenSize.width, screenSize.height, dispRenderOrientation);
+        outputDispRenderer->setDisplayResolution(resolution, resolution);
+    }
 
     // reset this to call prepareForFramesOfSize again
     firstFrame = true;
@@ -237,6 +240,16 @@ GLuint OEGLGPGPUTest::getLastShaderOutputTexture() const
     return gpgpuMngr->getOutputTexId();
 }
 
+void OEGLGPGPUTest::getInputData(unsigned char *data) const
+{
+    gpgpuMngr->getInputData(data);
+}
+
+void OEGLGPGPUTest::getOutputData(unsigned char *data) const
+{
+    gpgpuMngr->getOutputData(data);
+}
+
 cv::Size OEGLGPGPUTest::getOutputSize() const
 {
     return cv::Size(gpgpuMngr->getOutputFrameW(), gpgpuMngr->getOutputFrameH());
@@ -257,8 +270,11 @@ void OEGLGPGPUTest::captureOutput(cv::Size size, void* pixelBuffer, bool useRawP
         outputDispRenderer->setOutputSize(screenSize.width, screenSize.height);
         
         // YUV:
-        yuv2RgbProc.init(frameSize.width, frameSize.height, 0, true); // TODO: NEW
-        yuv2RgbProc.createFBOTex(false);
+        if(inputPixFormat == 0)
+        {
+            yuv2RgbProc.init(frameSize.width, frameSize.height, 0, true); // TODO: NEW
+            yuv2RgbProc.createFBOTex(false);
+        }
         
         firstFrame = false;
     }
@@ -267,7 +283,6 @@ void OEGLGPGPUTest::captureOutput(cv::Size size, void* pixelBuffer, bool useRawP
 
     // on each new frame, this will release the input buffers and textures, and prepare new ones
     // texture format must be GL_BGRA because this is one of the native camera formats (see initCam)
-
     if(inputPixFormat == 0)
     {
         // YUV: Special case NV12=>BGR
@@ -281,25 +296,17 @@ void OEGLGPGPUTest::captureOutput(cv::Size size, void* pixelBuffer, bool useRawP
         yuv2RgbProc.setTextures(manager->getLuminanceTexId(), manager->getChrominanceTexId());
         yuv2RgbProc.render();
         glFinish();
-        
-        inputTexture = yuv2RgbProc.getOutputTexId(); // will be used below
+
         gpgpuInputHandler->prepareInput(frameSize.width, frameSize.height, GL_NONE, nullptr);
+        gpgpuMngr->setInputTexId(yuv2RgbProc.getOutputTexId());
     }
     else
     {
         gpgpuInputHandler->prepareInput(frameSize.width, frameSize.height, inputPixFormat, pixelBuffer);
+        gpgpuMngr->setInputTexId(gpgpuMngr->getInputMemTransfer()->getInputTexId());
+        gpgpuMngr->setInputData(reinterpret_cast< const unsigned char *>(pixelBuffer));
     }
-
-    // set the input texture id - we do not copy any data, we use the camera frame directly as texture!
-    if (inputTexture)
-    {
-      gpgpuMngr->setInputTexId(inputTexture);
-    }
-    else
-    {
-      gpgpuMngr->setInputTexId(gpgpuInputHandler->getInputTexId());
-    }
-
+    
     // run processing pipeline
     gpgpuMngr->process();
 
@@ -320,10 +327,12 @@ void OEGLGPGPUTest::captureOutput(cv::Size size, void* pixelBuffer, bool useRawP
 #if !defined(NDEBUG)
     std::cerr << "Skipping render..." << std::endl;
 #endif
-    return;
 
-    // update the GL view to display the output directly
-    outputDispRenderer->render();
+    if(m_doDisplay)
+    {
+        // update the GL view to display the output directly
+        outputDispRenderer->render();
+    }
 }
 
 void OEGLGPGPUTest::prepareForFrameOfSize(const cv::Size &size)

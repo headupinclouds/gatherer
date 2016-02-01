@@ -44,6 +44,7 @@
 #include <QMediaRecorder>
 #include <QtPlugin> // Q_IMPORT_PLUGIN
 #include <QQmlExtensionPlugin>
+#include <QtOpenGL/QGLFormat>
 
 #include "VideoFilterRunnable.hpp"
 #include "VideoFilter.hpp"
@@ -77,10 +78,10 @@ int main(int argc, char **argv)
 #endif
     
     QGuiApplication app(argc, argv);
-    
+
     auto logger = gatherer::graphics::Logger::create("qmlvideofilter");
     logger->info() << "Start";
-    
+
     qmlRegisterType<VideoFilter>("qmlvideofilter.test", 1, 0, "VideoFilter");
     qmlRegisterType<InfoFilter>("qmlvideofilter.test", 1, 0, "InfoFilter");
     qmlRegisterType<QTRenderGL>("OpenGLUnderQML", 1, 0, "QTRenderGL");
@@ -93,6 +94,30 @@ int main(int argc, char **argv)
     QQuickView view;
     view.setSource(QUrl("qrc:///main.qml"));
     view.setResizeMode( QQuickView::SizeRootObjectToView );
+    
+#if defined(Q_OS_OSX)
+    
+    // This had been tested with GLFW + ogles_gpgpu before
+    //OpenGL version: 2.1 NVIDIA-10.4.2 310.41.35f01
+    //GLSL version: 1.20
+    
+    // Currently texture2D() calls in our shaders are failing on OS X builds.
+    // and the output texture appears black.  The input texture displays fine
+    // in the QML VideoOutput and if we write directly to the gl_FragColor from
+    // the same shader (ignoring the input texture) then the output texture
+    // displays properly in QML VideoOutput as well.  This would seem to point
+    // to a deprecated texture2D() behavior which could be remedied by setting
+    // the version/profile (several configurations tested without luck so far).
+    
+    QSurfaceFormat format;
+    format.setVersion(2, 1);
+    format.setProfile(QSurfaceFormat::CompatibilityProfile);
+    format.setDepthBufferSize(24);
+    format.setStencilBufferSize(8);
+    view.setFormat(format);
+    
+    logger->info() << "OpenGL Versions Supported: " << QGLFormat::openGLVersionFlags();
+#endif
     
     // Default camera on iOS is not setting good parameters by default
     QQuickItem* root = view.rootObject();
@@ -142,14 +167,21 @@ int main(int argc, char **argv)
     }
 #endif // Q_OS_ANDROID
 
-#if defined(Q_OS_IOS)
+#if defined(Q_OS_IOS) || defined(Q_OS_OSX)
     {
         // Not available in Android:
         // https://bugreports.qt.io/browse/QTBUG-46470
         
         // Try the highest resolution NV{12,21} format format:
         // This should work for both Android and iOS
-        std::vector<QVideoFrame::PixelFormat> desiredFormats { QVideoFrame::Format_NV12, QVideoFrame::Format_NV21 };
+        std::vector<QVideoFrame::PixelFormat> desiredFormats;
+        
+#if defined(Q_OS_IOS)
+        desiredFormats = { QVideoFrame::Format_NV12, QVideoFrame::Format_NV21 };
+#else
+        // TODO: add OS X texture cache for Y + UV texture loads
+        desiredFormats = { QVideoFrame::Format_ARGB32 };
+#endif
         auto viewfinderSettings = camera->supportedViewfinderSettings();
         
         logger->info() << "# of settings: " << viewfinderSettings.size();
