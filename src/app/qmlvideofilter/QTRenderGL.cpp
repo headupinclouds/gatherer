@@ -41,37 +41,42 @@
 #include <QtGui/QOpenGLContext>
 
 
+#define STRINGIFY_(x) #x
+#define STRINGIFY(x) STRINGIFY_(x)
+
 // (((((( VERTEX ))))))
-const char *vshaderSrc = R"SHADER(
-#version 120
+const char *vshaderSrc = STRINGIFY(
+                                   
 #if defined(OGLES_GPGPU_OPENGLES)
 precision mediump float;
 #endif
-attribute highp vec4 vertices;
-varying highp vec2 coords;
+                                   
+attribute vec4 vertices;
+varying vec2 coords;
 void main()
 {
     gl_Position = vertices;
     coords = vertices.xy;
     
-})SHADER";
+});
 
 
 // (((((( FRAGMENT ))))))
-const char *fshaderSrc = R"SHADER(
-#version 120
+const char *fshaderSrc = STRINGIFY(
+                                   
 #if defined(OGLES_GPGPU_OPENGLES)
 precision mediump float;
 #endif
-uniform lowp float t;
-varying highp vec2 coords;
+                                   
+uniform float t;
+varying vec2 coords;
 void main()
 {
     lowp float i = 1. - (pow(abs(coords.x), 4.) + pow(abs(coords.y), 4.));
     i = smoothstep(t - 0.8, t + 0.8, i);
     i = floor(i * 20.) / 20.;
     gl_FragColor = vec4(coords * .5 + .5, i, i);
-})SHADER";
+});
 
 QTRenderGL::QTRenderGL()
     : m_t(0)
@@ -119,7 +124,6 @@ void QTRenderGL::sync()
     if (!m_renderer) {
         m_renderer = new QTRenderGLRenderer();
         connect(window(), SIGNAL(beforeRendering()), m_renderer, SLOT(paint()), Qt::DirectConnection);
-        //connect(window(), SIGNAL(afterRendering()), m_renderer, SLOT(paint()), Qt::DirectConnection);
     }
     m_renderer->setViewportSize(window()->size() * window()->devicePixelRatio());
     m_renderer->setT(m_t);
