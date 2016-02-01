@@ -221,8 +221,6 @@ int main(int argc, char **argv)
 #endif
 
     view.showFullScreen();
-
-    view.setFormat(format);
     
     return app.exec();
 }
