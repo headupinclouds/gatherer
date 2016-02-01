@@ -1,8 +1,36 @@
 # found variable?
 #include_directories(${GTEST_INCLUDE_DIRS})
 
-add_executable(test-ogles-gpgpu test-ogles-gpgpu.cpp test-shader.cpp)
-target_link_libraries(test-ogles-gpgpu ogles_gpgpu ${OpenCV_LIBS} GTest::main OGLESGPGPUTest)
+set(TEST_OGLES_GPGPU_SRCS
+  test-ogles-gpgpu.cpp
+  test-shader.cpp
+  GLContextWindow.h # temporary os x only solution
+  GLContextWindow.cpp
+  )
+
+add_executable(test-ogles-gpgpu ${TEST_OGLES_GPGPU_SRCS})
+
+target_link_libraries(test-ogles-gpgpu
+  PRIVATE
+  #ogles_gpgpu::ogles_gpgpu
+  ogles_gpgpu
+  ${OpenCV_LIBS}
+  ${GLFW_LIBRARIES}
+  OGLESGPGPUTest
+  gatherer_graphics  
+  glew
+  GTest::main
+  "-framework OpenGL"
+  "-framework IOKit"
+  "-framework Cocoa"
+  "-framework OpenGL"
+  "-framework QuartzCore"
+  "-framework CoreMedia"
+  "-framework AVFoundation"
+  "-framework AppKit"
+  "-framework CoreData"
+  "-framework Foundation"
+  ) ## OS X only...
 
 enable_testing()
 add_test(TestOGLESGPGP test-ogles-gpgpu
