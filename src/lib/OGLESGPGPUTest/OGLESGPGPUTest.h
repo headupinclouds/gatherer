@@ -40,6 +40,9 @@ public:
     GLuint getOutputTexture() const;
     GLuint getLastShaderOutputTexture() const;
     
+    void getInputData(unsigned char *data) const;
+    void getOutputData(unsigned char *data) const;
+    
     void setFrameHandler(FrameHandler &handler) { frameHandler = handler; }
 
     void setDoDisplay(bool flag) { m_doDisplay = flag; }

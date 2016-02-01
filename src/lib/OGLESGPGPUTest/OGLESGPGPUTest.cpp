@@ -240,6 +240,16 @@ GLuint OEGLGPGPUTest::getLastShaderOutputTexture() const
     return gpgpuMngr->getOutputTexId();
 }
 
+void OEGLGPGPUTest::getInputData(unsigned char *data) const
+{
+    gpgpuMngr->getInputData(data);
+}
+
+void OEGLGPGPUTest::getOutputData(unsigned char *data) const
+{
+    gpgpuMngr->getOutputData(data);
+}
+
 cv::Size OEGLGPGPUTest::getOutputSize() const
 {
     return cv::Size(gpgpuMngr->getOutputFrameW(), gpgpuMngr->getOutputFrameH());
@@ -273,7 +283,6 @@ void OEGLGPGPUTest::captureOutput(cv::Size size, void* pixelBuffer, bool useRawP
 
     // on each new frame, this will release the input buffers and textures, and prepare new ones
     // texture format must be GL_BGRA because this is one of the native camera formats (see initCam)
-
     if(inputPixFormat == 0)
     {
         // YUV: Special case NV12=>BGR
@@ -287,25 +296,17 @@ void OEGLGPGPUTest::captureOutput(cv::Size size, void* pixelBuffer, bool useRawP
         yuv2RgbProc.setTextures(manager->getLuminanceTexId(), manager->getChrominanceTexId());
         yuv2RgbProc.render();
         glFinish();
-        
-        inputTexture = yuv2RgbProc.getOutputTexId(); // will be used below
+
         gpgpuInputHandler->prepareInput(frameSize.width, frameSize.height, GL_NONE, nullptr);
+        gpgpuMngr->setInputTexId(yuv2RgbProc.getOutputTexId());
     }
     else
     {
         gpgpuInputHandler->prepareInput(frameSize.width, frameSize.height, inputPixFormat, pixelBuffer);
-    }
-
-    // set the input texture id - we do not copy any data, we use the camera frame directly as texture!
-    if (inputTexture)
-    {
-        gpgpuMngr->setInputTexId(inputTexture);
-    }
-    else
-    { // For all other platforms we will use the generic OpenGL texture upload
+        gpgpuMngr->setInputTexId(gpgpuMngr->getInputMemTransfer()->getInputTexId());
         gpgpuMngr->setInputData(reinterpret_cast< const unsigned char *>(pixelBuffer));
     }
-
+    
     // run processing pipeline
     gpgpuMngr->process();
 
