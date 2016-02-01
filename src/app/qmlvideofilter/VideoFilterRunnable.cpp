@@ -98,16 +98,21 @@ QVideoFrame VideoFilterRunnable::run(QVideoFrame *input, const QVideoSurfaceForm
     Q_UNUSED(surfaceFormat);
     Q_UNUSED(flags);
     
+    QOpenGLContext * qContext = QOpenGLContext::currentContext();
+    QOpenGLFunctions glFuncs(qContext);
+    
     float resolution = 1.0f;
     void* glContext = 0;
 #if GATHERER_IOS
     glContext = ogles_gpgpu::Core::getCurrentEAGLContext();
     resolution = 2.0f;
 #else
-    QOpenGLContext * qContext = QOpenGLContext::currentContext();
     glContext = qContext;
+   
+    //GLint unit;
+    //glFuncs.glGetIntegerv(GL_ACTIVE_TEXTURE, &unit);
+    //unit -= GL_TEXTURE0;
     
-    QOpenGLFunctions glFuncs(qContext);
 #endif
     if(!m_pipeline)
     {
@@ -118,6 +123,8 @@ QVideoFrame VideoFilterRunnable::run(QVideoFrame *input, const QVideoSurfaceForm
         glFuncs.glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &backingWidth);
         glFuncs.glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &backingHeight);
         ogles_gpgpu::Tools::checkGLErr("VideoFilterRunnable", "run");
+        
+        //glFuncs.gl
         
         cv::Size screenSize(backingWidth, backingHeight);
         m_pipeline = std::make_shared<gatherer::graphics::OEGLGPGPUTest>(glContext, screenSize, resolution);
@@ -195,15 +202,15 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
         
         glActiveTexture(GL_TEXTURE0);
         GLuint outputTexture = m_pipeline->getLastShaderOutputTexture();
-        f->glBindTexture(GL_TEXTURE_2D, outputTexture);
+        f->glBindTexture(GL_TEXTURE_2D, outputTexture); // TODO: review, unnecessary?
         
         m_outTexture = outputTexture;
     }
     else
     {
-        // Scope based pixel buffer lock for no nios platforms
+        // Scope based pixel buffer lock for non ios platforms
         QVideoFrameScopeMap scopeMap(GATHERER_IOS ? nullptr : input, QAbstractVideoBuffer::ReadOnly);
-        if(!(GATHERER_IOS && !scopeMap)) // for non ios platforms
+        if((GATHERER_IOS && !scopeMap) || !GATHERER_IOS) // for non ios platforms
         {
             assert((input->pixelFormat() == QVideoFrame::Format_ARGB32) || (GATHERER_IOS && input->pixelFormat() == QVideoFrame::Format_NV12));
 
@@ -214,7 +221,7 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
 #endif
     
 #if defined(Q_OS_IOS)
-            void * const pixelBuffer = input->pixelBufferRef()
+            void * const pixelBuffer = input->pixelBufferRef();
 #else
             void * const pixelBuffer = input->bits();
 #endif
@@ -229,8 +236,6 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
             // QT is expecting GL_TEXTURE0 to be active
             glActiveTexture(GL_TEXTURE0);
             GLuint outputTexture = m_pipeline->getLastShaderOutputTexture();
-            //GLuint outputTexture = m_pipeline->getInputTexture();
-            f->glBindTexture(GL_TEXTURE_2D, outputTexture);
             m_outTexture = outputTexture;
         }
     }
@@ -245,6 +250,7 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
     emit m_filter->updateRectangle(QPoint(newX, newY), rectangleSize, visible);
 
     emit m_filter->updateOutputString(QDateTime::currentDateTime().toString());
+
     return m_outTexture;
 }
 
