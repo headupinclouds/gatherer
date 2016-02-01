@@ -114,7 +114,7 @@ void OEGLGPGPUTest::initGPUPipeline(int type)
     else if (type == 2)
     {
         gpgpuMngr->addProcToPipeline(&grayscaleProc);
-        //gpgpuMngr->addProcToPipeline(&simpleThreshProc);
+        gpgpuMngr->addProcToPipeline(&simpleThreshProc);
     }
     else if (type == 3)
     {
@@ -124,7 +124,7 @@ void OEGLGPGPUTest::initGPUPipeline(int type)
     {
 
 #define USE_TRANSFORM1 1
-#define USE_TRANSFORM2 0
+#define USE_TRANSFORM2 1
 
 #if USE_TRANSFORM1
         ogles_gpgpu::Mat44f transformMatrix =
@@ -204,10 +204,13 @@ void OEGLGPGPUTest::initGPUPipeline(int type)
         std::cout << "GPU pipeline definition #%d not supported" << type << std::endl;
     }
 
-    // create the display renderer with which we can directly render the output
-    // to the screen via OpenGL
-    outputDispRenderer = gpgpuMngr->createRenderDisplay(screenSize.width, screenSize.height, dispRenderOrientation);
-    outputDispRenderer->setDisplayResolution(resolution, resolution);
+    if(m_doDisplay)
+    {
+        // create the display renderer with which we can directly render the output
+        // to the screen via OpenGL
+        outputDispRenderer = gpgpuMngr->createRenderDisplay(screenSize.width, screenSize.height, dispRenderOrientation);
+        outputDispRenderer->setDisplayResolution(resolution, resolution);
+    }
 
     // reset this to call prepareForFramesOfSize again
     firstFrame = true;
@@ -257,8 +260,11 @@ void OEGLGPGPUTest::captureOutput(cv::Size size, void* pixelBuffer, bool useRawP
         outputDispRenderer->setOutputSize(screenSize.width, screenSize.height);
         
         // YUV:
-        yuv2RgbProc.init(frameSize.width, frameSize.height, 0, true); // TODO: NEW
-        yuv2RgbProc.createFBOTex(false);
+        if(inputPixFormat == 0)
+        {
+            yuv2RgbProc.init(frameSize.width, frameSize.height, 0, true); // TODO: NEW
+            yuv2RgbProc.createFBOTex(false);
+        }
         
         firstFrame = false;
     }
@@ -293,11 +299,11 @@ void OEGLGPGPUTest::captureOutput(cv::Size size, void* pixelBuffer, bool useRawP
     // set the input texture id - we do not copy any data, we use the camera frame directly as texture!
     if (inputTexture)
     {
-      gpgpuMngr->setInputTexId(inputTexture);
+        gpgpuMngr->setInputTexId(inputTexture);
     }
     else
-    {
-      gpgpuMngr->setInputTexId(gpgpuInputHandler->getInputTexId());
+    { // For all other platforms we will use the generic OpenGL texture upload
+        gpgpuMngr->setInputData(reinterpret_cast< const unsigned char *>(pixelBuffer));
     }
 
     // run processing pipeline
