@@ -19,6 +19,7 @@ function build_all
 			 --config Release \
 			 --jobs 8 \
              --reconfig \
+             --test \
 			 --open \
 			 ${EXTRA_ARGS}
 }
