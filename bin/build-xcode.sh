@@ -18,6 +18,7 @@ function build_all
 			 CMAKE_OSX_DEPLOYMENT_TARGET=10.10 \
 			 --config Release \
 			 --jobs 8 \
+             --reconfig \
 			 --open \
 			 ${EXTRA_ARGS}
 }
