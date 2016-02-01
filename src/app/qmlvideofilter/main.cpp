@@ -110,12 +110,11 @@ int main(int argc, char **argv)
     // the version/profile (several configurations tested without luck so far).
     
     QSurfaceFormat format;
-    format.setVersion(3, 3);
+    format.setVersion(2, 1);
     format.setProfile(QSurfaceFormat::CompatibilityProfile);
     format.setDepthBufferSize(24);
     format.setStencilBufferSize(8);
     view.setFormat(format);
-    //QSurfaceFormat::setDefaultFormat(format);
     
     logger->info() << "OpenGL Versions Supported: " << QGLFormat::openGLVersionFlags();
 #endif
