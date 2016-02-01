@@ -207,21 +207,20 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
         {
             assert((input->pixelFormat() == QVideoFrame::Format_ARGB32) || (GATHERER_IOS && input->pixelFormat() == QVideoFrame::Format_NV12));
 
-#if GATHERER_IOS || defined(Q_OS_OSX)
+#if defined(Q_OS_IOS) || defined(Q_OS_OSX)
             const GLenum rgbaFormat = GL_BGRA;
 #else
             const GLenum rgbaFormat = GL_RGBA;
 #endif
     
-#if GATHERER_IOS
+#if defined(Q_OS_IOS)
             void * const pixelBuffer = input->pixelBufferRef()
 #else
             void * const pixelBuffer = input->bits();
-            //cv::Mat frame({input->width(), input->height()}, CV_8UC4, pixelBuffer );
-            //cv::imwrite("/tmp/frame.png", frame);
 #endif
             
-            GLenum textureFormat = input->pixelFormat() == QVideoFrame::Format_ARGB32 ? rgbaFormat : 0; // 0 indicates YUV
+            // 0 indicates YUV
+            GLenum textureFormat = input->pixelFormat() == QVideoFrame::Format_ARGB32 ? rgbaFormat : 0;
             const bool useRawPixels = !(GATHERER_IOS); // ios uses texture cache / pixel buffer
             const GLuint inputTexture = 0;
             assert(pixelBuffer != nullptr);
@@ -231,7 +230,6 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
             glActiveTexture(GL_TEXTURE0);
             GLuint outputTexture = m_pipeline->getLastShaderOutputTexture();
             //GLuint outputTexture = m_pipeline->getInputTexture();
-            //GLuint outputTexture = m_pipeline->getDisplayTexture();
             f->glBindTexture(GL_TEXTURE_2D, outputTexture);
             m_outTexture = outputTexture;
         }
