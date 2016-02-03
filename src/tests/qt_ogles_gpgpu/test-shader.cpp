@@ -43,7 +43,7 @@ protected:
 
         float resolution = 1.f; // only for retina display
         void *glContext = nullptr;
-        m_pipeline = std::make_shared<gatherer::graphics::OEGLGPGPUTest>(glContext, resolution);
+        m_pipeline = std::make_shared<gatherer::graphics::OEGLGPGPUTest>(glContext, resolution, 1);
         m_pipeline->setDoDisplay(true); // TODO: temporary display for debug
 	}
 
@@ -91,10 +91,24 @@ TEST_F(QOGLESGPGPUTest, grayscale)
     
     cv::Mat result(image.size(), CV_8UC4);
     m_pipeline->getOutputData(result.ptr());
+    cv::extractChannel(result, result, 0);
+
+    // Here we use OpenCV for ground truth (approximate)
+    cv::Mat gray;
+    cv::cvtColor(image, gray, cv::COLOR_BGRA2GRAY);
+
+    cv::imwrite("/tmp/gray.png", gray);
+    
+    cv::Mat diff;
+    cv::absdiff(gray, result, diff);
+    
+    double mu = cv::mean(diff)[0];
+    EXPECT_LE(mu, 0.05);
     
     // TODO: compare result with expected ground truth result
-    cv::imshow("result", result);
-    cv::waitKey(2000);
+    //cv::imshow("result", result);
+    //cv::imshow("gray", gray);
+    //cv::waitKey(2000);
 }
 
 END_EMPTY_NAMESPACE

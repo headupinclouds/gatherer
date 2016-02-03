@@ -1,4 +1,4 @@
-# Copyright (c) 2015, Ruslan Baratov
+# Copyright (c) 2015, Ruslan Baratov, David Hirvonen
 # All rights reserved.
 
 set(SOURCES
@@ -22,4 +22,16 @@ target_link_libraries(qt_ogles_gpgpu
 
 find_package(Qt5PrintSupport REQUIRED)
 target_link_libraries(qt_ogles_gpgpu Qt5::PrintSupport)
+set_property(TARGET qt_ogles_gpgpu PROPERTY FOLDER "app/tests")
+
+
+##
+## GTest + CTest
+##
+
+enable_testing()
+add_test(ogles_gpgpu_test qt_ogles_gpgpu
+  "${CMAKE_SOURCE_DIR}/assets/images/lena512color.png"
+  "${CMAKE_SOURCE_DIR}/assets/images/lena512gray.png"
+  )
 
