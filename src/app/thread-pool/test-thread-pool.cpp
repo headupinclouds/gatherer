@@ -175,6 +175,7 @@ int run_test()
         
         std::future<int> r = t.get_future();
         
+        // Note: fastest variant (compared to 'process()' given prepackaged task)
         pool.post(t);
         
         ASSERT(42 == r.get());
@@ -183,6 +184,7 @@ int run_test()
     doTest("process job", []() {
         MyThreadPool pool;
         
+        // Note: This method of posting job to thread pool is much slower than 'post()' due to std::future and
         std::future<int> r = pool.process([]() {
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
             return 42;
