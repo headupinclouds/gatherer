@@ -108,11 +108,6 @@ QVideoFrame VideoFilterRunnable::run(QVideoFrame *input, const QVideoSurfaceForm
     resolution = 2.0f;
 #else
     glContext = qContext;
-   
-    //GLint unit;
-    //glFuncs.glGetIntegerv(GL_ACTIVE_TEXTURE, &unit);
-    //unit -= GL_TEXTURE0;
-    
 #endif
     if(!m_pipeline)
     {
@@ -235,8 +230,7 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
             
             // QT is expecting GL_TEXTURE0 to be active
             glActiveTexture(GL_TEXTURE0);
-            GLuint outputTexture = m_pipeline->getLastShaderOutputTexture();
-            m_outTexture = outputTexture;
+            m_outTexture = m_pipeline->getLastShaderOutputTexture();
         }
     }
 

@@ -139,6 +139,8 @@ include_directories(src/3rdparty/ogles_gpgpu)
 include_directories(src/3rdparty/ogles_gpgpu/ogles_gpgpu)
 include_directories(src/3rdparty/ogles_gpgpu/ogles_gpgpu/common)
 
+option(BUILD_TESTS "Build unit tests" ON)
+
 enable_testing()
 
 ### Manage libs and source code in src folder
