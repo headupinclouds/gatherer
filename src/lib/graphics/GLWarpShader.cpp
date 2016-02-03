@@ -57,7 +57,7 @@ void WarpShader::compileShadersPlanar()
     attributes.push_back( std::pair<int, const char*>(RenderTexture::ATTRIB_VERTEX, "position") );
     attributes.push_back( std::pair<int, const char*>(RenderTexture::ATTRIB_TEXTUREPOSITION, "inputTextureCoordinate") );
 
-    m_pPlanarShaderProgram = make_unique<gatherer::graphics::shader_prog>(vShaderStr, fShaderStr, attributes);
+    m_pPlanarShaderProgram = std::make_unique<gatherer::graphics::shader_prog>(vShaderStr, fShaderStr, attributes);
     m_PlanarUniformMVP = m_pPlanarShaderProgram->GetUniformLocation("modelViewProjMatrix");
     m_PlanarUniformTexture =  m_pPlanarShaderProgram->GetUniformLocation("texture");
     
