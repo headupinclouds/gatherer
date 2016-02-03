@@ -24,10 +24,10 @@ public:
     
     typedef std::function<void(const cv::Mat &)> FrameHandler;
     
-    OEGLGPGPUTest(void *glContext, const cv::Size &size, const float resolution=1.f);
-    OEGLGPGPUTest(void *glContext, const float resolution=1.f);
+    OEGLGPGPUTest(void *glContext, const cv::Size &size, const float resolution=1.f, int type=1);
+    OEGLGPGPUTest(void *glContext, const float resolution=1.f, int type=1);
     ~OEGLGPGPUTest();
-    void initOGLESGPGPU(void* glContext) ;
+    void initOGLESGPGPU(void* glContext, int type=1);
     void initGPUPipeline(int type);
     void prepareForFrameOfSize(const cv::Size &size);
     void captureOutput(cv::Size size, void* pixelBuffer, bool useRawPixels, GLuint inputTexture=0, GLenum inputPixFormat=DFLT_PIX_FORMAT);
