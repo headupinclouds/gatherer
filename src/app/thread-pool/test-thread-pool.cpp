@@ -104,16 +104,17 @@ struct Heavy
     }
 };
 
+typedef ThreadPool<128> MyThreadPool;
 
 struct RepostJob
 {
     //Heavy heavy;
-    ThreadPool *thread_pool;
+    MyThreadPool *thread_pool;
     volatile size_t counter;
     long long int begin_count;
     std::promise<void> *waiter;
     
-    RepostJob(ThreadPool *thread_pool, std::promise<void> *waiter)
+    RepostJob(MyThreadPool *thread_pool, std::promise<void> *waiter)
     : thread_pool(thread_pool)
     , counter(0)
     , waiter(waiter)
@@ -147,7 +148,7 @@ int run_benchmark()
         std::cout << "***thread pool cpp***" << std::endl;
         
         std::promise<void> waiters[CONCURRENCY];
-        ThreadPool thread_pool;
+        MyThreadPool thread_pool;
         for (auto &waiter : waiters) {
             thread_pool.post(RepostJob(&thread_pool, &waiter));
         }
@@ -165,7 +166,7 @@ int run_test()
     std::cout << "*** Testing ThreadPool ***" << std::endl;
     
     doTest("post job", []() {
-        ThreadPool pool;
+        MyThreadPool pool;
         
         std::packaged_task<int()> t([](){
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -180,7 +181,7 @@ int run_test()
     });
     
     doTest("process job", []() {
-        ThreadPool pool;
+        MyThreadPool pool;
         
         std::future<int> r = pool.process([]() {
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -193,7 +194,7 @@ int run_test()
     struct my_exception {};
     
     doTest("process job with exception", []() {
-        ThreadPool pool;
+        MyThreadPool pool;
         
         std::future<int> r = pool.process([]() {
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -207,4 +208,5 @@ int run_test()
         }
     });
     
+    return 0;
 }
