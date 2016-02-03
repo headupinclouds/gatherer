@@ -1,8 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <GL/glew.h> // include GLEW and new version of GL on Windows
-#include <GLFW/glfw3.h>
-#include "GLContextWindow.h"
+#include "QGLContext.h"
 
 #include "graphics/gatherer_graphics.h"
 #include "OGLESGPGPUTest.h"
@@ -25,12 +23,12 @@ const char* truthFilename;
 
 BEGIN_EMPTY_NAMESPACE
 
-class OGLESGPGPUTest : public ::testing::Test
+class QOGLESGPGPUTest : public ::testing::Test
 {
 protected:
-
+    
 	// Setup
-	OGLESGPGPUTest()
+	QOGLESGPGPUTest()
 	{
         m_logger = gatherer::graphics::Logger::create("test-shader");
         
@@ -40,17 +38,17 @@ protected:
         // TODO: we need to load ground truth output for each shader
         // (some combinations could be tested, but that is probably excessive!)
         truth = loadImage(truthFilename);
-        
-        m_context = std::make_shared<gatherer::graphics::GLContextWindow>(image.size(), "test-shader");
 
-        float resolution = 2.f;
+        m_context = std::make_shared<QGLContext>();
+
+        float resolution = 1.f; // only for retina display
         void *glContext = nullptr;
         m_pipeline = std::make_shared<gatherer::graphics::OEGLGPGPUTest>(glContext, resolution);
         m_pipeline->setDoDisplay(true); // TODO: temporary display for debug
 	}
 
 	// Cleanup
-	virtual ~OGLESGPGPUTest()
+	virtual ~QOGLESGPGPUTest()
 	{
 
 	}
@@ -73,7 +71,7 @@ protected:
         return image;
     }
 
-    std::shared_ptr<gatherer::graphics::GLContextWindow> m_context;
+    std::shared_ptr<QGLContext> m_context;
     std::shared_ptr<spdlog::logger> m_logger;
     std::shared_ptr<gatherer::graphics::OEGLGPGPUTest> m_pipeline;
     
@@ -85,7 +83,7 @@ protected:
  * Fixture tests
  */
 
-TEST_F(OGLESGPGPUTest, grayscale)
+TEST_F(QOGLESGPGPUTest, grayscale)
 {
     void * pixelBuffer = image.ptr();
     bool useRawPixels = true;
@@ -95,9 +93,7 @@ TEST_F(OGLESGPGPUTest, grayscale)
     m_pipeline->getOutputData(result.ptr());
     
     // TODO: compare result with expected ground truth result
-
     cv::imshow("result", result);
-    m_context->swapBuffers();
     cv::waitKey(2000);
 }
 

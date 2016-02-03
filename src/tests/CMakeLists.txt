@@ -7,4 +7,5 @@
 hunter_add_package(GTest)
 find_package(GTest CONFIG REQUIRED)
 
-add_subdirectory(ogles_gpgpu)
+# Portable QT context for desktop and mobile systems:
+add_subdirectory(qt_ogles_gpgpu)
