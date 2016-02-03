@@ -5,3 +5,6 @@
 [submodule "src/3rdparty/GPUImage"]
 	path = src/3rdparty/GPUImage
 	url = https://github.com/headupinclouds/GPUImage.git
+[submodule "src/3rdparty/thread-pool-cpp"]
+	path = src/3rdparty/thread-pool-cpp
+	url = git@github.com:headupinclouds/thread-pool-cpp.git

@@ -19,3 +19,5 @@ if(BUILD_QT)
 
   add_subdirectory(qmlvideofilter)
 endif()
+
+add_subdirectory(thread-pool)
