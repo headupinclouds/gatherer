@@ -7,7 +7,6 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 build.py --toolchain ${ANDROID_TOOLCHAIN} --verbose --fwd ANDROID=TRUE \
 		 ${GATHERER_BUILD_ARGS[*]} \
 		 --config Release \
-		 --jobs 8 \
          --reconfig \
 		 --target qmlvideofilter-launch
 
