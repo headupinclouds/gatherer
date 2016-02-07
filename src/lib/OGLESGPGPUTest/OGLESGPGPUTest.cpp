@@ -259,27 +259,32 @@ cv::Size OEGLGPGPUTest::getOutputSize() const
     return cv::Size(gpgpuMngr->getOutputFrameW(), gpgpuMngr->getOutputFrameH());
 }
 
+void OEGLGPGPUTest::configurePipeline(const cv::Size &size)
+{
+    frameSize = size;
+    if(!screenSize.area())
+    {
+        screenSize = frameSize;
+    }
+    prepareForFrameOfSize(frameSize);
+
+    outputDispRenderer->setOutputSize(screenSize.width, screenSize.height);
+        
+    // YUV:
+    if(inputPixFormat == 0)
+    {
+        yuv2RgbProc.init(frameSize.width, frameSize.height, 0, true); // TODO: NEW
+        yuv2RgbProc.createFBOTex(false);
+    }
+}
+
 void OEGLGPGPUTest::captureOutput(cv::Size size, void* pixelBuffer, bool useRawPixels, GLuint inputTexture, GLenum inputPixFormat)
 {
     // when we get the first frame, prepare the system for the size of the incoming frames
+
     if (firstFrame)
     {
-        frameSize = size;
-        if(!screenSize.area())
-        {
-            screenSize = frameSize;
-        }
-        prepareForFrameOfSize(frameSize);
-
-        outputDispRenderer->setOutputSize(screenSize.width, screenSize.height);
-        
-        // YUV:
-        if(inputPixFormat == 0)
-        {
-            yuv2RgbProc.init(frameSize.width, frameSize.height, 0, true); // TODO: NEW
-            yuv2RgbProc.createFBOTex(false);
-        }
-        
+        configurePipeline(size);
         firstFrame = false;
     }
 
@@ -287,29 +292,35 @@ void OEGLGPGPUTest::captureOutput(cv::Size size, void* pixelBuffer, bool useRawP
 
     // on each new frame, this will release the input buffers and textures, and prepare new ones
     // texture format must be GL_BGRA because this is one of the native camera formats (see initCam)
-    if(inputPixFormat == 0)
+    if(pixelBuffer)
     {
-        // YUV: Special case NV12=>BGR
-        auto manager = yuv2RgbProc.getMemTransferObj();
-        if (useRawPixels)
+        if(inputPixFormat == 0)
         {
-            manager->setUseRawPixels(true);
+            // YUV: Special case NV12=>BGR
+            auto manager = yuv2RgbProc.getMemTransferObj();
+            if (useRawPixels)
+            {
+                manager->setUseRawPixels(true);
+            }
+            manager->prepareInput(frameSize.width, frameSize.height, inputPixFormat, pixelBuffer);
+
+            yuv2RgbProc.setTextures(manager->getLuminanceTexId(), manager->getChrominanceTexId());
+            yuv2RgbProc.render();
+            glFinish();
+
+            gpgpuInputHandler->prepareInput(frameSize.width, frameSize.height, GL_NONE, nullptr);
+            inputTexture = yuv2RgbProc.getOutputTexId(); 
         }
-        manager->prepareInput(frameSize.width, frameSize.height, inputPixFormat, pixelBuffer);
-
-        yuv2RgbProc.setTextures(manager->getLuminanceTexId(), manager->getChrominanceTexId());
-        yuv2RgbProc.render();
-        glFinish();
-
-        gpgpuInputHandler->prepareInput(frameSize.width, frameSize.height, GL_NONE, nullptr);
-        gpgpuMngr->setInputTexId(yuv2RgbProc.getOutputTexId());
+        else
+        {
+            gpgpuInputHandler->prepareInput(frameSize.width, frameSize.height, inputPixFormat, pixelBuffer);
+            gpgpuMngr->setInputData(reinterpret_cast< const unsigned char *>(pixelBuffer));
+            inputTexture = gpgpuMngr->getInputMemTransfer()->getInputTexId();             
+        }
     }
-    else
-    {
-        gpgpuInputHandler->prepareInput(frameSize.width, frameSize.height, inputPixFormat, pixelBuffer);
-        gpgpuMngr->setInputTexId(gpgpuMngr->getInputMemTransfer()->getInputTexId());
-        gpgpuMngr->setInputData(reinterpret_cast< const unsigned char *>(pixelBuffer));
-    }
+
+    assert(inputTexture); // inputTexture must be defined at this point
+    gpgpuMngr->setInputTexId(inputTexture);
     
     // run processing pipeline
     gpgpuMngr->process();
