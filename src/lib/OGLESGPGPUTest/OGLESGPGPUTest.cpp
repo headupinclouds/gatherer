@@ -259,7 +259,7 @@ cv::Size OEGLGPGPUTest::getOutputSize() const
     return cv::Size(gpgpuMngr->getOutputFrameW(), gpgpuMngr->getOutputFrameH());
 }
 
-void OEGLGPGPUTest::configurePipeline(const cv::Size &size)
+void OEGLGPGPUTest::configurePipeline(const cv::Size &size, GLenum inputPixFormat)
 {
     frameSize = size;
     if(!screenSize.area())
@@ -284,7 +284,7 @@ void OEGLGPGPUTest::captureOutput(cv::Size size, void* pixelBuffer, bool useRawP
 
     if (firstFrame)
     {
-        configurePipeline(size);
+        configurePipeline(size, inputPixFormat);
         firstFrame = false;
     }
 
