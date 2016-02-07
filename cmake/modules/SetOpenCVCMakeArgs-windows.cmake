@@ -67,5 +67,6 @@ macro(set_opencv_cmake_args_windows)
       WITH_INTELPERC=OFF      # "Include Intel Perceptual Computing support"  
       WITH_IPP_A=OFF          # "Include Intel IPP_A support"                 
       WITH_GDAL=OFF           # "Include GDAL Support"                        
-      WITH_GPHOTO2=OFF        # "Include gPhoto2 library support"             
+      WITH_GPHOTO2=OFF        # "Include gPhoto2 library support"
+      )
 endmacro(set_opencv_cmake_args_windows)
