@@ -96,8 +96,10 @@ find_package(libyuv CONFIG REQUIRED)
 
 if(IOS OR ANDROID)
   set(GATHERER_OPENGL_ES TRUE)
+  add_definitions(-DGATHERER_OPENGL_ES=1)
 else()
   set(GATHERER_OPENGL_ES FALSE)
+  add_definitions(-DGATHERER_OPENGL_ES=0)
 endif()
 
 if(NOT GATHERER_OPENGL_ES)

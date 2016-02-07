@@ -47,7 +47,7 @@
 // (((((( VERTEX ))))))
 const char *vshaderSrc = STRINGIFY(
                                    
-#if defined(OGLES_GPGPU_OPENGLES)
+#if GATHERER_OPENGL_ES
 precision mediump float;
 #endif
                                    
@@ -64,7 +64,7 @@ void main()
 // (((((( FRAGMENT ))))))
 const char *fshaderSrc = STRINGIFY(
                                    
-#if defined(OGLES_GPGPU_OPENGLES)
+#if GATHERER_OPENGL_ES
 precision mediump float;
 #endif
                                    

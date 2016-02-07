@@ -49,6 +49,8 @@ public:
     
 protected:
 
+    void configurePipeline(const cv::Size &size, GLenum inputPixFormat);
+
     void *glContext = 0;
     float resolution = 1.f;
     

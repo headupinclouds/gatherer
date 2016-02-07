@@ -4,8 +4,11 @@
 # https://github.com/ruslo/hunter/blob/master/examples/GTest/CMakeLists.txt
 # https://github.com/ruslo/hunter/wiki/pkg.gtest
 
-#if(is_osx OR is_ios) 
-if(is_osx)
+# Currently only for local host tests
+# See potential extensions for test resource bundling here:
+#     https://github.com/headupinclouds/gatherer/issues/123
+
+if(NOT is_ios AND NOT is_android)
 
   # Not avabile on Android?
   hunter_add_package(GTest)
