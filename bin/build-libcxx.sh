@@ -4,7 +4,13 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 . ${DIR}/common.sh
 
 EXTRA_ARGS=""
-[ $# -ge 1 ] && EXTRA_ARGS="--clear" 
+if [ $# -ge 1 ] && [ $1 -gt 0 ]; then
+    EXTRA_ARGS="${EXTRA_ARGS} --clear "
+fi
+
+if [ $# -ge 2 ]; then
+    EXTRA_ARGS="${EXTRA_ARGS} --home ${2} "
+fi
 
 TOOLCHAIN=libcxx
 
@@ -21,4 +27,5 @@ function build_all
 			 ${EXTRA_ARGS}
 }
 
-(cd ${DIR}/.. && build_all)
+build_all
+#(cd ${DIR}/.. && build_all)
