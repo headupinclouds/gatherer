@@ -203,6 +203,19 @@ void OEGLGPGPUTest::initGPUPipeline(int type)
         }
         break;
             
+        case 7:
+        {
+            gpgpuMngr->addProcToPipeline(&grayscaleProc);
+            gpgpuMngr->addProcToPipeline(&gradProc);
+            break;
+        }
+        case 8:
+        {
+            gpgpuMngr->addProcToPipeline(&grayscaleProc);
+            gpgpuMngr->addProcToPipeline(&lbpProc);
+            break;
+        }
+            
         default:
             std::cout << "GPU pipeline definition #%d not supported" << type << std::endl;
             break;

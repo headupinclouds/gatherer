@@ -7,6 +7,8 @@
 #include "ogles_gpgpu/common/gl/memtransfer.h"
 
 #include "common/proc/yuv2rgb.h"
+#include "common/proc/grad.h"
+#include "common/proc/lbp.h"
 
 #include <opencv2/core/core.hpp>
 
@@ -81,6 +83,9 @@ protected:
     ogles_gpgpu::RenderOrientation dispRenderOrientation;   // current output orientation of the display renderer
     
     ogles_gpgpu::Yuv2RgbProc yuv2RgbProc;
+    
+    ogles_gpgpu::GradProc gradProc; // gradient, gradient magnitude, orientation
+    ogles_gpgpu::LbpProc lbpProc;
 };
 
 _GATHERER_GRAPHICS_END
