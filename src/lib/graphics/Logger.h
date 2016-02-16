@@ -13,6 +13,7 @@ public:
     using Pointer = std::shared_ptr<spdlog::logger>;
     static Pointer create(const char* name);
     static Pointer get(const char* name);
+    static void drop(const char* name);
 };
 
 _GATHERER_GRAPHICS_END

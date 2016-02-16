@@ -28,4 +28,9 @@ std::shared_ptr<spdlog::logger> Logger::get(const char* name)
     return spdlog::get(name);
 }
 
+void Logger::drop(const char *name)
+{
+    spdlog::drop(name);
+}
+
 _GATHERER_GRAPHICS_END
