@@ -9,6 +9,11 @@
 #include "common/proc/yuv2rgb.h"
 #include "common/proc/grad.h"
 #include "common/proc/lbp.h"
+#include "common/proc/corner.h"
+#include "common/proc/shitomasi.h"
+#include "common/proc/tensor.h"
+#include "common/proc/nms.h"
+#include "common/proc/pyramid.h"
 
 #include <opencv2/core/core.hpp>
 
@@ -53,6 +58,10 @@ protected:
 
     void configurePipeline(const cv::Size &size, GLenum inputPixFormat);
 
+    void initTransform1();
+    void initTransform2();
+    void initMultiscale();
+    
     void *glContext = 0;
     float resolution = 1.f;
     
@@ -86,6 +95,11 @@ protected:
     
     ogles_gpgpu::GradProc gradProc; // gradient, gradient magnitude, orientation
     ogles_gpgpu::LbpProc lbpProc;
+    ogles_gpgpu::CornerProc cornerProc;
+    ogles_gpgpu::TensorProc tensorProc;
+    ogles_gpgpu::ShiTomasiProc shiTomasiProc;
+    ogles_gpgpu::NmsProc nmsProc;
+    ogles_gpgpu::PyramidProc pyrProc;
 };
 
 _GATHERER_GRAPHICS_END
