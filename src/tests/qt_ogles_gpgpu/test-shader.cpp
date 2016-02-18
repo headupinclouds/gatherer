@@ -13,6 +13,8 @@
 #include <fstream>
 #include <memory>
 
+#define DISPLAY_OUTPUT 1
+
 // https://code.google.com/p/googletest/wiki/Primer
 
 const char* imageFilename;
@@ -64,7 +66,7 @@ protected:
         bool useRawPixels = true;
         m_pipeline->captureOutput(src.size(), pixelBuffer, useRawPixels, 0, GL_BGRA);
         
-        dst.create(image.size(), CV_8UC4);
+        dst.create(m_pipeline->getOutputSize(), CV_8UC4);
         m_pipeline->getOutputData(dst.ptr());
     }
 
@@ -94,24 +96,6 @@ protected:
     cv::Mat image, truth;
 };
 
-/*
- * Fixture tests
- */
-
-TEST_F(QOGLESGPGPUTest, grayscale)
-{
-    cv::Mat result;
-    processFrame(image, result, 1);
-    
-    // Here we use OpenCV for ground truth (approximate)
-    cv::extractChannel(result, result, 0);
-    cv::Mat gray, diff;
-    cv::cvtColor(image, gray, cv::COLOR_BGRA2GRAY);
-    cv::absdiff(gray, result, diff);
-    
-    double mu = cv::mean(diff)[0];
-    EXPECT_LE(mu, 0.05);
-}
 
 struct SobelResult
 {
@@ -129,6 +113,115 @@ struct SobelResult
     }
 };
 
+
+static void extract(const cv::Mat &image, cv::Size size, std::vector<cv::Mat> &pyramid, int n = 8)
+{
+    cv::Point tl(0,0);
+    for (int i = 0; i <= n; ++i)
+    {
+        pyramid.push_back( image(cv::Rect(tl, size)) );
+        
+        if(i % 2)
+        {
+            tl.y += size.height;
+        }
+        else
+        {
+            tl.x += size.width;
+        }
+        size.width >>= 1;
+        size.height >>= 1;
+    }
+}
+
+/*
+ * Fixture tests
+ */
+
+TEST_F(QOGLESGPGPUTest, pyramid)
+{
+    // Need border handling:
+    cv::Mat result;
+    processFrame(image, result, 10);
+    
+#if DISPLAY_OUTPUT
+    cv::imshow("pyramid", result);
+#endif
+}
+
+TEST_F(QOGLESGPGPUTest, multiscale)
+{
+    // Need border handling:
+    cv::Mat result;
+    processFrame(image, result, 12);
+    
+#if DISPLAY_OUTPUT
+    cv::imshow("scales", result);
+#endif
+}
+
+TEST_F(QOGLESGPGPUTest, pyredge)
+{
+    cv::Mat result;
+    processFrame(image, result, 11);
+    
+#define EXTRACT_PYRAMID 1
+#if EXTRACT_PYRAMID
+    std::vector<cv::Mat> pyramid;
+    extract(result, image.size(), pyramid, 8);
+    for(auto &l : pyramid)
+    {
+        cv::imshow("l", l);
+        cv::waitKey(0);
+    }
+#endif // EXTRACT_PYRAMID
+    
+    std::vector<cv::Mat> channels;
+    cv::split(result, channels);
+    
+    // #### GPU ####
+    SobelResult gpu;
+    gpu.mag = channels[0];
+    gpu.theta = channels[1];
+    gpu.dx = channels[2];
+    gpu.dy = channels[3];
+    
+    cv::Mat gpuCanvas = gpu.getAll(); cv::resize(gpuCanvas, gpuCanvas, {}, 0.5, 0.5);
+
+    cv::imshow("pyredge", gpuCanvas); cv::waitKey(0);
+    
+}
+
+TEST_F(QOGLESGPGPUTest, warp)
+{
+    // Need border handling:
+    cv::Mat result;
+    processFrame(image, result, 6);
+    
+#if DISPLAY_OUTPUT
+    cv::imshow("warp", result);
+#endif
+}
+
+TEST_F(QOGLESGPGPUTest, grayscale)
+{
+    cv::Mat result;
+    processFrame(image, result, 1);
+    
+    // Here we use OpenCV for ground truth (approximate)
+    cv::extractChannel(result, result, 0);
+    cv::Mat gray, diff;
+    cv::cvtColor(image, gray, cv::COLOR_BGRA2GRAY);
+    cv::absdiff(gray, result, diff);
+    
+#if DISPLAY_OUTPUT
+    cv::imshow("result", result);
+#endif
+    
+    double mu = cv::mean(diff)[0];
+    EXPECT_LE(mu, 0.05);
+}
+
 TEST_F(QOGLESGPGPUTest, grad)
 {
     cv::Mat result;
@@ -144,7 +237,6 @@ TEST_F(QOGLESGPGPUTest, grad)
     gpu.dx = channels[2];
     gpu.dy = channels[3];
     
-    
     // Compute ground truth
     cv::Mat gray;
     cv::cvtColor(image, gray, cv::COLOR_BGR2GRAY);
@@ -159,13 +251,14 @@ TEST_F(QOGLESGPGPUTest, grad)
     cv::Sobel(gray, cpu.dy, CV_32F, 0, 1, ksize, scale, delta, borderType);
     cv::cartToPolar(cpu.dx, cpu.dy, cpu.mag, cpu.theta);
 
+#if DISPLAY_OUTPUT
     // TODO: add comparison
-    //cv::Mat cpuCanvas = cpu.getAll();
-    //cv::Mat gpuCanvas = gpu.getAll();
-    //cv::imshow("cpuCanvas", cpuCanvas);
-    //cv::imshow("gpuCanvas", gpuCanvas); cv::waitKey(0);
+    cv::Mat cpuCanvas = cpu.getAll(); cv::resize(cpuCanvas, cpuCanvas, {}, 0.25, 0.25);
+    cv::Mat gpuCanvas = gpu.getAll(); cv::resize(gpuCanvas, gpuCanvas, {}, 0.25, 0.25);
+    cv::imshow("cpuCanvas", cpuCanvas);
+    cv::imshow("gpuCanvas", gpuCanvas);
+#endif
 }
-
 
 // Source: OpenCV face recognition
 template <typename _Tp> static
@@ -196,8 +289,6 @@ void olbp_(cv::InputArray _src, cv::OutputArray _dst)
     }
 }
 
-#define DISPLAY_OUTPUT 1
-
 TEST_F(QOGLESGPGPUTest, lbp)
 {
     cv::Mat result;
@@ -216,6 +307,32 @@ TEST_F(QOGLESGPGPUTest, lbp)
 #if DISPLAY_OUTPUT
     cv::imshow("lbpCPU", lbpCPU);
     cv::imshow("lbpGPU", lbpGPU);
+#endif
+}
+
+TEST_F(QOGLESGPGPUTest, corner)
+{
+    cv::Mat result;
+    processFrame(image, result, 9); // 9 == corner
+
+    std::cout << "corners: " << cv::mean(result) << std::endl;
+    cv::imshow("result>0", result > 0);
+    
+    cv::Mat mask;
+    cv::extractChannel(result, mask, 0);
+    
+    std::vector<cv::Point> points;
+    cv::findNonZero(mask, points);
+
+    cv::Mat canvas = image.clone();
+    for(const auto &p : points)
+    {
+        cv::circle(canvas, p, 2, {0,255,0}, -1, 8);
+    }
+    
+    
+#if DISPLAY_OUTPUT
+    cv::imshow("corner", canvas);
     cv::waitKey(0);
 #endif
 }
