@@ -18,3 +18,5 @@ if(NOT is_ios AND NOT is_android)
   add_subdirectory(qt_ogles_gpgpu)
 
 endif()
+
+add_subdirectory(compute)

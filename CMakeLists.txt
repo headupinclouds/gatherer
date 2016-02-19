@@ -91,6 +91,19 @@ hunter_add_package(libyuv)
 find_package(libyuv CONFIG REQUIRED)
 
 ## #################################################################
+## Dependencies - boost.compute
+## #################################################################
+
+hunter_add_package(BoostCompute)
+find_package(BoostCompute CONFIG REQUIRED)
+
+# get_cmake_property(_variableNames VARIABLES)
+# foreach (_variableName ${_variableNames})
+#     message(STATUS "VARIABLE: ${_variableName}=${${_variableName}}")
+# endforeach()
+# return()
+
+## #################################################################
 ## Dependencies - OpenGL stuff
 ## #################################################################
 
