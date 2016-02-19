@@ -181,10 +181,8 @@ void OEGLGPGPUTest::initTransform2()
 
 void OEGLGPGPUTest::initMultiscale()
 {
-    ogles_gpgpu::PyramidProc::Size size;
-    size.width = 512;
-    size.height = 512;
-    std::vector<ogles_gpgpu::PyramidProc::Size> scales;
+    ogles_gpgpu::Size2d size(512, 512);
+    std::vector<ogles_gpgpu::Size2d> scales;
     for(int i = 0; i < 4; i++)
     {
         scales.push_back(size);
@@ -254,6 +252,12 @@ void OEGLGPGPUTest::initGPUPipeline(int type)
             break;
         case 12:
             initMultiscale();
+            break;
+        case 13:
+            gpgpuMngr->addProcToPipeline(&fifoProc);
+            break;
+        case 14:
+            gpgpuMngr->addProcToPipeline(&twoInputProc);
             break;
         default:
             std::cout << "GPU pipeline definition #%d not supported" << type << std::endl;
