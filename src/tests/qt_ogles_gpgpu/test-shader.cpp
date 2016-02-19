@@ -175,6 +175,28 @@ void olbp_(cv::InputArray _src, cv::OutputArray _dst)
  * Fixture tests
  */
 
+TEST_F(QOGLESGPGPUTest, resize)
+{
+    ogles_gpgpu::VideoSource video;
+    ogles_gpgpu::GrayscaleProc grayscaleProc;
+    
+    video.set(&grayscaleProc);
+    
+    video({image.cols, image.rows}, image.ptr(), true, 0, GL_BGRA);
+    cv::Mat result0 = getImage(grayscaleProc);
+    
+    cv::Mat half;
+    cv::pyrDown(image, half);
+    video({half.cols, half.rows}, half.ptr(), true, 0, GL_BGRA);
+    cv::Mat result1 = getImage(grayscaleProc);
+    
+#if DISPLAY_OUTPUT
+    cv::imshow("gray0", result0);
+    cv::imshow("gray1", result1);
+    cv::waitKey(0);
+#endif
+}
+
 TEST_F(QOGLESGPGPUTest, pyramid)
 {
     ogles_gpgpu::VideoSource video;
@@ -313,7 +335,6 @@ TEST_F(QOGLESGPGPUTest, warp)
 #if DISPLAY_OUTPUT
     cv::imshow("warp", result);
 #endif
-    
 }
 
 TEST_F(QOGLESGPGPUTest, grayscale)
