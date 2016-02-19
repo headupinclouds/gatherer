@@ -13,6 +13,8 @@
 #include "common/proc/tensor.h"
 #include "common/proc/nms.h"
 #include "common/proc/pyramid.h"
+#include "common/proc/fifo.h"
+#include "common/proc/two.h"
 
 #include <opencv2/core/core.hpp>
 
@@ -98,6 +100,9 @@ protected:
     ogles_gpgpu::ShiTomasiProc shiTomasiProc;
     ogles_gpgpu::NmsProc nmsProc;
     ogles_gpgpu::PyramidProc pyrProc;
+    ogles_gpgpu::FIFOProc fifoProc;
+    
+    ogles_gpgpu::TwoInputProc twoInputProc;
 };
 
 _GATHERER_GRAPHICS_END
