@@ -4,6 +4,7 @@
 
 #include "graphics/gatherer_graphics.h"
 #include "OGLESGPGPUTest.h"
+#include "common/proc/video.h"
 #include "graphics/Logger.h"
 
 #include <opencv2/core.hpp>
@@ -134,15 +135,54 @@ static void extract(const cv::Mat &image, cv::Size size, std::vector<cv::Mat> &p
     }
 }
 
+static cv::Mat getImage(ogles_gpgpu::ProcInterface &proc)
+{
+    cv::Mat result(proc.getOutFrameH(), proc.getOutFrameW(), CV_8UC4);
+    proc.getResultData(result.ptr());
+    return result;
+}
+
+// Source: OpenCV face recognition
+template <typename _Tp> static
+void olbp_(cv::InputArray _src, cv::OutputArray _dst)
+{
+    // get matrices
+    cv::Mat src = _src.getMat();
+    // allocate memory for result
+    _dst.create(src.rows-2, src.cols-2, CV_8UC1);
+    cv::Mat dst = _dst.getMat();
+    // zero the result matrix
+    dst.setTo(0);
+    // calculate patterns
+    for(int i=1;i<src.rows-1;i++) {
+        for(int j=1;j<src.cols-1;j++) {
+            _Tp center = src.at<_Tp>(i,j);
+            unsigned char code = 0;
+            code |= (src.at<_Tp>(i-1,j-1) >= center) << 7;
+            code |= (src.at<_Tp>(i-1,j) >= center) << 6;
+            code |= (src.at<_Tp>(i-1,j+1) >= center) << 5;
+            code |= (src.at<_Tp>(i,j+1) >= center) << 4;
+            code |= (src.at<_Tp>(i+1,j+1) >= center) << 3;
+            code |= (src.at<_Tp>(i+1,j) >= center) << 2;
+            code |= (src.at<_Tp>(i+1,j-1) >= center) << 1;
+            code |= (src.at<_Tp>(i,j-1) >= center) << 0;
+            dst.at<unsigned char>(i-1,j-1) = code;
+        }
+    }
+}
+
 /*
  * Fixture tests
  */
 
 TEST_F(QOGLESGPGPUTest, pyramid)
 {
-    // Need border handling:
-    cv::Mat result;
-    processFrame(image, result, 10);
+    ogles_gpgpu::VideoSource video;
+    ogles_gpgpu::PyramidProc pyrProc; // gradient, gradient magnitude, orientation
+    
+    video.set(&pyrProc);
+    video({image.cols, image.rows}, image.ptr(), true, 0, GL_BGRA);
+    cv::Mat result = getImage(pyrProc);
     
 #if DISPLAY_OUTPUT
     cv::imshow("pyramid", result);
@@ -151,28 +191,77 @@ TEST_F(QOGLESGPGPUTest, pyramid)
 
 TEST_F(QOGLESGPGPUTest, multiscale)
 {
-    // Need border handling:
-    cv::Mat result;
-    processFrame(image, result, 12);
+    ogles_gpgpu::VideoSource video;
+    ogles_gpgpu::PyramidProc pyrProc;
+    
+    ogles_gpgpu::Size2d size(image.cols, image.rows);
+    std::vector<ogles_gpgpu::Size2d> scales;
+    for(int i = 0; i < 4; i++)
+    {
+        scales.push_back(size);
+        size.width = float(size.width) * 0.95;
+        size.height = float(size.height) * 0.95;
+    }
+    pyrProc.setScales(scales);
+
+    video.set(&pyrProc);
+    video({image.cols, image.rows}, image.ptr(), true, 0, GL_BGRA);
+    cv::Mat result = getImage(pyrProc);
     
 #if DISPLAY_OUTPUT
     cv::imshow("scales", result);
 #endif
 }
 
+TEST_F(QOGLESGPGPUTest, lbp)
+{
+    ogles_gpgpu::VideoSource video;
+    ogles_gpgpu::GrayscaleProc grayProc; // gradient, gradient magnitude, orientation
+    ogles_gpgpu::LbpProc lbpProc;
+    
+    video.set(&grayProc);
+    grayProc.add(&lbpProc);
+    video({image.cols, image.rows}, image.ptr(), true, 0, GL_BGRA);
+    cv::Mat result = getImage(lbpProc);
+
+    // #### GPU ####
+    cv::Mat lbpGPU;
+    cv::extractChannel(result, lbpGPU, 0);
+    
+    // #### CPU ####
+    cv::Mat gray, lbpCPU;
+    cv::cvtColor(image, gray, cv::COLOR_BGR2GRAY);
+    olbp_<unsigned char>(gray, lbpCPU);
+    
+#if DISPLAY_OUTPUT
+    cv::imshow("lbpCPU", lbpCPU);
+    cv::imshow("lbpGPU", lbpGPU);
+#endif
+}
+
 TEST_F(QOGLESGPGPUTest, pyredge)
 {
-    cv::Mat result;
-    processFrame(image, result, 11);
+    ogles_gpgpu::VideoSource video;
+    ogles_gpgpu::PyramidProc pyrProc;
+    ogles_gpgpu::GrayscaleProc grayscaleProc;
+    ogles_gpgpu::GradProc gradProc;
+    ogles_gpgpu::GaussProc gaussProc;
+
+    video.set(&pyrProc);
+    pyrProc.add(&grayscaleProc);
+    grayscaleProc.add(&gradProc);
+    gradProc.add(&gaussProc);
     
-#define EXTRACT_PYRAMID 1
+    video({image.cols, image.rows}, image.ptr(), true, 0, GL_BGRA);
+    cv::Mat result = getImage(gaussProc);
+    
+#define EXTRACT_PYRAMID 0
 #if EXTRACT_PYRAMID
     std::vector<cv::Mat> pyramid;
     extract(result, image.size(), pyramid, 8);
     for(auto &l : pyramid)
     {
         cv::imshow("l", l);
-        cv::waitKey(0);
     }
 #endif // EXTRACT_PYRAMID
     
@@ -186,46 +275,73 @@ TEST_F(QOGLESGPGPUTest, pyredge)
     gpu.dx = channels[2];
     gpu.dy = channels[3];
     
-    cv::Mat gpuCanvas = gpu.getAll(); cv::resize(gpuCanvas, gpuCanvas, {}, 0.5, 0.5);
+    cv::Mat gpuCanvas = gpu.getAll();
+    cv::resize(gpuCanvas, gpuCanvas, {}, 0.5, 0.5);
 
-    cv::imshow("pyredge", gpuCanvas); cv::waitKey(0);
-    
+    cv::imshow("pyredge", gpuCanvas);
 }
 
 TEST_F(QOGLESGPGPUTest, warp)
 {
-    // Need border handling:
-    cv::Mat result;
-    processFrame(image, result, 6);
+    ogles_gpgpu::VideoSource video;
+    ogles_gpgpu::TransformProc transformProc;
+    
+    video.set(&transformProc);
+    
+    auto interpolation = ogles_gpgpu::TransformProc::BICUBIC;
+    
+    transformProc.setInterpolation(interpolation);
+    float theta = 15.0 * M_PI / 180.0;
+    float ct = std::cos(theta);
+    float st = std::sin(theta);
+    ogles_gpgpu::Mat44f transformMatrix =
+    {{
+        {+ct,-st,0.f,0.f},
+        {+st,+ct,0.f,0.f},
+        {0.f,0.f,0.f,0.f},
+        {0.f,0.f,0.f,1.f}
+    }};
+    
+    // Use this to place the texture upright for processing (object, detection, etc)
+    transformProc.setTransformMatrix(transformMatrix); // don't rotate
+    transformProc.setOutputRenderOrientation(ogles_gpgpu::RenderOrientationDiagonalMirrored);
+    transformProc.setOutputSize(0.25);
+    
+    video({image.cols, image.rows}, image.ptr(), true, 0, GL_BGRA);
+    cv::Mat result = getImage(transformProc);
     
 #if DISPLAY_OUTPUT
     cv::imshow("warp", result);
 #endif
+    
 }
 
 TEST_F(QOGLESGPGPUTest, grayscale)
 {
-    cv::Mat result;
-    processFrame(image, result, 1);
+    ogles_gpgpu::VideoSource video;
+    ogles_gpgpu::GrayscaleProc grayscaleProc;
     
-    // Here we use OpenCV for ground truth (approximate)
-    cv::extractChannel(result, result, 0);
-    cv::Mat gray, diff;
-    cv::cvtColor(image, gray, cv::COLOR_BGRA2GRAY);
-    cv::absdiff(gray, result, diff);
+    video.set(&grayscaleProc);
+    
+    video({image.cols, image.rows}, image.ptr(), true, 0, GL_BGRA);
+    cv::Mat result = getImage(grayscaleProc);
     
 #if DISPLAY_OUTPUT
-    cv::imshow("result", result);
+    cv::imshow("gray", result);
 #endif
-    
-    double mu = cv::mean(diff)[0];
-    EXPECT_LE(mu, 0.05);
 }
 
 TEST_F(QOGLESGPGPUTest, grad)
 {
-    cv::Mat result;
-    processFrame(image, result, 7); // 7 == gradient
+    ogles_gpgpu::VideoSource video;
+    ogles_gpgpu::GrayscaleProc grayscaleProc;
+    ogles_gpgpu::GradProc gradProc;
+    
+    video.set(&grayscaleProc);
+    grayscaleProc.add(&gradProc);
+    
+    video({image.cols, image.rows}, image.ptr(), true, 0, GL_BGRA);
+    cv::Mat result = getImage(gradProc);
     
     std::vector<cv::Mat> channels;
     cv::split(result, channels);
@@ -260,77 +376,41 @@ TEST_F(QOGLESGPGPUTest, grad)
 #endif
 }
 
-// Source: OpenCV face recognition
-template <typename _Tp> static
-void olbp_(cv::InputArray _src, cv::OutputArray _dst)
-{
-    // get matrices
-    cv::Mat src = _src.getMat();
-    // allocate memory for result
-    _dst.create(src.rows-2, src.cols-2, CV_8UC1);
-    cv::Mat dst = _dst.getMat();
-    // zero the result matrix
-    dst.setTo(0);
-    // calculate patterns
-    for(int i=1;i<src.rows-1;i++) {
-        for(int j=1;j<src.cols-1;j++) {
-            _Tp center = src.at<_Tp>(i,j);
-            unsigned char code = 0;
-            code |= (src.at<_Tp>(i-1,j-1) >= center) << 7;
-            code |= (src.at<_Tp>(i-1,j) >= center) << 6;
-            code |= (src.at<_Tp>(i-1,j+1) >= center) << 5;
-            code |= (src.at<_Tp>(i,j+1) >= center) << 4;
-            code |= (src.at<_Tp>(i+1,j+1) >= center) << 3;
-            code |= (src.at<_Tp>(i+1,j) >= center) << 2;
-            code |= (src.at<_Tp>(i+1,j-1) >= center) << 1;
-            code |= (src.at<_Tp>(i,j-1) >= center) << 0;
-            dst.at<unsigned char>(i-1,j-1) = code;
-        }
-    }
-}
-
-TEST_F(QOGLESGPGPUTest, lbp)
-{
-    cv::Mat result;
-    processFrame(image, result, 8); // 7 == lbp
-    
-    std::cout << "lbp: " << cv::mean(result) << std::endl;
-    
-    cv::Mat lbpGPU;
-    cv::extractChannel(result, lbpGPU, 0);
-    
-    // #### CPU ####
-    cv::Mat gray, lbpCPU;
-    cv::cvtColor(image, gray, cv::COLOR_BGR2GRAY);
-    olbp_<unsigned char>(gray, lbpCPU);
-    
-#if DISPLAY_OUTPUT
-    cv::imshow("lbpCPU", lbpCPU);
-    cv::imshow("lbpGPU", lbpGPU);
-#endif
-}
-
 TEST_F(QOGLESGPGPUTest, corner)
 {
-    cv::Mat result;
-    processFrame(image, result, 9); // 9 == corner
-
-    std::cout << "corners: " << cv::mean(result) << std::endl;
-    cv::imshow("result>0", result > 0);
+    ogles_gpgpu::VideoSource video;
+    ogles_gpgpu::GrayscaleProc grayscaleProc;
+    ogles_gpgpu::TensorProc tensorProc;
+    ogles_gpgpu::GaussProc gaussProc;
+    ogles_gpgpu::ShiTomasiProc shiTomasiProc;
+    ogles_gpgpu::NmsProc nmsProc;
     
+    video.set(&grayscaleProc);
+    grayscaleProc.add(&tensorProc);
+    tensorProc.add(&gaussProc);
+    gaussProc.add(&shiTomasiProc);
+    shiTomasiProc.add(&nmsProc);
+    
+    tensorProc.setEdgeStrength(1.0);
+    shiTomasiProc.setSensitivity(10.0);
+    nmsProc.setThreshold(0.1);
+    
+    video({image.cols, image.rows}, image.ptr(), true, 0, GL_BGRA);
+    cv::Mat result = getImage(nmsProc);
+    
+    // ### GPU ###
     cv::Mat mask;
     cv::extractChannel(result, mask, 0);
     
     std::vector<cv::Point> points;
-    cv::findNonZero(mask, points);
+    try { cv::findNonZero(mask, points); } catch(...) {}
 
     cv::Mat canvas = image.clone();
     for(const auto &p : points)
     {
         cv::circle(canvas, p, 2, {0,255,0}, -1, 8);
     }
-    
-    
+
 #if DISPLAY_OUTPUT
     cv::imshow("corner", canvas);
     cv::waitKey(0);
