@@ -168,14 +168,6 @@ int main(int argc, char **argv)
         assert(!best.second.isNull());
 
         camera->setViewfinderSettings(best.second);
-
-        QCameraViewfinderSettings resultSettings = camera->viewfinderSettings();
-
-        assert(best.second.resolution().width() == resultSettings.resolution().width());
-        assert(best.second.resolution().height() == resultSettings.resolution().height());
-        assert(best.second.pixelFormat() == resultSettings.pixelFormat());
-        assert(best.second.minimumFrameRate() == resultSettings.minimumFrameRate());
-        assert(best.second.maximumFrameRate() == resultSettings.maximumFrameRate());
     }
 
 #if TEST_CALLBACK
