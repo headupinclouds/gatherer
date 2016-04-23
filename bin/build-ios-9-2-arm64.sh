@@ -8,7 +8,7 @@ if [ $# -ge 1 ]; then
 	EXTRA_ARGS="--clear"
 fi
 
-TOOLCHAIN=ios-9-1-arm64
+TOOLCHAIN=ios-9-2-arm64
 
 rename_tab gatherer $TOOLCHAIN
 

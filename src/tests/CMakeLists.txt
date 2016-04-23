@@ -19,4 +19,6 @@ if(NOT is_ios AND NOT is_android)
 
 endif()
 
-add_subdirectory(compute)
+if(NOT is_android)
+  add_subdirectory(compute)
+endif()
