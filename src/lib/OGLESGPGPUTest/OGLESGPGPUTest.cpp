@@ -231,7 +231,7 @@ void OEGLGPGPUTest::captureOutput(cv::Size size, void* pixelBuffer, bool useRawP
     if(m_doDisplay)
     {
         // update the GL view to display the output directly
-        outputDispRenderer->render();
+        outputDispRenderer->render(0);
     }
 }
 
