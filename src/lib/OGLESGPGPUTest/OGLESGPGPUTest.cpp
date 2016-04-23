@@ -98,171 +98,14 @@ void OEGLGPGPUTest::setDisplaySize(int width, int height)
     outputDispRenderer->setOutputSize(width, height);
 }
 
-void OEGLGPGPUTest::initTransform1()
-{
-#define USE_TRANSFORM1 1
-#define USE_TRANSFORM2 1
-    
-#if USE_TRANSFORM1
-    ogles_gpgpu::Mat44f transformMatrix =
-    {{
-        {1.f,0.f,0.f,0.f},
-        {0.f,1.f,0.f,0.f},
-        {0.f,0.f,0.f,0.f},
-        {0.f,0.f,0.f,1.f}
-    }};
-    
-    // Use this to place the texture upright for processing (object, detection, etc)
-    transformProc1.setTransformMatrix(transformMatrix);
-    transformProc1.setOutputRenderOrientation(ogles_gpgpu::RenderOrientationDiagonalMirrored);
-    transformProc1.setOutputSize(0.25);
-    
-    gpgpuMngr->addProcToPipeline(&transformProc1);
-#endif
-    
-    gpgpuMngr->addProcToPipeline(&grayscaleProc);
-    
-#if USE_TRANSFORM2
-    // Use this to place the texture back in the native orientation (and aspect ratio)
-    // provided by the QML Camera since the QML VideoOutput object that displays the
-    // frames is expecting that and I don't see a trivial way to work around that.
-    // It seems we need to override either the VideoObject class or encapsulate this
-    // native processing pipeline in some kind of ExtendedCamera qml object that
-    // reports the size and orientation of the final processed texture.  Since this
-    // is all on the GPU it may not matter much from a performance standpoint.
-    //
-    // TODO: investigate QT mechanism for avoiding this.
-    transformProc2.setTransformMatrix(transformMatrix);
-    transformProc2.setOutputRenderOrientation(ogles_gpgpu::RenderOrientationDiagonalFlipped);
-    transformProc2.setOutputSize(0.25);
-    
-    gpgpuMngr->addProcToPipeline(&transformProc2);
-#endif
-
-}
-
-void OEGLGPGPUTest::initTransform2()
-{
-    auto interpolation = ogles_gpgpu::TransformProc::BICUBIC;
-    
-    transformProc1.setInterpolation(interpolation);
-    float theta = 15.0 * M_PI / 180.0;
-    float ct = std::cos(theta);
-    float st = std::sin(theta);
-    ogles_gpgpu::Mat44f transformMatrix1, transformMatrix2;
-    
-    transformMatrix1 = transformMatrix2 =
-    {{
-        {+ct,-st,0.f,0.f},
-        {+st,+ct,0.f,0.f},
-        {0.f,0.f,0.f,0.f},
-        {0.f,0.f,0.f,1.f}
-    }};
-    
-    transformMatrix2.data[0][0] = +ct;
-    transformMatrix2.data[1][1] = +ct;
-    transformMatrix2.data[1][0] = +st;
-    transformMatrix2.data[0][1] = -st;
-    
-    // Use this to place the texture upright for processing (object, detection, etc)
-    transformProc1.setTransformMatrix(transformMatrix1); // don't rotate
-    transformProc1.setOutputRenderOrientation(ogles_gpgpu::RenderOrientationDiagonalMirrored);
-    transformProc1.setOutputSize(0.25);
-    
-    gpgpuMngr->addProcToPipeline(&transformProc1);
-    
-    transformProc2.setInterpolation(interpolation);
-    transformProc2.setTransformMatrix(transformMatrix2); // rotate output
-    transformProc2.setOutputRenderOrientation(ogles_gpgpu::RenderOrientationDiagonalFlipped);
-    transformProc2.setOutputSize(1.0);
-    
-    gpgpuMngr->addProcToPipeline(&transformProc2);
-}
-
-void OEGLGPGPUTest::initMultiscale()
-{
-    ogles_gpgpu::Size2d size(512, 512);
-    std::vector<ogles_gpgpu::Size2d> scales;
-    for(int i = 0; i < 4; i++)
-    {
-        scales.push_back(size);
-        size.width = float(size.width) * 0.95;
-        size.height = float(size.height) * 0.95;
-    }
-    pyrProc.setScales(scales);
-    gpgpuMngr->addProcToPipeline(&pyrProc);
-}
-
 void OEGLGPGPUTest::initGPUPipeline(int type)
 {
     if (selectedProcType == type) return;   // no change
 
     // reset the pipeline
     gpgpuMngr->reset();
-    
-    switch(type)
-    {
-        case 1:
-            gpgpuMngr->addProcToPipeline(&grayscaleProc);
-            break;
-        case 2:
-            gpgpuMngr->addProcToPipeline(&grayscaleProc);
-            gpgpuMngr->addProcToPipeline(&adaptThreshProc);
-            break;
-        case 3:
-            gpgpuMngr->addProcToPipeline(&grayscaleProc);
-            gpgpuMngr->addProcToPipeline(&simpleThreshProc);
-            break;
-        case 4:
-            gpgpuMngr->addProcToPipeline(&gaussProc);
-            break;
-        case 5:
-            initTransform1();
-            break;
-        case 6:
-            initTransform2();
-            break;
-        case 7:
-            gpgpuMngr->addProcToPipeline(&grayscaleProc);
-            gpgpuMngr->addProcToPipeline(&gradProc);
-            break;
-        case 8:
-            gpgpuMngr->addProcToPipeline(&grayscaleProc);
-            gpgpuMngr->addProcToPipeline(&lbpProc);
-            break;
-        case 9:
-            gpgpuMngr->addProcToPipeline(&grayscaleProc);
-            gpgpuMngr->addProcToPipeline(&tensorProc);
-            gpgpuMngr->addProcToPipeline(&gaussProc);
-            gpgpuMngr->addProcToPipeline(&shiTomasiProc);
-            gpgpuMngr->addProcToPipeline(&nmsProc);
-            
-            tensorProc.setEdgeStrength(1.0);
-            shiTomasiProc.setSensitivity(10.0);
-            nmsProc.setThreshold(0.1);
-            break;
-        case 10:
-            gpgpuMngr->addProcToPipeline(&pyrProc);
-            break;
-        case 11:
-            gpgpuMngr->addProcToPipeline(&pyrProc);
-            gpgpuMngr->addProcToPipeline(&grayscaleProc);
-            gpgpuMngr->addProcToPipeline(&gradProc);
-            gpgpuMngr->addProcToPipeline(&gaussProc);
-            break;
-        case 12:
-            initMultiscale();
-            break;
-        case 13:
-            gpgpuMngr->addProcToPipeline(&fifoProc);
-            break;
-        case 14:
-            gpgpuMngr->addProcToPipeline(&twoInputProc);
-            break;
-        default:
-            std::cout << "GPU pipeline definition #%d not supported" << type << std::endl;
-            break;
-    }
+
+    gpgpuMngr->addProcToPipeline(&grayscaleProc);
 
     if(m_doDisplay)
     {
@@ -381,20 +224,6 @@ void OEGLGPGPUTest::captureOutput(cv::Size size, void* pixelBuffer, bool useRawP
     // run processing pipeline
     gpgpuMngr->process();
 
-#if 1
-    if(frameHandler)
-    {
-        auto transfer = dynamic_cast<ogles_gpgpu::MemTransferOptimized *>(gpgpuMngr->getOutputMemTransfer());
-        if(transfer)
-        {
-            MemTransferScopeLock data(transfer);
-            cv::Size outSize(transformProc1.getOutFrameW(), transformProc1.getOutFrameH());
-            cv::Mat frame(outSize.height, outSize.width, CV_8UC4, (void *)data.data());
-            frameHandler(frame);
-        }
-    }
-#endif
-    
 #if !defined(NDEBUG)
     std::cerr << "Skipping render..." << std::endl;
 #endif

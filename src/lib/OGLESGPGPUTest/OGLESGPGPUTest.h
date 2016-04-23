@@ -58,10 +58,6 @@ public:
 protected:
 
     void configurePipeline(const cv::Size &size, GLenum inputPixFormat);
-
-    void initTransform1();
-    void initTransform2();
-    void initMultiscale();
     
     void *glContext = 0;
     float resolution = 1.f;
@@ -82,27 +78,10 @@ protected:
     
     ogles_gpgpu::MemTransfer *yuvInputHandler; // special yuv input handler (weak ref!)
     
-    ogles_gpgpu::TransformProc transformProc1;  // 2D parametric transformations
-    ogles_gpgpu::TransformProc transformProc2;  // 2D parametric transformations
-    
     ogles_gpgpu::GrayscaleProc grayscaleProc;       // pipeline processor 1: convert input to grayscale image
-    ogles_gpgpu::ThreshProc simpleThreshProc;       // pipeline processor 2 (alternative 1): simple thresholding
-    ogles_gpgpu::AdaptThreshProc adaptThreshProc;   // pipeline processor 2 (alternative 2): adaptive thresholding (two passes)
-    ogles_gpgpu::GaussProc gaussProc;               // pipeline processor 2 (alternative 3): gaussian smoothing (two passes)
     ogles_gpgpu::Disp *outputDispRenderer;          // display renderer to directly display the output in the GL view. weak ref!
     ogles_gpgpu::RenderOrientation dispRenderOrientation;   // current output orientation of the display renderer
-    
     ogles_gpgpu::Yuv2RgbProc yuv2RgbProc;
-    
-    ogles_gpgpu::GradProc gradProc; // gradient, gradient magnitude, orientation
-    ogles_gpgpu::LbpProc lbpProc;
-    ogles_gpgpu::TensorProc tensorProc;
-    ogles_gpgpu::ShiTomasiProc shiTomasiProc;
-    ogles_gpgpu::NmsProc nmsProc;
-    ogles_gpgpu::PyramidProc pyrProc;
-    ogles_gpgpu::FIFOProc fifoProc;
-    
-    ogles_gpgpu::TwoInputProc twoInputProc;
 };
 
 _GATHERER_GRAPHICS_END
