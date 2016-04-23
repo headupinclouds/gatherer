@@ -131,43 +131,6 @@ int main(int argc, char **argv)
     QObject * qmlVideoOutput = root->findChild<QObject*>("VideoOutput");
     assert(qmlVideoOutput);
 
-#if defined(Q_OS_ANDROID)
-    {
-        // viewfinderSettings doesn't work for Android:
-        // * https://bugreports.qt.io/browse/QTBUG-50422
-        // Experiments show that QCameraImageCapture can be used for this:
-        // * https://github.com/headupinclouds/gatherer/issues/109
-        // (probably not quite correctly)
-
-        std::pair<QSize, int> best;
-        QCameraImageCapture *imageCapture = new QCameraImageCapture(camera);
-        QList<QVideoFrame::PixelFormat> formats = imageCapture->supportedBufferFormats();
-        
-        QList<QSize> resolutions = imageCapture->supportedResolutions();
-
-        if(resolutions.size())
-        {
-            // This seems to work on Android, but not for iOS
-            for(auto &i : resolutions)
-            {
-                int area = i.width() * i.height();
-                if(area > best.second)
-                {
-                    best = {i, area};
-                }
-                logger->info() << "video: " << i.width() << " " << i.height();
-            }
-            
-            logger->info() << "best: " << best.first.width() << " " << best.first.height();
-            
-            QImageEncoderSettings imageSettings;
-            imageSettings.setResolution(best.first);
-            imageCapture->setEncodingSettings(imageSettings);
-        }
-    }
-#endif // Q_OS_ANDROID
-
-#if defined(Q_OS_IOS) || defined(Q_OS_OSX)
     {
         // Not available in Android:
         // https://bugreports.qt.io/browse/QTBUG-46470
@@ -178,6 +141,8 @@ int main(int argc, char **argv)
         
 #if defined(Q_OS_IOS)
         desiredFormats = { QVideoFrame::Format_NV12, QVideoFrame::Format_NV21 };
+#elif defined(Q_OS_ANDROID)
+        desiredFormats = { QVideoFrame::Format_NV12, QVideoFrame::Format_NV21, QVideoFrame::Format_YV12 };
 #else
         // TODO: add OS X texture cache for Y + UV texture loads
         desiredFormats = { QVideoFrame::Format_ARGB32 };
@@ -189,7 +154,8 @@ int main(int argc, char **argv)
         std::pair<int, QCameraViewfinderSettings> best;
         for (auto i: viewfinderSettings)
         {
-            logger->info() << "settings: " << i.resolution().width() << "x" << i.resolution().height() << " : " << int(i.pixelFormat());
+            logger->info() << "settings: " << i.resolution().width() << "x" << i.resolution().height() << " : " << int(i.pixelFormat())
+                << " (fps from " << i.minimumFrameRate() << " to " << i.maximumFrameRate() << ")";
             if(std::find(desiredFormats.begin(), desiredFormats.end(), i.pixelFormat()) != desiredFormats.end())
             {
                 int area = (i.resolution().height() * i.resolution().width());
@@ -200,9 +166,9 @@ int main(int argc, char **argv)
             }
         }
         assert(!best.second.isNull());
+
         camera->setViewfinderSettings(best.second);
     }
-#endif // Q_OS_IOS
 
 #if TEST_CALLBACK
     // TODO: We need a way to register this callback after VideoFilterRunnable is instantiated:
