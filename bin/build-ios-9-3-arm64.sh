@@ -8,14 +8,14 @@ if [ $# -ge 1 ]; then
 	EXTRA_ARGS="--clear"
 fi
 
-TOOLCHAIN=ios-9-1-arm64
+TOOLCHAIN=ios-9-3-arm64
 
 rename_tab gatherer $TOOLCHAIN
 
 function build_all
 {
-    COMMANDS=(
-        "--toolchain ${TOOLCHAIN} "
+    COMMAND=(
+        "--toolchain ${TOOLCHAIN}"
         "--verbose "
         "--fwd HUNTER_CONFIGURATION_TYPES=Release "
         "USE_OGLES_GPGPU=ON "
@@ -26,10 +26,10 @@ function build_all
         "--open "
         "--reconfig "
         "--nobuild "
-        "${EXTRA_ARGS}"
+		"${EXTRA_ARGS} "
     )
     
-	build.py ${COMMANDS[*]}
+	build.py  ${COMMAND[*]}
 }
 
 (cd ${DIR}/.. && build_all)
