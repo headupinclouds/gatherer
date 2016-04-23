@@ -94,8 +94,8 @@ find_package(libyuv CONFIG REQUIRED)
 ## Dependencies - boost.compute
 ## #################################################################
 
-hunter_add_package(BoostCompute)
-find_package(BoostCompute CONFIG REQUIRED)
+#hunter_add_package(BoostCompute)
+#find_package(BoostCompute CONFIG REQUIRED)
 
 # get_cmake_property(_variableNames VARIABLES)
 # foreach (_variableName ${_variableNames})
