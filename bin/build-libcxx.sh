@@ -18,13 +18,18 @@ rename_tab gatherer $TOOLCHAIN
 
 function build_all
 {
-	build.py --toolchain ${TOOLCHAIN} --verbose --fwd HUNTER_CONFIGURATION_TYPES=Release \
-			 ${GATHERER_BUILD_ARGS[*]} \
-			 --config Release \
-			 --install \
-			 --jobs 8 \
-			 --reconfig \
-			 ${EXTRA_ARGS}
+    COMMAND=(
+        "--toolchain ${TOOLCHAIN} "
+        "--verbose --fwd HUNTER_CONFIGURATION_TYPES=Release "
+        "${GATHERER_BUILD_ARGS[*]} "
+        "--config Release "
+        "--install "
+        "--jobs 8 "
+        "--reconfig "
+        "${EXTRA_ARGS} "
+    )
+    
+	build.py ${COMMAND[*]}
 }
 
 build_all
