@@ -175,24 +175,6 @@ void olbp_(cv::InputArray _src, cv::OutputArray _dst)
  * Fixture tests
  */
 
-TEST_F(QOGLESGPGPUTest, two)
-{
-    ogles_gpgpu::VideoSource video;
-    ogles_gpgpu::TwoInputProc twoInputProc;
-    
-    video.set(&twoInputProc);
-    video.set(&two)
-    
-    video({image.cols, image.rows}, image.ptr(), true, 0, GL_BGRA);
-    cv::Mat result = getImage(twoInputProc);
-    
-#if DISPLAY_OUTPUT
-    cv::imshow("two", result);
-    cv::waitKey(0);
-#endif
-}
-
-
 TEST_F(QOGLESGPGPUTest, resize)
 {
     ogles_gpgpu::VideoSource video;

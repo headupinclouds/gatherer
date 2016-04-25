@@ -12,16 +12,22 @@ rename_tab gatherer $TOOLCHAIN
 
 function build_all
 {
-	build.py --toolchain ${TOOLCHAIN} --verbose --fwd HUNTER_CONFIGURATION_TYPES=Release \
-			 ${GATHERER_BUILD_ARGS[*]} \
-			 CMAKE_XCODE_ATTRIBUTE_OSX_DEPLOYMENT_TARGET=10.10 \
-			 CMAKE_OSX_DEPLOYMENT_TARGET=10.10 \
-			 --config Release \
-			 --jobs 8 \
-             --reconfig \
-             --test \
-			 --open \
-			 ${EXTRA_ARGS}
+    COMMANDS=(
+	    "--toolchain ${TOOLCHAIN} "
+        "--verbose "
+        "--fwd HUNTER_CONFIGURATION_TYPES=Release "
+        "${GATHERER_BUILD_ARGS[*]} "
+        "CMAKE_XCODE_ATTRIBUTE_OSX_DEPLOYMENT_TARGET=10.10 "
+        "CMAKE_OSX_DEPLOYMENT_TARGET=10.10 "
+        "--config Release "
+        "--jobs 8 "
+        "--reconfig "
+        "--test "
+        "--open "
+        "${EXTRA_ARGS} "
+    )
+
+     build.py ${COMMANDS[*]}
 }
 
 (cd ${DIR}/.. && build_all)

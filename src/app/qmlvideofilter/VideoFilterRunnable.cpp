@@ -32,6 +32,8 @@
  **
  ****************************************************************************/
 
+#define TEST_QML_DRAWING 0
+
 #include "VideoFilterRunnable.hpp"
 
 #include <cassert> // assert
@@ -40,43 +42,53 @@
 
 #include "VideoFilter.hpp"
 #include "TextureBuffer.hpp"
+#include "ogles_gpgpu/common/proc/flow.h"
+#include "ogles_gpgpu/common/proc/video.h"
+#include "ogles_gpgpu/common/proc/iir.h"
+#include "ogles_gpgpu/common/proc/grayscale.h"
 
-#include "libyuv.h"
-
-#include "OGLESGPGPUTest.h"
+#include "FrameHandler.h"
+#include "QVideoFrameScopeMap.h"
 
 #include <opencv2/imgproc.hpp>
 #include <opencv2/core.hpp>
-#include <opencv2/highgui.hpp>
 
 #include <QDateTime>
 
-struct QVideoFrameScopeMap
-{
-    QVideoFrameScopeMap(QVideoFrame *frame, QAbstractVideoBuffer::MapMode mode) : frame(frame)
-    {
-        if(frame)
-        {
-            status = frame->map(mode);
-            if (!status)
-            {
-                qWarning("Can't map!");
-            }
-        }
-    }
-    ~QVideoFrameScopeMap()
-    {
-        if(frame)
-        {
-            frame->unmap();
-        }
-    }
-    operator bool() const { return status; }
-    QVideoFrame *frame = nullptr;
-    bool status = false;
-};
+#define DO_GRAY 0
 
-static cv::Mat QVideoFrameToCV(QVideoFrame *input);
+struct VideoFilterRunnable::Impl
+{
+    using FrameInput = ogles_gpgpu::FrameInput;
+    
+    Impl(void *glContext, int orientation)
+    : m_glContext(glContext)
+#if DO_GRAY
+    , m_filter()
+#else
+    , m_filter(ogles_gpgpu::IirFilterProc::kHighPass, 0.5f, 8.0f)
+    //, m_filter(ogles_gpgpu::IirFilterProc::kLowPass, 0.8f)
+#endif
+    , m_video(glContext)
+    {
+        m_video.set(&m_filter);
+    }
+
+    GLuint operator()(const ogles_gpgpu::FrameInput &frame)
+    {
+        m_video(frame);
+        return m_filter.getOutputTexId();
+    }
+    
+    void * m_glContext = nullptr;
+    ogles_gpgpu::VideoSource m_video;
+#if DO_GRAY
+    ogles_gpgpu::GrayscaleProc m_filter;
+#else
+    ogles_gpgpu::IirFilterProc m_filter;
+#endif
+
+};
 
 VideoFilterRunnable::VideoFilterRunnable(VideoFilter *filter) :
 m_filter(filter),
@@ -109,21 +121,10 @@ QVideoFrame VideoFilterRunnable::run(QVideoFrame *input, const QVideoSurfaceForm
 #else
     glContext = qContext;
 #endif
-    if(!m_pipeline)
+    if(!m_pImpl)
     {
-        QSize size = surfaceFormat.sizeHint();
-        GLint backingWidth = size.width(), backingHeight = size.height();
-
-        // TODO: These calls are failing on OS X
-        glFuncs.glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &backingWidth);
-        glFuncs.glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &backingHeight);
-        ogles_gpgpu::Tools::checkGLErr("VideoFilterRunnable", "run");
-        
-        //glFuncs.gl
-        
-        cv::Size screenSize(backingWidth, backingHeight);
-        m_pipeline = std::make_shared<gatherer::graphics::OEGLGPGPUTest>(glContext, screenSize, resolution);
-        m_pipeline->setDoDisplay(false);
+        int orientation = FrameHandlerManager::get()->getOrientation();
+        m_pImpl = std::make_shared<Impl>(glContext, orientation);
     }
     
     // This example supports RGB data only, either in system memory (typical with
@@ -142,8 +143,7 @@ QVideoFrame VideoFilterRunnable::run(QVideoFrame *input, const QVideoSurfaceForm
     }
 
     m_outTexture = createTextureForFrame(input);
-    auto size = m_pipeline->getOutputSize();
-    return TextureBuffer::createVideoFrame(m_outTexture, {size.width, size.height});
+    return TextureBuffer::createVideoFrame(m_outTexture, input->size());
 }
 
 bool VideoFilterRunnable::isFrameValid(const QVideoFrame& frame) {
@@ -171,7 +171,16 @@ bool VideoFilterRunnable::isFrameFormatYUV(const QVideoFrame& frame) {
 }
 
 // Create a texture from the image data.
-GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
+GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input)
+{
+    GLuint outTexture = processFrame(input);
+    return outTexture;
+}
+
+GLuint VideoFilterRunnable::processFrame(QVideoFrame *input)
+{
+    using FrameInput = ogles_gpgpu::FrameInput;
+    
     QOpenGLContext* openglContext = QOpenGLContext::currentContext();
     if (!openglContext) {
         qWarning("Can't get context!");
@@ -182,24 +191,21 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
     QOpenGLFunctions *f = openglContext->functions();
     assert(f != 0);
     
+    GLint inputTexture = 0, outputTexture = 0;
+    GLenum textureFormat = 0;
+    const ogles_gpgpu::Size2d size(input->width(), input->height());
+    void* pixelBuffer = nullptr; //  we are using texture
+    bool useRawPixels = false; //  - // -
+    
     // Already an OpenGL texture.
-    if (input->handleType() == QAbstractVideoBuffer::GLTextureHandle) {
+    if (input->handleType() == QAbstractVideoBuffer::GLTextureHandle)
+    {
         assert(input->pixelFormat() == TextureBuffer::qtTextureFormat());
-        GLuint texture = input->handle().toUInt();
-        assert(texture != 0);
-        f->glBindTexture(GL_TEXTURE_2D, texture);
-        m_lastInputTexture = texture;
+        inputTexture = outputTexture = input->handle().toUInt();
+        assert(inputTexture != 0);
         
-        const cv::Size size(input->width(), input->height());
-        void* pixelBuffer = nullptr; //  we are using texture
-        const bool useRawPixels = false; //  - // -
-        m_pipeline->captureOutput(size, pixelBuffer, useRawPixels, texture);
-        
-        glActiveTexture(GL_TEXTURE0);
-        GLuint outputTexture = m_pipeline->getLastShaderOutputTexture();
-        f->glBindTexture(GL_TEXTURE_2D, outputTexture); // TODO: review, unnecessary?
-        
-        m_outTexture = outputTexture;
+        FrameInput frame(size, pixelBuffer, useRawPixels, inputTexture, GL_RGBA);
+        m_outTexture = (*m_pImpl)(frame);
     }
     else
     {
@@ -208,80 +214,49 @@ GLuint VideoFilterRunnable::createTextureForFrame(QVideoFrame* input) {
         if((GATHERER_IOS && !scopeMap) || !GATHERER_IOS) // for non ios platforms
         {
             assert((input->pixelFormat() == QVideoFrame::Format_ARGB32) || (GATHERER_IOS && input->pixelFormat() == QVideoFrame::Format_NV12));
-
+            
 #if defined(Q_OS_IOS) || defined(Q_OS_OSX)
             const GLenum rgbaFormat = GL_BGRA;
 #else
             const GLenum rgbaFormat = GL_RGBA;
 #endif
-    
+            
 #if defined(Q_OS_IOS)
-            void * const pixelBuffer = input->pixelBufferRef();
+            pixelBuffer = input->pixelBufferRef();
 #else
-            void * const pixelBuffer = input->bits();
+            pixelBuffer = input->bits();
 #endif
             
             // 0 indicates YUV
-            GLenum textureFormat = input->pixelFormat() == QVideoFrame::Format_ARGB32 ? rgbaFormat : 0;
-            const bool useRawPixels = !(GATHERER_IOS); // ios uses texture cache / pixel buffer
-            const GLuint inputTexture = 0;
+            textureFormat = (input->pixelFormat() == QVideoFrame::Format_ARGB32) ? rgbaFormat : 0;
+            useRawPixels = !(GATHERER_IOS); // ios uses texture cache / pixel buffer
+            inputTexture = 0;
             assert(pixelBuffer != nullptr);
-            m_pipeline->captureOutput({input->width(), input->height()}, pixelBuffer, useRawPixels, inputTexture, textureFormat);
             
-            // QT is expecting GL_TEXTURE0 to be active
-            glActiveTexture(GL_TEXTURE0);
-            m_outTexture = m_pipeline->getLastShaderOutputTexture();
+            FrameInput frame(size, pixelBuffer, useRawPixels, inputTexture, textureFormat);
+            
+            // Note: Pixel buffer access must occur within the protected scope  (see QVideoFrameScopeMap above)
+            m_outTexture = (*m_pImpl)(frame);
         }
     }
+    
+    // Be sure to active GL_TEXTURE0 for Qt
+    glActiveTexture(GL_TEXTURE0);
 
-    const QPoint oldPosition = m_filter->rectanglePosition();
-    const QSize rectangleSize(100, 100);
-    const bool visible = true;
-    const int xDelta = std::rand() % 10;
-    const int yDelta = std::rand() % 10;
-    const int newX = (oldPosition.x() + xDelta) % input->size().width();
-    const int newY = (oldPosition.y() + yDelta) % input->size().height();
-    emit m_filter->updateRectangle(QPoint(newX, newY), rectangleSize, visible);
 
-    emit m_filter->updateOutputString(QDateTime::currentDateTime().toString());
+    { // Test QML display:
+#if TEST_QML_DRAWING
+        const QPoint oldPosition = m_filter->rectanglePosition();
+        const QSize rectangleSize(100, 100);
+        const bool visible = true;
+        const int xDelta = std::rand() % 10;
+        const int yDelta = std::rand() % 10;
+        const int newX = (oldPosition.x() + xDelta) % input->size().width();
+        const int newY = (oldPosition.y() + yDelta) % input->size().height();
+        emit m_filter->updateRectangle(QPoint(newX, newY), rectangleSize, visible);
+#endif
+        emit m_filter->updateOutputString(QDateTime::currentDateTime().toString());
+    }
 
     return m_outTexture;
-}
-
-// We don't ever want to use this in any practical scenario.
-// To be deprecated...
-static cv::Mat QVideoFrameToCV(QVideoFrame *input)
-{
-    cv::Mat frame;
-    switch(input->pixelFormat())
-    {
-        case QVideoFrame::Format_ARGB32:
-        case QVideoFrame::Format_BGRA32:
-            frame = cv::Mat(input->height(), input->width(), CV_8UC4, input->bits());
-            break;
-        case QVideoFrame::Format_NV21:
-            frame.create(input->height(), input->width(), CV_8UC4);
-            libyuv::NV21ToARGB(input->bits(),
-                               input->bytesPerLine(),
-                               input->bits(1),
-                               input->bytesPerLine(1),
-                               frame.ptr<uint8_t>(),
-                               int(frame.step1()),
-                               frame.cols,
-                               frame.rows);
-            break;
-        case QVideoFrame::Format_NV12:
-            frame.create(input->height(), input->width(), CV_8UC4);
-            libyuv::NV12ToARGB(input->bits(),
-                               input->bytesPerLine(),
-                               input->bits(1),
-                               input->bytesPerLine(1),
-                               frame.ptr<uint8_t>(),
-                               int(frame.step1()),
-                               frame.cols,
-                               frame.rows);
-            break;
-        default: CV_Assert(false);
-    }
-    return frame;
 }

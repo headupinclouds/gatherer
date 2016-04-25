@@ -51,6 +51,8 @@
 #include "InfoFilter.hpp"
 #include "QTRenderGL.hpp"
 
+#include "FrameHandler.h"
+
 #include "graphics/Logger.h"
 
 #define TEST_CALLBACK 0
@@ -170,20 +172,12 @@ int main(int argc, char **argv)
         camera->setViewfinderSettings(best.second);
     }
 
-#if TEST_CALLBACK
-    // TODO: We need a way to register this callback after VideoFilterRunnable is instantiated:
-    gatherer::graphics::OEGLGPGPUTest *pipeline = 0; // ??? use signal/slot ?
-    if(pipeline)
+    auto frameHandlers = FrameHandlerManager::get();
+    if(frameHandlers)
     {
-        gatherer::graphics::OEGLGPGPUTest::FrameHandler frameHandler = [](const cv::Mat &frame)
-        {
-            std::stringstream ss;
-            ss << getenv("HOME") << "/Documents/frame.png";
-            cv::imwrite(ss.str(), frame);
-        };
-        pipeline->setFrameHandler(frameHandler);
+        QCameraInfo cameraInfo( *camera );
+        frameHandlers->setOrientation(cameraInfo.orientation());
     }
-#endif
 
     view.showFullScreen();
     
