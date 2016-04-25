@@ -45,6 +45,7 @@
 #include "ogles_gpgpu/common/proc/flow.h"
 #include "ogles_gpgpu/common/proc/video.h"
 #include "ogles_gpgpu/common/proc/iir.h"
+#include "ogles_gpgpu/common/proc/grayscale.h"
 
 #include "FrameHandler.h"
 #include "QVideoFrameScopeMap.h"
@@ -54,14 +55,20 @@
 
 #include <QDateTime>
 
+#define DO_GRAY 0
+
 struct VideoFilterRunnable::Impl
 {
     using FrameInput = ogles_gpgpu::FrameInput;
     
     Impl(void *glContext, int orientation)
     : m_glContext(glContext)
+#if DO_GRAY
+    , m_filter()
+#else
     , m_filter(ogles_gpgpu::IirFilterProc::kHighPass, 0.5f, 8.0f)
     //, m_filter(ogles_gpgpu::IirFilterProc::kLowPass, 0.8f)
+#endif
     , m_video(glContext)
     {
         m_video.set(&m_filter);
@@ -75,7 +82,12 @@ struct VideoFilterRunnable::Impl
     
     void * m_glContext = nullptr;
     ogles_gpgpu::VideoSource m_video;
+#if DO_GRAY
+    ogles_gpgpu::GrayscaleProc m_filter;
+#else
     ogles_gpgpu::IirFilterProc m_filter;
+#endif
+
 };
 
 VideoFilterRunnable::VideoFilterRunnable(VideoFilter *filter) :
