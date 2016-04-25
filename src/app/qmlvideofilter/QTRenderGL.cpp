@@ -98,8 +98,10 @@ void QTRenderGL::setT(qreal t)
 void QTRenderGL::handleWindowChanged(QQuickWindow *win)
 {
     if (win) {
+#if 0
         connect(win, SIGNAL(beforeSynchronizing()), this, SLOT(sync()), Qt::DirectConnection);
         connect(win, SIGNAL(sceneGraphInvalidated()), this, SLOT(cleanup()), Qt::DirectConnection);
+#endif
         // If we allow QML to do the clearing, they would clear what we paint
         // and nothing would show.
         win->setClearBeforeRendering(false);
