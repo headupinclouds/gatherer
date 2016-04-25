@@ -9,6 +9,8 @@ find_package(Qt5Multimedia REQUIRED) # Qt5::QMultimediaDeclarativeModule
 set(
   sources
   main.cpp
+  FrameHandler.h
+  FrameHandler.cpp
   TextureBuffer.hpp
   VideoFilter.hpp
   VideoFilter.cpp
@@ -25,6 +27,7 @@ set(
   main.qml
   QTRenderGL.hpp
   QTRenderGL.cpp
+  QVideoFrameScopeMap.h
   )
 
 if(ANDROID)
