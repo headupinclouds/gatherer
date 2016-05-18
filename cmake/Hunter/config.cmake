@@ -34,7 +34,7 @@ hunter_config(TIFF VERSION 4.0.2-p3)
 hunter_config(cereal VERSION 1.1.2-p5)
 hunter_config(OpenCV VERSION 3.0.0-p6 CMAKE_ARGS "${OPENCV_CMAKE_ARGS}")
 hunter_config(spdlog VERSION 1.0.0-p0)
-hunter_config(Qt VERSION 5.5.1-cvpixelbuffer-2-p3)
+hunter_config(Qt VERSION ${HUNTER_Qt_VERSION})
 hunter_config(BoostCompute VERSION 0.5-p0)
 
 #  CMAKE_ARGS 
