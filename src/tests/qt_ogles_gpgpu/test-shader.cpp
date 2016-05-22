@@ -6,6 +6,7 @@
 #include "OGLESGPGPUTest.h"
 #include "common/proc/video.h"
 #include "graphics/Logger.h"
+#include "ogles_gpgpu/common/proc/blend.h"
 
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
@@ -174,6 +175,47 @@ void olbp_(cv::InputArray _src, cv::OutputArray _dst)
 /*
  * Fixture tests
  */
+
+TEST_F(QOGLESGPGPUTest, blend)
+{
+    // ### Configure the pipeline architecture ###
+    ogles_gpgpu::GrayscaleProc grayscaleProc;
+    ogles_gpgpu::GrayscaleProc colorProc;
+    
+    // Here we make colorProc a simple pass through/noop shader:
+    colorProc.setGrayscaleConvType(ogles_gpgpu::GRAYSCALE_INPUT_CONVERSION_NONE);
+
+    ogles_gpgpu::BlendProc blenderProc;
+    colorProc.add(&blenderProc, 0);
+    grayscaleProc.add(&blenderProc, 1);
+
+    // ### Configure the color and grayscale inpput "video" sources ###
+    ogles_gpgpu::VideoSource videoColor;
+    videoColor.set(&colorProc);
+    
+    ogles_gpgpu::VideoSource videoGray;
+    videoGray.set(&grayscaleProc);
+    videoGray({image.cols, image.rows}, image.ptr(), true, 0, GL_BGRA);
+    
+    for(int i = 0; i < 10; i++)
+    {
+        float alpha = float(i % 11) / 10.f; // std::cout << "alpha: " << alpha << std::endl;
+        blenderProc.setAlpha(alpha);
+        
+        // Load and trigger the color input pipeline (source #0):
+        // Note: here image is static, but these could be dynamic video frames
+        videoColor({image.cols, image.rows}, image.ptr(), true, 0, GL_BGRA);
+        
+        // Just trigger the grayscale pipeline (source #1) with existing texture:
+        grayscaleProc.process(1);
+
+        cv::Mat result = getImage(blenderProc);
+        
+#if DISPLAY_OUTPUT
+        cv::imshow("blend", result); cv::waitKey(0);
+#endif
+    }
+}
 
 TEST_F(QOGLESGPGPUTest, resize)
 {
