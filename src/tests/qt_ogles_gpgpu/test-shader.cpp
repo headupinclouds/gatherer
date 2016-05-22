@@ -197,7 +197,7 @@ TEST_F(QOGLESGPGPUTest, blend)
     videoGray.set(&grayscaleProc);
     videoGray({image.cols, image.rows}, image.ptr(), true, 0, GL_BGRA);
     
-    for(int i = 0; i < 100; i++)
+    for(int i = 0; i < 10; i++)
     {
         float alpha = float(i % 11) / 10.f; // std::cout << "alpha: " << alpha << std::endl;
         blenderProc.setAlpha(alpha);
