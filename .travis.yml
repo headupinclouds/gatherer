@@ -3,10 +3,6 @@
 language:
   - cpp
 
-os:
-  - linux
-  - osx
-
 # Container-based infrastructure (Linux)
 # * https://docs.travis-ci.com/user/migrating-from-legacy/#How-can-I-use-container-based-infrastructure%3F
 sudo:
@@ -40,58 +36,50 @@ addons:
       - libstdc++6:i386
       - zlib1g:i386
 
-env:
-  - TOOLCHAIN=libcxx CONFIG=Release
-  - TOOLCHAIN=libcxx CONFIG=Debug
-  # FIXME (no OpenCV) {
-  # - TOOLCHAIN=clang-libstdcxx CONFIG=Release
-  # - TOOLCHAIN=clang-libstdcxx CONFIG=Debug
-  # }
-  - TOOLCHAIN=osx-10-9 CONFIG=Release
-  - TOOLCHAIN=osx-10-9 CONFIG=Debug
-  # FIXME (glew, glfw3) {
-  # * https://travis-ci.org/ruslo/gatherer/jobs/133200753
-  # - TOOLCHAIN=gcc-4-8 CONFIG=Release
-  # - TOOLCHAIN=gcc-4-8 CONFIG=Debug
-  # }
-  # FIXME (no OpenCV) {
-  # - TOOLCHAIN=ios-nocodesign-wo-armv7s CONFIG=Release
-  # - TOOLCHAIN=ios-nocodesign-wo-armv7s CONFIG=Debug
-  # }
-  - TOOLCHAIN=android-ndk-r10e-api-19-armeabi-v7a-neon CONFIG=Release
-  - TOOLCHAIN=android-ndk-r10e-api-19-armeabi-v7a-neon CONFIG=Debug
-
 matrix:
-  exclude:
-    ### Linux excludes ###
-    # https://github.com/travis-ci-tester/travis-test-clang-with-libcxx
+  include:
+    # FIXME (no OpenCV) {
+    # - os: linux
+    #   env: TOOLCHAIN=clang-libstdcxx CONFIG=Release
+    # - os: linux
+    #   env: TOOLCHAIN=clang-libstdcxx CONFIG=Debug
+    # }
+    # FIXME (glew, glfw3) {
+    # * https://travis-ci.org/ruslo/gatherer/jobs/133200753
+    # - os: linux
+    #   env: TOOLCHAIN=gcc-4-8 CONFIG=Release
+    # - os: linux
+    #   env: TOOLCHAIN=gcc-4-8 CONFIG=Debug
+    # }
     - os: linux
+      env: TOOLCHAIN=android-ndk-r10e-api-19-armeabi-v7a-neon CONFIG=Release
+    - os: linux
+      env: TOOLCHAIN=android-ndk-r10e-api-19-armeabi-v7a-neon CONFIG=Debug
+
+    - os: osx
       env: TOOLCHAIN=libcxx CONFIG=Release
-    - os: linux
+    - os: osx
       env: TOOLCHAIN=libcxx CONFIG=Debug
-
-    # Xcode is for OSX only
-    - os: linux
+    # FIXME (no OpenCV) {
+    # - os: osx
+    #   env: TOOLCHAIN=clang-libstdcxx CONFIG=Release
+    # - os: osx
+    #   env: TOOLCHAIN=clang-libstdcxx CONFIG=Debug
+    # }
+    - os: osx
       env: TOOLCHAIN=osx-10-9 CONFIG=Release
-    - os: linux
+    - os: osx
       env: TOOLCHAIN=osx-10-9 CONFIG=Debug
-
-    - os: linux
-      env: TOOLCHAIN=ios-nocodesign-wo-armv7s CONFIG=Release
-    - os: linux
-      env: TOOLCHAIN=ios-nocodesign-wo-armv7s CONFIG=Debug
-
-    ### OSX excludes ###
-    # TOOLCHAIN=gcc works fine on OSX (and 'gcc' same as 'libcxx')
+    # FIXME (no OpenCV) {
+    # - os: osx
+    #   env: TOOLCHAIN=ios-nocodesign-wo-armv7s CONFIG=Release
+    # - os: osx
+    #   env: TOOLCHAIN=ios-nocodesign-wo-armv7s CONFIG=Debug
+    # }
     - os: osx
-      env: TOOLCHAIN=gcc-4-8 CONFIG=Release
+      env: TOOLCHAIN=android-ndk-r10e-api-19-armeabi-v7a-neon CONFIG=Release
     - os: osx
-      env: TOOLCHAIN=gcc-4-8 CONFIG=Debug
-
-    - os: osx
-      env: TOOLCHAIN=clang-libstdcxx CONFIG=Release
-    - os: osx
-      env: TOOLCHAIN=clang-libstdcxx CONFIG=Debug
+      env: TOOLCHAIN=android-ndk-r10e-api-19-armeabi-v7a-neon CONFIG=Debug
 
 install:
   # Info about OS
