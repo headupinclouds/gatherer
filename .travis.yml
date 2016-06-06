@@ -116,4 +116,18 @@ install:
   - export ANDROID_NDK_r10e="`pwd`/_ci/android-ndk-r10e"
 
 script:
-  - build.py --toolchain ${TOOLCHAIN} --config ${CONFIG} --verbose --fwd HUNTER_STATUS_DEBUG=OFF HUNTER_USE_CACHE_SERVERS=ONLY
+  - build.py --toolchain ${TOOLCHAIN} --config ${CONFIG} --pack TGZ --verbose --fwd HUNTER_STATUS_DEBUG=OFF HUNTER_USE_CACHE_SERVERS=ONLY
+
+before_deploy:
+  - export FILE_TO_UPLOAD=$(ls _builds/*/gatherer-*.tar.gz)
+
+deploy:
+  provider: releases
+  api_key:
+    - secure: "hyXfnJXKyUj4zyGF3oSuqIk5DREpRuxPQLFJqd78Ti3K/zmQxeNmv5/G5jCF8n310Rb+NoIvNsn7vlcriPOev9TL02G7j4Jbz2n+Si3TtNv2d6nXbW4oEyawMBiPrh+1xLL883euW3fQwh9oRxk4QZDWk9qsbGIJtYp0INUrePXKDW7SiDPTj9t6OCiH2NRCjWdGjxcqmlkVH/F05lh+DNoOauWVnoUkXIZ4NP4s4jDmnzUQy4RBt7fpVhSK8K5VbMLSTOklsBCAyHH6mor0jQx2bf6A9Ud6UnIK5uolMG3kyP+WQDYLdBazDP9PHD5XQYE9cM3VedPQWkKjOmS89p1zFsgRkfQ/v5He2UEX2bcDvXwCntQ9KATVjrCPQz86BQ1JfoBq8z3Q9VUEOH2o65gCOfQqP9Hv3sytzv6Lh3DfF2yEZPwPVu4DENuh6eWv1l38GLSGxzoO5YFyKUhJKRxIu38NMwSpUHOfEQdENy6lECBEx+PjwuA7eJPG0O5fDJlpXBwIMcQJWNjNR/wvl8bM5Su6C2MqA7lbG3GnrAec0g2nBxNARztINVw34EjV0GKbzNfEPvIT8wwAe3XDJTpDYdXMfpTPOb1Qs9QSV2pXZG2QSnZv2HpGgV7GB3gDLIme2Wb+jBaRuCbE0WxVQdeMzASOfwKJIxtWwi72TDk="
+
+  file_glob: true
+  file: "${FILE_TO_UPLOAD}"
+  skip_cleanup: true
+  on:
+    tags: true
