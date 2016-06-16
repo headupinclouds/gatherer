@@ -19,8 +19,8 @@ string(REGEX REPLACE "^v" "" version "${version}")
 ### Hunter snapshot that will be used ###
 include("cmake/HunterGate.cmake")
 HunterGate(
-    URL "https://github.com/ruslo/hunter/archive/v0.14.25.tar.gz"
-    SHA1 "a7ba9775c1206ced7cac204db802b116736ca481"
+    URL "https://github.com/ruslo/hunter/archive/v0.14.26.tar.gz"
+    SHA1 "45ac03944db2bc7fc55dfceca42d89ec7fa1dca2"
 )
 project(gatherer VERSION ${version})
 
